@@ -1,18 +1,20 @@
-let video = document.createElement("video");
+let video = document.getElementById("video");
 
 function openScanner() {
   document.getElementById("result").innerHTML = "📷 افتح الكاميرا ووجّهها على QR";
 
-  navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-    .then(stream => {
-      video.srcObject = stream;
-      video.setAttribute("playsinline", true);
-      video.play();
-      scanQR();
-    })
-    .catch(err => {
-      document.getElementById("result").innerHTML = "❌ لم يتم السماح بالكاميرا";
-    });
+  navigator.mediaDevices.getUserMedia({
+    video: { facingMode: "environment" }
+  })
+  .then(stream => {
+    video.srcObject = stream;
+    video.setAttribute("playsinline", true);
+    video.play();
+    scanQR();
+  })
+  .catch(() => {
+    document.getElementById("result").innerHTML = "❌ لم يتم السماح بالكاميرا";
+  });
 }
 
 function scanQR() {
@@ -29,10 +31,12 @@ function scanQR() {
 
     if (code) {
       document.getElementById("result").innerHTML =
-        "✅ تم قراءة QR: <br><b>" + code.data + "</b>";
+        "✅ تم قراءة QR:<br><b>" + code.data + "</b>";
+
       video.srcObject.getTracks().forEach(track => track.stop());
       return;
     }
   }
+
   requestAnimationFrame(scanQR);
 }
