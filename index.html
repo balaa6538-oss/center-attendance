@@ -3,22 +3,114 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>نظام حضور QR</title>
-
+  <title>لوحة السنتر</title>
   <link rel="stylesheet" href="style.css">
-  <script src="https://unpkg.com/jsqr/dist/jsQR.js"></script>
 </head>
 
 <body>
-  <h1>سيستم الحضور بـ QR</h1>
 
-  <button id="startBtn">فتح الكاميرا</button>
+  <!-- LOGIN -->
+  <div id="loginBox" class="card">
+    <h1>دخول لوحة السنتر</h1>
+    <p class="muted">الدخول للمسؤول فقط</p>
 
-  <div class="camBox">
-    <video id="video" autoplay playsinline></video>
+    <label class="lbl">Username</label>
+    <input id="user" class="inp" type="text" placeholder="Admin">
+
+    <label class="lbl">Password</label>
+    <input id="pass" class="inp" type="password" placeholder="####1111">
+
+    <button id="loginBtn" class="btn primary">دخول</button>
+
+    <div id="loginMsg" class="msg"></div>
   </div>
 
-  <div id="result"></div>
+  <!-- APP -->
+  <div id="appBox" class="hidden">
+
+    <div class="topbar">
+      <div class="brand">لوحة السنتر</div>
+      <button id="logoutBtn" class="btn">خروج</button>
+    </div>
+
+    <div class="grid">
+
+      <!-- LEFT: OPEN STUDENT -->
+      <div class="card">
+        <h2>فتح طالب (بالـ ID)</h2>
+        <p class="muted">اعمل Scan ببرنامج QR خارجي → هيطلع رقم (مثلاً 27) → اكتب الرقم هنا</p>
+
+        <div class="row">
+          <input id="openId" class="inp" type="number" min="1" max="500" placeholder="اكتب ID من 1 إلى 500">
+          <button id="openBtn" class="btn primary">فتح</button>
+        </div>
+
+        <div class="hr"></div>
+
+        <h3>بحث سريع</h3>
+        <input id="search" class="inp" type="text" placeholder="ابحث بالاسم أو الموبايل أو ID">
+        <div id="searchResults" class="list"></div>
+      </div>
+
+      <!-- RIGHT: STUDENT CARD -->
+      <div class="card">
+        <h2>بيانات الطالب</h2>
+        <div class="muted">افتح طالب من اليسار علشان يظهر هنا</div>
+
+        <div id="studentBox" class="student hidden">
+          <div class="pill">ID: <b id="s_id">—</b></div>
+
+          <label class="lbl">الاسم</label>
+          <input id="s_name" class="inp" type="text" placeholder="مثلاً: محمد أحمد السيد">
+
+          <label class="lbl">رقم الهاتف</label>
+          <input id="s_phone" class="inp" type="tel" placeholder="مثلاً: 010...">
+
+          <label class="lbl">المطلوب (إجمالي)</label>
+          <input id="s_total" class="inp" type="number" min="0" step="1" placeholder="سيبه فاضي لو لسه">
+
+          <label class="lbl">المدفوع</label>
+          <input id="s_paid" class="inp" type="number" min="0" step="1" placeholder="مثلاً: 1500">
+
+          <label class="lbl">Note (ملاحظة)</label>
+          <input id="s_note" class="inp" type="text" placeholder="مثلاً: مادة رياضة فقط / خصم / مجموعة السبت...">
+
+          <div class="row wrap">
+            <div class="pill">عدد أيام الحضور: <b id="s_days">0</b></div>
+            <div class="pill">آخر حضور: <b id="s_last">—</b></div>
+          </div>
+
+          <div class="row wrap">
+            <button id="markTodayBtn" class="btn primary">سجّل حضور اليوم</button>
+            <button id="saveBtn" class="btn">حفظ البيانات</button>
+          </div>
+
+          <div id="s_msg" class="msg"></div>
+          <div id="s_dates" class="dates"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TODAY -->
+    <div class="card">
+      <h2>حضور اليوم</h2>
+      <div class="row wrap">
+        <div class="pill">تاريخ اليوم: <b id="todayDate">—</b></div>
+        <div class="pill">عدد الحضور: <b id="todayCount">0</b></div>
+        <button id="refreshTodayBtn" class="btn">تحديث</button>
+      </div>
+      <div id="todayList" class="list"></div>
+
+      <div class="hr"></div>
+      <div class="row wrap">
+        <button id="init500Btn" class="btn primary">تجهيز 500 طالب فاضي</button>
+        <button id="wipeBtn" class="btn danger">مسح كل البيانات (خطر)</button>
+      </div>
+      <p class="muted">البيانات محفوظة على نفس الجهاز داخل المتصفح.</p>
+    </div>
+
+  </div>
 
   <script src="app.js"></script>
 </body>
