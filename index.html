@@ -1,27 +1,25 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>نظام حضور QR</title>
 
   <link rel="stylesheet" href="style.css">
-
-  <!-- مكتبة قراءة QR -->
   <script src="https://unpkg.com/jsqr/dist/jsQR.js"></script>
 </head>
 
 <body>
-
   <h1>سيستم الحضور بـ QR</h1>
 
-  <button onclick="openScanner()">فتح الكاميرا</button>
+  <button id="startBtn">فتح الكاميرا</button>
 
-  <!-- عرض الكاميرا -->
-  <video id="video" style="width:100%;max-width:400px;margin-top:20px;" autoplay></video>
+  <div class="camBox">
+    <video id="video" autoplay playsinline></video>
+  </div>
 
-  <div id="result" style="margin-top:20px;font-size:18px;"></div>
+  <div id="result"></div>
 
   <script src="app.js"></script>
-
 </body>
 </html>
