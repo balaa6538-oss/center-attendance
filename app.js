@@ -1,12 +1,12 @@
-// ===== إعدادات الدخول (زي ما قلت) =====
+// ===== دخول =====
 const ADMIN_USER = "Admin";
 const ADMIN_PASS = "####1111";
 
-// ===== التخزين المحلي =====
-const STORAGE_KEY = "center_students_v1";
-const AUTH_KEY = "center_admin_authed_v1";
+const DB_KEY = "center_db_v2";
+const AUTH_KEY = "center_auth_v2";
+const PENDING_ID_KEY = "center_pending_id_v2";
 
-// ===== Helpers =====
+// ===== أدوات =====
 function el(id){ return document.getElementById(id); }
 
 function todayISO(){
@@ -17,45 +17,79 @@ function todayISO(){
   return `${yyyy}-${mm}-${dd}`;
 }
 
-function loadDB(){
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if(!raw) return { students: {} };
-  try { return JSON.parse(raw); } catch { return { students: {} }; }
+function readQueryId(){
+  const sp = new URLSearchParams(location.search);
+  const v = sp.get("id");
+  if(!v) return null;
+  const n = Number(v);
+  return Number.isInteger(n) ? n : null;
 }
+
+function setMsg(node, text, ok=true){
+  node.textContent = text;
+  node.className = "msg " + (ok ? "ok" : "bad");
+}
+
+function clearMsg(node){
+  node.textContent = "";
+  node.className = "msg";
+  node.style.display = "none";
+}
+
+function loadDB(){
+  const raw = localStorage.getItem(DB_KEY);
+  if(!raw) return null;
+  try { return JSON.parse(raw); } catch { return null; }
+}
+
 function saveDB(db){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+  localStorage.setItem(DB_KEY, JSON.stringify(db));
+}
+
+function ensureDB(){
+  let db = loadDB();
+  if(db && db.students) return db;
+
+  // إنشاء 500 طالب فاضيين (1..500)
+  db = { students: {} };
+  for(let i=1;i<=500;i++){
+    db.students[String(i)] = {
+      id: i,
+      name: "",
+      grade: "",
+      phone: "",
+      paid: "",
+      attendance: [] // ISO dates
+    };
+  }
+  saveDB(db);
+  return db;
 }
 
 function getStudent(db, id){
-  const sid = String(id);
-  if(!db.students[sid]){
-    db.students[sid] = {
-      id: Number(id),
+  const k = String(id);
+  if(!db.students[k]){
+    // لو ID جديد خارج الـ 500
+    db.students[k] = {
+      id: id,
       name: "",
+      grade: "",
       phone: "",
-      total: "",   // مطلوب
-      paid: "",    // مدفوع
-      note: "",
-      attendance: [] // تواريخ ISO
+      paid: "",
+      attendance: []
     };
     saveDB(db);
   }
-  return db.students[sid];
+  return db.students[k];
 }
 
-function normalize(s){
-  return (s || "").toString().trim().toLowerCase();
+function isAuthed(){
+  return localStorage.getItem(AUTH_KEY) === "1";
 }
 
-function showMsg(targetEl, text, ok=true){
-  targetEl.textContent = text;
-  targetEl.className = "msg " + (ok ? "ok" : "bad");
-}
-
-function clearMsg(targetEl){
-  targetEl.textContent = "";
-  targetEl.className = "msg";
-  targetEl.style.display = "none";
+function setAuthed(v){
+  if(v) localStorage.setItem(AUTH_KEY, "1");
+  else localStorage.removeItem(AUTH_KEY);
 }
 
 // ===== عناصر الصفحة =====
@@ -66,215 +100,308 @@ const userInp = el("user");
 const passInp = el("pass");
 const loginBtn = el("loginBtn");
 const loginMsg = el("loginMsg");
-
 const logoutBtn = el("logoutBtn");
 
-const openIdInp = el("openId");
-const openBtn = el("openBtn");
+const togglePassBtn = el("togglePass");
 
-const searchInp = el("search");
-const searchResults = el("searchResults");
+const quickId = el("quickId");
+const quickAttendBtn = el("quickAttendBtn");
 
+const searchId = el("searchId");
+const openOnlyBtn = el("openOnlyBtn");
+
+const addStudentBtn = el("addStudentBtn");
+
+const datePick = el("datePick");
+const showByDateBtn = el("showByDateBtn");
+const shownDate = el("shownDate");
+const shownCount = el("shownCount");
+const shownList = el("shownList");
+
+const resetDeviceBtn = el("resetDeviceBtn");
+
+// Student UI
+const studentEmpty = el("studentEmpty");
 const studentBox = el("studentBox");
+
 const s_id = el("s_id");
-const s_name = el("s_name");
-const s_phone = el("s_phone");
-const s_total = el("s_total");
-const s_paid = el("s_paid");
-const s_note = el("s_note");
+const s_today = el("s_today");
 const s_days = el("s_days");
-const s_last = el("s_last");
-const s_dates = el("s_dates");
-const s_msg = el("s_msg");
+
+const s_name = el("s_name");
+const s_grade = el("s_grade");
+const s_phone = el("s_phone");
+const s_paid = el("s_paid");
 
 const saveBtn = el("saveBtn");
-const markTodayBtn = el("markTodayBtn");
+const toggleTodayBtn = el("toggleTodayBtn");
+const studentMsg = el("studentMsg");
+const datesBox = el("datesBox");
 
-const todayDate = el("todayDate");
-const todayCount = el("todayCount");
-const todayList = el("todayList");
-const refreshTodayBtn = el("refreshTodayBtn");
+let currentId = null;
 
-const init500Btn = el("init500Btn");
-const wipeBtn = el("wipeBtn");
-
-// ===== حالة حالية =====
-let currentStudentId = null;
-
-// ===== Auth =====
-function isAuthed(){
-  return sessionStorage.getItem(AUTH_KEY) === "1";
-}
-
-function setAuthed(on){
-  if(on) sessionStorage.setItem(AUTH_KEY, "1");
-  else sessionStorage.removeItem(AUTH_KEY);
-}
-
-function showApp(){
-  loginBox.classList.add("hidden");
-  appBox.classList.remove("hidden");
-  todayDate.textContent = todayISO();
-  renderToday();
-  renderSearch(searchInp.value);
-}
-
+// ===== عرض/إخفاء =====
 function showLogin(){
   appBox.classList.add("hidden");
   loginBox.classList.remove("hidden");
 }
 
+function showApp(){
+  loginBox.classList.add("hidden");
+  appBox.classList.remove("hidden");
+  // default date = today
+  if(datePick) datePick.value = todayISO();
+  renderAttendanceByDate(datePick?.value || todayISO());
+}
+
+// ===== تسجيل دخول =====
 loginBtn.addEventListener("click", ()=>{
   const u = userInp.value.trim();
   const p = passInp.value;
+
   if(u === ADMIN_USER && p === ADMIN_PASS){
     setAuthed(true);
     showApp();
-    showMsg(loginMsg, "✅ تم الدخول", true);
+    setMsg(loginMsg, "✅ تم الدخول", true);
+
+    // لو فيه ID كان جاي من QR قبل الدخول
+    const pending = sessionStorage.getItem(PENDING_ID_KEY);
+    if(pending){
+      sessionStorage.removeItem(PENDING_ID_KEY);
+      const pid = Number(pending);
+      if(Number.isInteger(pid)){
+        openStudent(pid, true); // تسجيل حضور تلقائي
+      }
+    }
   }else{
-    showMsg(loginMsg, "❌ اسم المستخدم أو كلمة السر غلط", false);
+    setMsg(loginMsg, "❌ اسم المستخدم أو كلمة المرور غلط", false);
   }
 });
 
 logoutBtn.addEventListener("click", ()=>{
   setAuthed(false);
+  currentId = null;
+  hideStudent();
   showLogin();
 });
 
-// ===== فتح طالب بالـ ID =====
-function openStudent(id){
-  const n = Number(id);
-  if(!Number.isInteger(n) || n < 1 || n > 500){
-    alert("ID لازم يكون رقم من 1 إلى 500");
-    return;
-  }
-  const db = loadDB();
-  const st = getStudent(db, n);
-  currentStudentId = n;
-  fillStudentUI(st);
-  studentBox.classList.remove("hidden");
-  clearMsg(s_msg);
+togglePassBtn?.addEventListener("click", ()=>{
+  passInp.type = (passInp.type === "password") ? "text" : "password";
+});
+
+// ===== الطالب =====
+function hideStudent(){
+  studentBox.classList.add("hidden");
+  studentEmpty.classList.remove("hidden");
+  clearMsg(studentMsg);
+  datesBox.innerHTML = "";
 }
 
-openBtn.addEventListener("click", ()=>{
-  openStudent(openIdInp.value);
-});
-
-openIdInp.addEventListener("keydown", (e)=>{
-  if(e.key === "Enter") openStudent(openIdInp.value);
-});
-
-// ===== عرض بيانات الطالب =====
 function fillStudentUI(st){
+  currentId = st.id;
+
   s_id.textContent = st.id;
   s_name.value = st.name || "";
+  s_grade.value = st.grade || "";
   s_phone.value = st.phone || "";
-  s_total.value = (st.total === "" || st.total === null || st.total === undefined) ? "" : st.total;
-  s_paid.value  = (st.paid === ""  || st.paid === null  || st.paid === undefined)  ? "" : st.paid;
-  s_note.value  = st.note || "";
+  s_paid.value = (st.paid === "" || st.paid === null || st.paid === undefined) ? "" : st.paid;
 
+  const t = todayISO();
   const dates = (st.attendance || []).slice().sort();
-  s_days.textContent = dates.length;
-  s_last.textContent = dates.length ? dates[dates.length-1] : "—";
+  const hasToday = dates.includes(t);
 
-  s_dates.innerHTML = "";
-  dates.slice().reverse().slice(0, 40).forEach(d=>{
+  s_today.textContent = hasToday ? "حاضر ✅" : "غير حاضر ❌";
+  s_days.textContent = String(dates.length);
+
+  toggleTodayBtn.textContent = hasToday ? "❌ إلغاء حضور اليوم" : "✅ تسجيل حضور اليوم";
+
+  // عرض آخر 25 تاريخ
+  datesBox.innerHTML = "";
+  dates.slice().reverse().slice(0,25).forEach(d=>{
     const chip = document.createElement("div");
     chip.className = "datechip";
     chip.textContent = d;
-    s_dates.appendChild(chip);
+    datesBox.appendChild(chip);
   });
+
+  studentEmpty.classList.add("hidden");
+  studentBox.classList.remove("hidden");
 }
 
 function readStudentUIInto(st){
   st.name = s_name.value.trim();
+  st.grade = s_grade.value.trim();
   st.phone = s_phone.value.trim();
-  st.note = s_note.value.trim();
-  st.total = (s_total.value === "") ? "" : Number(s_total.value);
-  st.paid  = (s_paid.value === "")  ? "" : Number(s_paid.value);
+  st.paid = (s_paid.value === "") ? "" : Number(s_paid.value);
   return st;
 }
 
-// ===== حفظ بيانات =====
-saveBtn.addEventListener("click", ()=>{
-  if(!currentStudentId){
-    alert("افتح طالب الأول");
+function openStudent(id, autoAttend=false){
+  const n = Number(id);
+  if(!Number.isInteger(n) || n < 1){
+    alert("ID لازم يكون رقم صحيح");
     return;
   }
-  const db = loadDB();
-  const st = getStudent(db, currentStudentId);
-  readStudentUIInto(st);
-  db.students[String(currentStudentId)] = st;
-  saveDB(db);
-  showMsg(s_msg, "✅ تم حفظ البيانات", true);
-  renderSearch(searchInp.value);
-  renderToday();
-});
 
-// ===== تسجيل حضور اليوم =====
-markTodayBtn.addEventListener("click", ()=>{
-  if(!currentStudentId){
-    alert("افتح طالب الأول");
+  const db = ensureDB();
+  const st = getStudent(db, n);
+
+  // اعرض بياناته
+  fillStudentUI(st);
+  clearMsg(studentMsg);
+
+  // لو autoAttend = true يسجل حضور اليوم تلقائي (مرة واحدة فقط)
+  if(autoAttend){
+    markTodayForCurrent(true);
+  }
+}
+
+function markTodayForCurrent(silent=false){
+  if(!currentId){
+    if(!silent) alert("افتح طالب الأول");
     return;
   }
-  const db = loadDB();
-  const st = getStudent(db, currentStudentId);
+  const db = ensureDB();
+  const st = getStudent(db, currentId);
 
-  // احفظ أي تعديلات قبل تسجيل الحضور
+  // احفظ أي تعديلات قبل تسجيل/إلغاء
   readStudentUIInto(st);
 
   const t = todayISO();
-  if(!st.attendance.includes(t)){
+  st.attendance = st.attendance || [];
+
+  const idx = st.attendance.indexOf(t);
+  if(idx === -1){
     st.attendance.push(t);
-    db.students[String(currentStudentId)] = st;
+    db.students[String(currentId)] = st;
     saveDB(db);
     fillStudentUI(st);
-    showMsg(s_msg, `✅ اتسجل حضور اليوم (${t})`, true);
+    if(!silent) setMsg(studentMsg, `✅ تم تسجيل حضور اليوم (${t})`, true);
   }else{
-    showMsg(s_msg, `ℹ️ حضور اليوم متسجل بالفعل (${t})`, true);
+    // موجود بالفعل
+    fillStudentUI(st);
+    if(!silent) setMsg(studentMsg, `ℹ️ حضور اليوم مسجل بالفعل (${t})`, true);
   }
-  renderToday();
+
+  // تحديث قائمة الحضور
+  renderAttendanceByDate(datePick?.value || todayISO());
+}
+
+function toggleTodayForCurrent(){
+  if(!currentId){
+    alert("افتح طالب الأول");
+    return;
+  }
+  const db = ensureDB();
+  const st = getStudent(db, currentId);
+
+  readStudentUIInto(st);
+
+  const t = todayISO();
+  st.attendance = st.attendance || [];
+
+  const idx = st.attendance.indexOf(t);
+  if(idx !== -1){
+    st.attendance.splice(idx, 1);
+    db.students[String(currentId)] = st;
+    saveDB(db);
+    fillStudentUI(st);
+    setMsg(studentMsg, `✅ تم إلغاء حضور اليوم (${t})`, true);
+  }else{
+    st.attendance.push(t);
+    db.students[String(currentId)] = st;
+    saveDB(db);
+    fillStudentUI(st);
+    setMsg(studentMsg, `✅ تم تسجيل حضور اليوم (${t})`, true);
+  }
+
+  renderAttendanceByDate(datePick?.value || todayISO());
+}
+
+// ===== أزرار =====
+quickAttendBtn.addEventListener("click", ()=>{
+  openStudent(quickId.value, true); // حضور تلقائي
 });
 
-// ===== بحث =====
-function renderSearch(q){
-  const db = loadDB();
-  const query = normalize(q);
+quickId.addEventListener("keydown", (e)=>{
+  if(e.key === "Enter") openStudent(quickId.value, true);
+});
 
-  searchResults.innerHTML = "";
+openOnlyBtn.addEventListener("click", ()=>{
+  openStudent(searchId.value, false);
+});
 
-  const all = Object.values(db.students);
-  const filtered = all.filter(s=>{
-    if(!query) return true;
-    const idMatch = String(s.id) === query;
-    const nameMatch = normalize(s.name).includes(query);
-    const phoneMatch = normalize(s.phone).includes(query);
-    return idMatch || nameMatch || phoneMatch;
-  }).sort((a,b)=>a.id-b.id).slice(0, 80);
+searchId.addEventListener("keydown", (e)=>{
+  if(e.key === "Enter") openStudent(searchId.value, false);
+});
 
-  if(!filtered.length){
-    const d = document.createElement("div");
-    d.className = "muted";
-    d.textContent = "مفيش نتائج.";
-    searchResults.appendChild(d);
+saveBtn.addEventListener("click", ()=>{
+  if(!currentId){
+    alert("افتح طالب الأول");
+    return;
+  }
+  const db = ensureDB();
+  const st = getStudent(db, currentId);
+  readStudentUIInto(st);
+  db.students[String(currentId)] = st;
+  saveDB(db);
+  fillStudentUI(st);
+  setMsg(studentMsg, "✅ تم حفظ البيانات", true);
+});
+
+toggleTodayBtn.addEventListener("click", ()=>{
+  toggleTodayForCurrent();
+});
+
+addStudentBtn.addEventListener("click", ()=>{
+  const db = ensureDB();
+  const ids = Object.keys(db.students).map(Number).filter(n=>Number.isInteger(n));
+  const maxId = ids.length ? Math.max(...ids) : 500;
+  const newId = maxId + 1;
+  openStudent(newId, false);
+  setMsg(studentMsg, `✅ تم إنشاء طالب جديد ID = ${newId}`, true);
+});
+
+resetDeviceBtn.addEventListener("click", ()=>{
+  if(!confirm("تحذير: سيتم مسح كل بيانات الطلاب والحضور من هذا الجهاز. متأكد؟")) return;
+  localStorage.removeItem(DB_KEY);
+  alert("تم المسح. أعد تحميل الصفحة.");
+  location.reload();
+});
+
+// ===== حضور بتاريخ =====
+function renderAttendanceByDate(dateStr){
+  const d = dateStr || todayISO();
+  shownDate.textContent = d;
+
+  const db = ensureDB();
+  const list = Object.values(db.students)
+    .filter(s => (s.attendance || []).includes(d))
+    .sort((a,b)=>a.id-b.id);
+
+  shownCount.textContent = String(list.length);
+  shownList.innerHTML = "";
+
+  if(list.length === 0){
+    const div = document.createElement("div");
+    div.className = "muted";
+    div.textContent = "لا يوجد حضور في هذا التاريخ.";
+    shownList.appendChild(div);
     return;
   }
 
-  filtered.forEach(s=>{
+  list.forEach(s=>{
     const item = document.createElement("div");
     item.className = "item";
-    const nm = s.name ? s.name : "— (فاضي) —";
-    const ph = s.phone ? s.phone : "—";
-    const tot = (s.total === "" ? "—" : String(s.total));
-    const paid = (s.paid === "" ? "—" : String(s.paid));
-    item.innerHTML = `<b>${escapeHTML(nm)}</b><div class="muted">ID: ${s.id} • موبايل: ${escapeHTML(ph)} • مطلوب: ${escapeHTML(tot)} • مدفوع: ${escapeHTML(paid)}</div>`;
-    item.addEventListener("click", ()=>openStudent(s.id));
-    searchResults.appendChild(item);
+    const nm = s.name ? s.name : "— بدون اسم —";
+    item.innerHTML = `<b>${escapeHTML(nm)}</b><div class="muted">ID: ${s.id} • موبايل: ${escapeHTML(s.phone || "—")} • الصف: ${escapeHTML(s.grade || "—")}</div>`;
+    item.addEventListener("click", ()=>openStudent(s.id, false));
+    shownList.appendChild(item);
   });
 }
 
-searchInp.addEventListener("input", ()=>{
-  renderSearch(searchInp.value);
+showByDateBtn.addEventListener("click", ()=>{
+  renderAttendanceByDate(datePick.value || todayISO());
 });
 
 function escapeHTML(s){
@@ -286,64 +413,31 @@ function escapeHTML(s){
     .replaceAll("'","&#039;");
 }
 
-// ===== حضور اليوم =====
-function renderToday(){
-  todayDate.textContent = todayISO();
-  const db = loadDB();
-  const t = todayISO();
+// ===== تشغيل =====
+(function boot(){
+  ensureDB();
 
-  const list = Object.values(db.students)
-    .filter(s => (s.attendance || []).includes(t))
-    .sort((a,b)=>a.id-b.id);
+  if(isAuthed()){
+    showApp();
 
-  todayCount.textContent = String(list.length);
-  todayList.innerHTML = "";
+    const qid = readQueryId();
+    if(qid){
+      // لو داخل بالفعل: افتح الطالب وسجل حضور تلقائي
+      openStudent(qid, true);
+      // نضيف تنظيف اختياري للرابط (علشان ما يعيدش تسجيل عند الريفريش)
+      // التاريخ لن يتكرر أصلاً، بس ده أنضف
+      history.replaceState({}, "", location.pathname);
+    }
+  }else{
+    showLogin();
 
-  if(!list.length){
-    const d = document.createElement("div");
-    d.className = "muted";
-    d.textContent = "محدّش اتسجل حضوره النهارده لسه.";
-    todayList.appendChild(d);
-    return;
-  }
-
-  list.forEach(s=>{
-    const item = document.createElement("div");
-    item.className = "item";
-    const nm = s.name ? s.name : "— (فاضي) —";
-    const ph = s.phone ? s.phone : "—";
-    item.innerHTML = `<b>${escapeHTML(nm)}</b><div class="muted">ID: ${s.id} • موبايل: ${escapeHTML(ph)} • Note: ${escapeHTML(s.note || "—")}</div>`;
-    item.addEventListener("click", ()=>openStudent(s.id));
-    todayList.appendChild(item);
-  });
-}
-
-refreshTodayBtn.addEventListener("click", renderToday);
-
-// ===== تجهيز 500 طالب =====
-init500Btn.addEventListener("click", ()=>{
-  const db = loadDB();
-  for(let i=1;i<=500;i++){
-    if(!db.students[String(i)]){
-      db.students[String(i)] = {
-        id: i, name:"", phone:"", total:"", paid:"", note:"",
-        attendance: []
-      };
+    const qid = readQueryId();
+    if(qid){
+      // جاي من QR ولسه مش داخل -> نخزن ID مؤقت
+      sessionStorage.setItem(PENDING_ID_KEY, String(qid));
     }
   }
-  saveDB(db);
-  alert("✅ تم تجهيز IDs من 1 إلى 500 (فاضيين).");
-  renderSearch(searchInp.value);
-});
 
-// ===== مسح كل البيانات =====
-wipeBtn.addEventListener("click", ()=>{
-  if(!confirm("تحذير: هيمسح كل بيانات الطلاب والحضور من الجهاز. متأكد؟")) return;
-  localStorage.removeItem(STORAGE_KEY);
-  alert("تم المسح.");
-  location.reload();
-});
-
-// ===== تشغيل مبدئي =====
-if(isAuthed()) showApp();
-else showLogin();
+  // ضبط التاريخ على اليوم
+  if(datePick) datePick.value = todayISO();
+})();
