@@ -1,12 +1,36 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>نظام الحضور</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css" />
 
-  <link rel="stylesheet" href="style.css">
+  <style>
+    /* علشان نعمل زر العين جنب الباسورد */
+    .passWrap{
+      position: relative;
+      width: 100%;
+    }
+    .passWrap .inp{
+      width: 100%;
+      padding-left: 44px; /* مساحة لزر العين */
+      box-sizing: border-box;
+    }
+    .eyeBtn{
+      position: absolute;
+      left: 10px;   /* لأن الصفحة RTL */
+      top: 50%;
+      transform: translateY(-50%);
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 18px;
+      opacity: .7;
+    }
+    .eyeBtn:active{ opacity: 1; }
+  </style>
 </head>
 
 <body>
@@ -16,11 +40,16 @@
     <h1>دخول لوحة السنتر</h1>
     <p class="muted">الدخول للمسؤول فقط</p>
 
-    <label class="lbl">اسم المستخدم</label>
-    <input id="user" class="inp" type="text" placeholder="">
+    <!-- Username: نص عادي (مش نجوم) + placeholder اسم المستخدم -->
+    <label class="lbl">Username</label>
+    <input id="user" class="inp" type="text" placeholder="اسم المستخدم" autocomplete="username">
 
-    <label class="lbl">كلمة المرور</label>
-    <input id="pass" class="inp" type="password" placeholder="">
+    <!-- Password: نجوم + زر عين -->
+    <label class="lbl">Password</label>
+    <div class="passWrap">
+      <input id="pass" class="inp" type="password" placeholder="كلمة المرور" autocomplete="current-password">
+      <button type="button" id="togglePass" class="eyeBtn" aria-label="إظهار/إخفاء كلمة المرور">👁</button>
+    </div>
 
     <button id="loginBtn" class="btn primary">دخول</button>
 
@@ -32,7 +61,7 @@
 
     <h2>فتح طالب (بالـ ID)</h2>
     <p class="muted">
-      اعمل Scan بـ برنامج QR خارجي → هيطلع رقم  
+      اعمل Scan ببرنامج QR خارجي → هيطلع رقم<br>
       اكتب الرقم هنا
     </p>
 
@@ -50,7 +79,22 @@
 
   </div>
 
-  <script src="app.js"></script>
+  <script>
+    // زر العين للباسورد فقط
+    const passInput = document.getElementById("pass");
+    const toggleBtn = document.getElementById("togglePass");
 
+    toggleBtn.addEventListener("click", () => {
+      if (passInput.type === "password") {
+        passInput.type = "text";
+        toggleBtn.textContent = "🙈";
+      } else {
+        passInput.type = "password";
+        toggleBtn.textContent = "👁";
+      }
+    });
+  </script>
+
+  <script src="app.js"></script>
 </body>
 </html>
