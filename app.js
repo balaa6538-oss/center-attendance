@@ -1,42 +1,51 @@
-let video = document.getElementById("video");
+const video = document.getElementById("video");
+const result = document.getElementById("result");
+const startBtn = document.getElementById("startBtn");
 
-function openScanner() {
-  document.getElementById("result").innerHTML = "📷 افتح الكاميرا ووجّهها على QR";
+let stream = null;
 
-  navigator.mediaDevices.getUserMedia({
-    video: { facingMode: "environment" }
-  })
-  .then(stream => {
+startBtn.addEventListener("click", openScanner);
+
+async function openScanner() {
+  result.innerHTML = "📷 جاري فتح الكاميرا...";
+
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: "environment" } },
+      audio: false
+    });
+
     video.srcObject = stream;
-    video.setAttribute("playsinline", true);
-    video.play();
+    await video.play();
+
+    result.innerHTML = "✅ الكاميرا اشتغلت.. وجّهها على QR";
     scanQR();
-  })
-  .catch(() => {
-    document.getElementById("result").innerHTML = "❌ لم يتم السماح بالكاميرا";
-  });
+  } catch (e) {
+    result.innerHTML = "❌ لم يتم السماح بالكاميرا أو المتصفح منعها";
+  }
 }
 
 function scanQR() {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
 
-  if (video.readyState === video.HAVE_ENOUGH_DATA) {
-    canvas.height = video.videoHeight;
-    canvas.width = video.videoWidth;
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  const loop = () => {
+    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
 
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const code = jsQR(imageData.data, canvas.width, canvas.height);
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
-    if (code) {
-      document.getElementById("result").innerHTML =
-        "✅ تم قراءة QR:<br><b>" + code.data + "</b>";
-
-      video.srcObject.getTracks().forEach(track => track.stop());
-      return;
+      const code = jsQR(imageData.data, canvas.width, canvas.height);
+      if (code) {
+        result.innerHTML = `✅ تم قراءة QR:<br><b>${code.data}</b>`;
+        if (stream) stream.getTracks().forEach(t => t.stop());
+        return;
+      }
     }
-  }
+    requestAnimationFrame(loop);
+  };
 
-  requestAnimationFrame(scanQR);
+  loop();
 }
