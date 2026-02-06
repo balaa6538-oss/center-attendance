@@ -1,134 +1,68 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>سيستم السنتر</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>نظام الحضور</title>
+
+  <link rel="stylesheet" href="style.css">
+
+  <!-- مكتبة Excel (تصدير + استيراد) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 
 <body>
 
-  <!-- LOGIN -->
+  <!-- ========== LOGIN ========== -->
   <div id="loginBox" class="card">
-    <h1>لوحة السنتر</h1>
+    <h1>دخول لوحة السنتر</h1>
     <p class="muted">الدخول للمسؤول فقط</p>
 
     <label class="lbl">اسم المستخدم</label>
-    <input id="user" class="inp" type="text" placeholder="اكتب اسم المستخدم">
+    <input
+      id="user"
+      class="inp"
+      type="text"
+      placeholder="اسم المستخدم"
+      autocomplete="username"
+    >
 
     <label class="lbl">كلمة المرور</label>
     <div class="passWrap">
-      <input id="pass" class="inp" type="password" placeholder="اكتب كلمة المرور">
-      <button id="togglePass" class="eyeBtn" type="button" title="إظهار/إخفاء">👁</button>
+      <input
+        id="pass"
+        class="inp"
+        type="password"
+        placeholder="كلمة المرور"
+        autocomplete="current-password"
+      >
+      <button id="togglePass" type="button" class="eyeBtn">👁</button>
     </div>
 
     <button id="loginBtn" class="btn primary">دخول</button>
     <div id="loginMsg" class="msg"></div>
   </div>
 
-  <!-- APP -->
+  <!-- ========== APP ========== -->
   <div id="appBox" class="hidden">
+
     <div class="topbar">
-      <div class="brand">سيستم الحضور</div>
-      <div class="topActions">
+      <div class="brand">لوحة السنتر</div>
+      <div class="actions">
+        <button id="exportExcelBtn" class="btn">تصدير Excel</button>
+        <label class="btn">
+          استيراد Excel
+          <input type="file" id="importExcelInput" hidden>
+        </label>
         <button id="logoutBtn" class="btn danger">خروج</button>
       </div>
     </div>
 
-    <div class="grid">
-
-      <!-- Left: quick + search -->
-      <div class="card">
-        <h2>سريع</h2>
-        <p class="muted">
-          لو بتشتغل بالموبايل: QR هيفتح الموقع على طول بـ <b>?id=25</b> ويسجل حضور تلقائي (لو إنت داخل).
-          <br>ولو حبيت يدوي:
-        </p>
-
-        <label class="lbl">تسجيل حضور سريع (يدوي)</label>
-        <div class="row">
-          <input id="quickId" class="inp" type="number" min="1" placeholder="اكتب ID">
-          <button id="quickAttendBtn" class="btn primary">سجّل حضور</button>
-        </div>
-
-        <div class="hr"></div>
-
-        <h3>بحث فقط</h3>
-        <p class="muted">يفتح بيانات الطالب بدون تسجيل حضور.</p>
-        <div class="row">
-          <input id="searchId" class="inp" type="number" min="1" placeholder="اكتب ID">
-          <button id="openOnlyBtn" class="btn">فتح</button>
-        </div>
-
-        <div class="hr"></div>
-
-        <div class="row wrap">
-          <button id="addStudentBtn" class="btn">+ إضافة طالب جديد (ID جديد)</button>
-          <span class="muted">اختياري</span>
-        </div>
-
-        <div class="hr"></div>
-
-        <h3>حضور بتاريخ</h3>
-        <p class="muted">اليوم تلقائي. تقدر تختار تاريخ تاني لو حبيت.</p>
-        <div class="row">
-          <input id="datePick" class="inp" type="date">
-          <button id="showByDateBtn" class="btn">عرض</button>
-        </div>
-
-        <div class="pillRow">
-          <div class="pill">التاريخ: <b id="shownDate">—</b></div>
-          <div class="pill">عدد الحضور: <b id="shownCount">0</b></div>
-        </div>
-
-        <div id="shownList" class="list"></div>
-
-        <div class="hr"></div>
-
-        <button id="resetDeviceBtn" class="btn danger">مسح بيانات الجهاز (خطر)</button>
-        <p class="muted">يمسح كل الداتا من هذا الجهاز فقط.</p>
-      </div>
-
-      <!-- Right: student -->
-      <div class="card">
-        <h2>بيانات الطالب</h2>
-        <div id="studentEmpty" class="muted">افتح طالب علشان تظهر بياناته هنا.</div>
-
-        <div id="studentBox" class="hidden">
-          <div class="pillRow">
-            <div class="pill">ID: <b id="s_id">—</b></div>
-            <div class="pill">حضور اليوم: <b id="s_today">—</b></div>
-            <div class="pill">عدد أيام الحضور: <b id="s_days">0</b></div>
-          </div>
-
-          <label class="lbl">الاسم</label>
-          <input id="s_name" class="inp" type="text" placeholder="اسم الطالب">
-
-          <label class="lbl">الصف</label>
-          <input id="s_grade" class="inp" type="text" placeholder="مثال: تمريض / الصف الأول ...">
-
-          <label class="lbl">رقم الموبايل</label>
-          <input id="s_phone" class="inp" type="tel" placeholder="01xxxxxxxxx">
-
-          <label class="lbl">المدفوع</label>
-          <input id="s_paid" class="inp" type="number" min="0" step="1" placeholder="مثال: 1500">
-
-          <div class="row wrap">
-            <button id="saveBtn" class="btn">حفظ البيانات</button>
-            <button id="toggleTodayBtn" class="btn primary">تسجيل حضور اليوم</button>
-          </div>
-
-          <div id="studentMsg" class="msg"></div>
-
-          <div class="hr"></div>
-
-          <h3>سجل الحضور (آخر 25 تاريخ)</h3>
-          <div id="datesBox" class="dates"></div>
-        </div>
-      </div>
-
+    <!-- المحتوى الأساسي -->
+    <div id="appContent">
+      <!-- app.js هو اللي هيملأ الصفحة -->
     </div>
+
   </div>
 
   <script src="app.js"></script>
