@@ -1,936 +1,745 @@
-/* =========================
-   Center Attendance System (Offline)
-   Rule A:
-   - IDs 1..500 exist by default
-   - IDs > 500 must be added manually
-   - No auto-create for unknown IDs
-   Data saved in localStorage
-========================= */
+/***************
+  مركز الحضور - بدون سيرفر
+  تخزين على الجهاز: localStorage
+****************/
 
-(() => {
-  const BASE_MAX_ID = 500;
+// ====== إعدادات الدخول ======
+const ADMIN_USER = "Admin";
+const ADMIN_PASS = "####1111";
 
-  // -------- Storage Keys --------
-  const LS_STUDENTS = "ca_students_v2";
-  const LS_AUTH = "ca_auth_v2";
-  const LS_EXTRA_IDS = "ca_extra_ids_v2"; // manually added IDs list (numbers)
+// ====== مفاتيح التخزين ======
+const LS_KEY = "CENTER_DATA_V1";
 
-  // -------- Admin Credentials --------
-  const ADMIN_USER = "Admin";
-  const ADMIN_PASS = "####1111";
+// ====== أدوات مساعدة ======
+function todayISO() {
+  // yyyy-mm-dd
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
 
-  // -------- Helpers --------
-  const $ = (sel) => document.querySelector(sel);
+function safeNumber(v) {
+  const n = parseInt(String(v).trim(), 10);
+  return Number.isFinite(n) ? n : NaN;
+}
 
-  function todayISO() {
-    const d = new Date();
-    const yyyy = d.getFullYear();
-    const mm = String(d.getMonth() + 1).padStart(2, "0");
-    const dd = String(d.getDate()).padStart(2, "0");
-    return `${yyyy}-${mm}-${dd}`;
+function isFilledStudent(s) {
+  // يعتبر "مليان" لو عنده اسم أو موبايل أو مدفوع
+  return !!(s.name || s.phone || (s.paid && String(s.paid).trim() !== ""));
+}
+
+function downloadBlob(filename, blob) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function esc(s) {
+  return String(s ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+// ====== حالة البرنامج ======
+let state = {
+  students: {}, // { "1": {id, name, grade, phone, paid, attendance: ["2026-02-05"] } ... }
+  session: { isLogged: false }
+};
+
+// ====== تحميل / حفظ ======
+function loadState() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    if (!data || typeof data !== "object") return false;
+    if (!data.students || typeof data.students !== "object") return false;
+    state.students = data.students;
+    return true;
+  } catch (e) {
+    console.error(e);
+    return false;
   }
+}
 
-  function prettyDate(iso) {
-    if (!iso || !iso.includes("-")) return iso || "";
-    const [y, m, d] = iso.split("-");
-    return `${d}-${m}-${y}`;
+function saveState() {
+  localStorage.setItem(LS_KEY, JSON.stringify({ students: state.students }));
+}
+
+// ====== إنشاء 500 طالب ======
+function ensureDefault500() {
+  // لو مفيش داتا: اعمل 500
+  if (Object.keys(state.students).length > 0) return;
+
+  for (let i = 1; i <= 500; i++) {
+    state.students[String(i)] = {
+      id: i,
+      name: "",
+      grade: "",
+      phone: "",
+      paid: "",
+      attendance: [] // تواريخ yyyy-mm-dd
+    };
   }
+  saveState();
+}
 
-  function parseId(v) {
-    const s = String(v ?? "").trim();
-    if (!s) return null;
-    if (!/^\d+$/.test(s)) return null;
-    const n = Number(s);
-    if (!Number.isFinite(n) || n <= 0) return null;
-    return n;
+// ====== فحص وجود طالب ======
+function getStudentById(id) {
+  return state.students[String(id)] || null;
+}
+
+function ensureIdExistsOrMsg(id, msgEl) {
+  const s = getStudentById(id);
+  if (!s) {
+    if (msgEl) msgEl.innerHTML = `❌ هذا الـ ID غير موجود في قاعدة البيانات: <b>${esc(id)}</b>`;
+    return null;
   }
+  return s;
+}
 
-  function loadJSON(key, fallback) {
-    try {
-      const raw = localStorage.getItem(key);
-      if (!raw) return fallback;
-      return JSON.parse(raw);
-    } catch {
-      return fallback;
-    }
+// ====== واجهة الدخول / الخروج ======
+const loginBox = document.getElementById("loginBox");
+const appBox = document.getElementById("appBox");
+
+const userInp = document.getElementById("user");
+const passInp = document.getElementById("pass");
+const loginBtn = document.getElementById("loginBtn");
+const loginMsg = document.getElementById("loginMsg");
+const togglePass = document.getElementById("togglePass");
+
+const exportExcelBtn = document.getElementById("exportExcelBtn");
+const importExcelInput = document.getElementById("importExcelInput");
+const logoutBtn = document.getElementById("logoutBtn");
+const appContent = document.getElementById("appContent");
+
+// زر العين
+togglePass?.addEventListener("click", () => {
+  if (passInp.type === "password") {
+    passInp.type = "text";
+    togglePass.textContent = "🙈";
+  } else {
+    passInp.type = "password";
+    togglePass.textContent = "👁";
   }
+});
 
-  function saveJSON(key, value) {
-    localStorage.setItem(key, JSON.stringify(value));
+// الدخول
+loginBtn?.addEventListener("click", () => {
+  const u = (userInp.value || "").trim();
+  const p = (passInp.value || "").trim();
+
+  if (u === ADMIN_USER && p === ADMIN_PASS) {
+    state.session.isLogged = true;
+    loginMsg.innerHTML = "✅ تم الدخول";
+    showApp();
+  } else {
+    loginMsg.innerHTML = "❌ بيانات الدخول غير صحيحة";
   }
+});
 
-  function escapeHTML(s) {
-    return (s ?? "").toString()
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;")
-      .replaceAll("'","&#039;");
-  }
+// خروج
+logoutBtn?.addEventListener("click", () => {
+  state.session.isLogged = false;
+  showLogin();
+});
 
-  // -------- Data Model --------
-  // students: { [id:number]: { id, name, grade, phone, paid, attendance: [YYYY-MM-DD,...] } }
-  function ensureBaseStudents() {
-    const students = loadJSON(LS_STUDENTS, null);
-    if (students && typeof students === "object") return students;
+// ====== بناء الواجهة ======
+function showLogin() {
+  loginBox.classList.remove("hidden");
+  appBox.classList.add("hidden");
+}
 
-    const init = {};
-    for (let i = 1; i <= BASE_MAX_ID; i++) {
-      init[i] = {
-        id: i,
-        name: "",
-        grade: "",
-        phone: "",
-        paid: "",
-        attendance: []
-      };
-    }
-    saveJSON(LS_STUDENTS, init);
-    saveJSON(LS_EXTRA_IDS, []);
-    return init;
-  }
+function showApp() {
+  loginBox.classList.add("hidden");
+  appBox.classList.remove("hidden");
+  renderApp();
+}
 
-  function getStudents() {
-    return ensureBaseStudents();
-  }
+function renderApp() {
+  const tdy = todayISO();
 
-  function setStudents(students) {
-    saveJSON(LS_STUDENTS, students);
-  }
+  appContent.innerHTML = `
+    <div class="grid">
 
-  function getExtraIds() {
-    const arr = loadJSON(LS_EXTRA_IDS, []);
-    return Array.isArray(arr) ? arr : [];
-  }
+      <div class="card">
+        <h2>سريع</h2>
+        <p class="muted">
+          لو بتشتغل بالموبايل: QR يفتح الموقع على طول بـ <b>?id=25</b> (لو إنت داخل)،
+          ويسجل حضور تلقائي (لو اخترنا كده).<br>
+          أو تسجل حضور يدوي من هنا.
+        </p>
 
-  function setExtraIds(arr) {
-    saveJSON(LS_EXTRA_IDS, arr);
-  }
-
-  // Rule A existence:
-  function idExists(id) {
-    if (id >= 1 && id <= BASE_MAX_ID) return true;
-    const extra = getExtraIds();
-    return extra.includes(id);
-  }
-
-  function requireExistingId(id) {
-    if (!idExists(id)) return { ok: false, msg: "❌ هذا الـ ID غير موجود في قاعدة البيانات." };
-    return { ok: true, msg: "" };
-  }
-
-  function getOrCreateStudentRecord(id) {
-    const students = getStudents();
-    if (!students[id]) {
-      if (!idExists(id)) return null; // forbidden
-      students[id] = {
-        id,
-        name: "",
-        grade: "",
-        phone: "",
-        paid: "",
-        attendance: []
-      };
-      setStudents(students);
-    }
-    return students[id];
-  }
-
-  function addNewStudentId(id) {
-    const n = parseId(id);
-    if (!n) return { ok: false, msg: "❌ اكتب ID صحيح (أرقام فقط)." };
-
-    if (n >= 1 && n <= BASE_MAX_ID) {
-      return { ok: true, msg: "✅ هذا الـ ID موجود بالفعل ضمن 1..500." };
-    }
-
-    const extra = getExtraIds();
-    if (!extra.includes(n)) extra.push(n);
-    extra.sort((a, b) => a - b);
-    setExtraIds(extra);
-
-    getOrCreateStudentRecord(n);
-    return { ok: true, msg: `✅ تم إضافة ID جديد: ${n}` };
-  }
-
-  function isFilledStudent(s) {
-    const name = (s?.name || "").trim();
-    const grade = (s?.grade || "").trim();
-    const phone = (s?.phone || "").trim();
-    const paid = (s?.paid || "").toString().trim();
-    const att = Array.isArray(s?.attendance) ? s.attendance : [];
-    return !!(name || grade || phone || paid || att.length > 0);
-  }
-
-  function markAttendance(id, dateISO) {
-    const chk = requireExistingId(id);
-    if (!chk.ok) return chk;
-
-    const rec = getOrCreateStudentRecord(id);
-    if (!rec) return { ok: false, msg: "❌ غير موجود." };
-
-    if (!Array.isArray(rec.attendance)) rec.attendance = [];
-    if (rec.attendance.includes(dateISO)) {
-      return { ok: true, msg: "ℹ️ مسجل حضور بالفعل في هذا التاريخ (لن يتم التكرار)." };
-    }
-    rec.attendance.push(dateISO);
-    rec.attendance.sort();
-    const students = getStudents();
-    students[id] = rec;
-    setStudents(students);
-    return { ok: true, msg: "✅ تم تسجيل الحضور." };
-  }
-
-  function unmarkAttendance(id, dateISO) {
-    const chk = requireExistingId(id);
-    if (!chk.ok) return chk;
-
-    const rec = getOrCreateStudentRecord(id);
-    if (!rec) return { ok: false, msg: "❌ غير موجود." };
-
-    if (!Array.isArray(rec.attendance)) rec.attendance = [];
-    rec.attendance = rec.attendance.filter(d => d !== dateISO);
-    const students = getStudents();
-    students[id] = rec;
-    setStudents(students);
-    return { ok: true, msg: "✅ تم إلغاء الحضور." };
-  }
-
-  function getAttendanceListByDate(dateISO) {
-    const students = getStudents();
-    const ids = Object.keys(students).map(Number).filter(n => Number.isFinite(n));
-    ids.sort((a, b) => a - b);
-
-    const present = [];
-    for (const id of ids) {
-      const s = students[id];
-      const att = Array.isArray(s.attendance) ? s.attendance : [];
-      if (att.includes(dateISO)) present.push(s);
-    }
-    return present;
-  }
-
-  // -------- Auth --------
-  function isAuthed() {
-    const a = loadJSON(LS_AUTH, null);
-    return !!(a && a.ok === true);
-  }
-
-  function setAuthed(v) {
-    if (v) saveJSON(LS_AUTH, { ok: true, at: Date.now() });
-    else localStorage.removeItem(LS_AUTH);
-  }
-
-  // -------- XLSX Loader (for Excel export) --------
-  function ensureXLSXLoaded() {
-    return new Promise((resolve, reject) => {
-      if (window.XLSX) return resolve(true);
-
-      const s = document.createElement("script");
-      s.src = "https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js";
-      s.onload = () => resolve(true);
-      s.onerror = () => reject(new Error("XLSX load failed"));
-      document.head.appendChild(s);
-    });
-  }
-
-  function downloadBlob(filename, blob) {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  }
-
-  async function exportAllExcelB() {
-    try {
-      showMsg($("#exportAllMsg"), "⏳ جاري تجهيز ملف Excel...", true);
-      await ensureXLSXLoaded();
-
-      const studentsMap = getStudents();
-      const ids = Object.keys(studentsMap).map(Number).filter(Number.isFinite).sort((a,b)=>a-b);
-
-      // Sheet 1: Students (filled only)
-      const studentsRows = [];
-      for (const id of ids) {
-        const s = studentsMap[id];
-        if (!isFilledStudent(s)) continue;
-
-        const att = Array.isArray(s.attendance) ? [...s.attendance].sort() : [];
-        const last = att.length ? att[att.length - 1] : "";
-
-        studentsRows.push({
-          "ID": s.id,
-          "الاسم": s.name || "",
-          "الصف": s.grade || "",
-          "الموبايل": s.phone || "",
-          "المدفوع": s.paid === "" ? "" : s.paid,
-          "عدد أيام الحضور": att.length,
-          "آخر حضور": last ? prettyDate(last) : ""
-        });
-      }
-
-      // Sheet 2: Attendance (detailed)
-      const attendanceRows = [];
-      for (const id of ids) {
-        const s = studentsMap[id];
-        const att = Array.isArray(s.attendance) ? [...s.attendance] : [];
-        if (!att.length) continue;
-
-        const name = (s.name || "").trim();
-        const phone = (s.phone || "").trim();
-        const grade = (s.grade || "").trim();
-
-        att.sort().forEach(d => {
-          attendanceRows.push({
-            "التاريخ": prettyDate(d),
-            "التاريخ_ISO": d,
-            "ID": s.id,
-            "الاسم": name || "",
-            "الموبايل": phone || "",
-            "الصف": grade || ""
-          });
-        });
-      }
-
-      const wb = XLSX.utils.book_new();
-      const ws1 = XLSX.utils.json_to_sheet(studentsRows);
-      const ws2 = XLSX.utils.json_to_sheet(attendanceRows);
-
-      XLSX.utils.book_append_sheet(wb, ws1, "الطلاب");
-      XLSX.utils.book_append_sheet(wb, ws2, "الحضور");
-
-      const filename = `كل_البيانات_${todayISO()}.xlsx`;
-      const out = XLSX.write(wb, { bookType: "xlsx", type: "array" });
-      downloadBlob(filename, new Blob([out], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }));
-
-      showMsg($("#exportAllMsg"), "✅ تم تنزيل ملف Excel (Sheetين: الطلاب + الحضور).", true);
-    } catch (e) {
-      showMsg($("#exportAllMsg"), "❌ حصلت مشكلة في تصدير Excel. جرّب تاني.", false);
-    }
-  }
-
-  async function exportDateExcel(dateISO) {
-    try {
-      showMsg($("#exportDateMsg"), "⏳ جاري تجهيز ملف Excel...", true);
-      await ensureXLSXLoaded();
-
-      const list = getAttendanceListByDate(dateISO).sort((a,b)=>a.id-b.id);
-
-      const rows = list.map(s => ({
-        "التاريخ": prettyDate(dateISO),
-        "التاريخ_ISO": dateISO,
-        "ID": s.id,
-        "الاسم": (s.name || "").trim() || "بدون اسم",
-        "الموبايل": (s.phone || "").trim(),
-        "الصف": (s.grade || "").trim(),
-        "المدفوع": s.paid === "" ? "" : s.paid
-      }));
-
-      const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.json_to_sheet(rows);
-      XLSX.utils.book_append_sheet(wb, ws, "حضور_التاريخ");
-
-      const filename = `حضور_${dateISO}.xlsx`;
-      const out = XLSX.write(wb, { bookType: "xlsx", type: "array" });
-      downloadBlob(filename, new Blob([out], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }));
-
-      showMsg($("#exportDateMsg"), "✅ تم تنزيل ملف حضور هذا التاريخ.", true);
-    } catch {
-      showMsg($("#exportDateMsg"), "❌ حصلت مشكلة في تصدير حضور التاريخ. جرّب تاني.", false);
-    }
-  }
-
-  // -------- UI --------
-  function mountUI() {
-    const style = document.createElement("style");
-    style.textContent = `
-      :root{font-family:system-ui,Segoe UI,Tahoma,Arial; direction:rtl}
-      body{margin:0; background:#f6f7fb}
-      .wrap{max-width:1150px;margin:0 auto;padding:16px}
-      .grid{display:grid;grid-template-columns:1fr;gap:12px}
-      @media (min-width:900px){.grid{grid-template-columns:1.2fr 1fr}}
-      .card{background:#fff;border:1px solid #e6e8f0;border-radius:14px;padding:14px;box-shadow:0 2px 10px rgba(0,0,0,.04)}
-      h1,h2,h3{margin:0 0 10px}
-      h1{font-size:28px}
-      h2{font-size:20px}
-      .muted{color:#666;font-size:14px;line-height:1.7}
-      .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-      .col{display:flex;flex-direction:column;gap:8px}
-      .inp{width:100%;padding:10px 12px;border:1px solid #d7dbe7;border-radius:10px;font-size:16px;box-sizing:border-box}
-      .btn{padding:10px 12px;border:1px solid #d7dbe7;border-radius:10px;background:#fff;cursor:pointer}
-      .btn.primary{background:#2563eb;color:#fff;border-color:#2563eb}
-      .btn.danger{background:#ef4444;color:#fff;border-color:#ef4444}
-      .btn.gray{background:#f3f4f6}
-      .msg{margin-top:8px;font-size:14px}
-      .ok{color:#0f766e}
-      .err{color:#b91c1c}
-      .pill{display:inline-flex;gap:8px;align-items:center;padding:8px 10px;border:1px solid #e6e8f0;border-radius:999px;background:#fafafa}
-      .split{display:flex;gap:10px;align-items:stretch}
-      .split .inp{flex:1}
-      .eyeWrap{position:relative; flex:1}
-      .eyeBtn{position:absolute;left:8px;top:50%;transform:translateY(-50%);border:none;background:transparent;cursor:pointer;font-size:18px}
-      .list{margin:0;padding:0;list-style:none;max-height:280px;overflow:auto;border:1px solid #eee;border-radius:10px}
-      .list li{padding:10px 12px;border-bottom:1px solid #eee}
-      .list li:last-child{border-bottom:none}
-      .kbd{font-family:ui-monospace,Consolas,monospace;background:#f3f4f6;padding:2px 6px;border-radius:6px}
-      .smallBtn{padding:6px 10px;font-size:14px}
-      details{border:1px solid #eee;border-radius:12px;padding:10px 12px;background:#fafafa}
-      details summary{cursor:pointer;font-weight:700}
-      .results{max-height:240px;overflow:auto;border:1px solid #eee;border-radius:10px;margin-top:8px;background:#fff}
-      .resItem{padding:10px 12px;border-bottom:1px solid #eee;cursor:pointer}
-      .resItem:last-child{border-bottom:none}
-      .resItem:hover{background:#f6f7fb}
-    `;
-    document.head.appendChild(style);
-
-    document.body.innerHTML = `
-      <div class="wrap">
-        <div id="loginView" class="card" style="max-width:520px;margin:30px auto;">
-          <h1>دخول لوحة السنتر</h1>
-          <div class="muted">الدخول للمسؤول فقط</div>
-          <div style="height:10px"></div>
-
-          <div class="col">
-            <label>اسم المستخدم</label>
-            <input id="user" class="inp" type="text" placeholder="اسم المستخدم" autocomplete="username">
-            
-            <label>كلمة المرور</label>
-            <div class="eyeWrap">
-              <input id="pass" class="inp" type="password" placeholder="كلمة المرور" autocomplete="current-password">
-              <button id="togglePass" class="eyeBtn" title="إظهار/إخفاء">👁️</button>
-            </div>
-
-            <button id="loginBtn" class="btn primary">دخول</button>
-            <div id="loginMsg" class="msg"></div>
-          </div>
+        <div class="row">
+          <button id="quickAttendBtn" class="btn primary">سجل حضور</button>
+          <input id="quickAttendId" class="inp" type="number" placeholder="اكتب ID هنا">
         </div>
 
-        <div id="appView" style="display:none">
-          <div class="row" style="justify-content:space-between;margin-bottom:12px">
-            <h1 style="margin:0">نظام تسجيل حضور</h1>
-            <button id="logoutBtn" class="btn danger">خروج</button>
-          </div>
+        <hr>
 
-          <div class="grid">
-            <!-- RIGHT -->
-            <div class="card">
-              <h2>سريع</h2>
-              <div class="muted">
-                QR لينك مثل: <span class="kbd">?id=25</span>
-                — (لو أنت داخل) هيسجل حضور اليوم تلقائيًا ويعرض بيانات الطالب.
-              </div>
+        <h3>بحث فقط</h3>
+        <p class="muted">يفتح بيانات الطالب بدون تسجيل حضور.</p>
+        <div class="row">
+          <button id="openOnlyBtn" class="btn">فتح</button>
+          <input id="openOnlyId" class="inp" type="number" placeholder="اكتب ID هنا">
+        </div>
 
-              <div style="height:10px"></div>
+        <hr>
 
-              <h3 style="margin-top:0">تسجيل حضور سريع (يدوي)</h3>
-              <div class="split">
-                <input id="quickAttendId" class="inp" inputmode="numeric" placeholder="اكتب ID هنا">
-                <button id="quickAttendBtn" class="btn primary">سجّل حضور</button>
-              </div>
-              <div id="quickAttendMsg" class="msg"></div>
+        <div class="row">
+          <button id="addStudentBtn" class="btn">+ إضافة طالب جديد (ID جديد)</button>
+        </div>
 
-              <div style="height:14px"></div>
+        <div id="quickMsg" class="msg"></div>
+      </div>
 
-              <h3 style="margin-top:0">بحث فقط (فتح بيانات بدون حضور)</h3>
-              <div class="split">
-                <input id="openOnlyId" class="inp" inputmode="numeric" placeholder="اكتب ID هنا">
-                <button id="openOnlyBtn" class="btn">فتح</button>
-              </div>
-              <div id="openOnlyMsg" class="msg"></div>
+      <div class="card">
+        <h2>حضور بتاريخ</h2>
+        <p class="muted">اليوم تلقائي. تقدر تختار تاريخ تاني للعرض.</p>
 
-              <div style="height:14px"></div>
+        <div class="row">
+          <button id="showAttendanceBtn" class="btn">عرض</button>
+          <input id="attendanceDate" class="inp" type="date" value="${esc(tdy)}">
+        </div>
 
-              <h3 style="margin-top:0">بحث بالاسم أو الموبايل</h3>
-              <div class="muted">اكتب جزء من الاسم أو رقم الموبايل، وهتظهر نتائج تضغط عليها تفتح الطالب.</div>
-              <div style="height:8px"></div>
-              <input id="searchText" class="inp" type="text" placeholder="مثال: محمد / 0106 / آخر 4 أرقام">
-              <div id="searchResults" class="results" style="display:none"></div>
+        <div class="pillRow">
+          <div class="pill" id="attDateLabel">التاريخ: ${esc(tdy)}</div>
+          <div class="pill" id="attCountLabel">عدد الحضور: 0</div>
+        </div>
 
-              <div style="height:14px"></div>
+        <div id="attList"></div>
+      </div>
 
-              <div class="row" style="justify-content:space-between">
-                <h3 style="margin:0">إضافة ID جديد (بعد 500)</h3>
-                <div class="muted">اختياري</div>
-              </div>
+      <div class="card">
+        <h2>بحث سريع</h2>
+        <p class="muted">ابحث بالاسم أو الموبايل أو الـ ID</p>
+        <input id="searchBox" class="inp" type="text" placeholder="ابحث بالاسم أو الموبايل أو ID">
 
-              <div class="split">
-                <input id="addNewId" class="inp" inputmode="numeric" placeholder="مثال: 501">
-                <button id="addNewBtn" class="btn gray">إضافة</button>
-              </div>
-              <div id="addNewMsg" class="msg"></div>
+        <div id="searchResults" class="list"></div>
 
-              <hr style="border:none;border-top:1px solid #eee;margin:16px 0">
+        <hr>
 
-              <h2>حضور بتاريخ</h2>
-              <div class="muted">اليوم تلقائيًا — تقدر تختار تاريخ ثاني.</div>
-              <div style="height:8px"></div>
-
-              <div class="row">
-                <input id="datePick" class="inp" type="date" style="max-width:220px">
-                <button id="showDateBtn" class="btn">عرض</button>
-              </div>
-
-              <div class="row" style="margin-top:10px;gap:10px">
-                <div class="pill"><b>التاريخ:</b> <span id="dateLabel"></span></div>
-                <div class="pill"><b>عدد الحضور:</b> <span id="dateCount">0</span></div>
-              </div>
-
-              <div style="height:10px"></div>
-              <ul id="dateList" class="list"></ul>
-
-              <div style="height:12px"></div>
-              <div class="row">
-                <button id="exportDateBtn" class="btn primary">تصدير حضور هذا التاريخ Excel</button>
-                <button id="exportAllBtn" class="btn">تصدير كل البيانات Excel (Sheetين)</button>
-              </div>
-              <div id="exportDateMsg" class="msg"></div>
-              <div id="exportAllMsg" class="msg"></div>
-
-              <div style="height:14px"></div>
-              <details>
-                <summary>إعدادات خطيرة</summary>
-                <div class="muted" style="margin-top:8px">مسح كل بيانات هذا الجهاز (طلاب + حضور). يتطلب كلمة مرور.</div>
-                <div style="height:10px"></div>
-                <button id="resetDeviceBtn" class="btn danger">مسح كل البيانات من هذا الجهاز</button>
-                <div id="resetMsg" class="msg"></div>
-              </details>
-            </div>
-
-            <!-- LEFT -->
-            <div class="card">
-              <h2>بيانات الطالب</h2>
-              <div id="studentHint" class="muted">افتح طالب علشان تظهر بياناته هنا.</div>
-
-              <div id="studentBox" style="display:none">
-                <div class="row" style="justify-content:space-between; align-items:center">
-                  <div class="pill"><b>ID:</b> <span id="sid"></span></div>
-                  <div class="pill"><b>حضور اليوم:</b> <span id="todayState">—</span></div>
-                </div>
-
-                <div style="height:12px"></div>
-
-                <div class="col">
-                  <label>الاسم</label>
-                  <input id="sname" class="inp" type="text" placeholder="اسم الطالب">
-
-                  <label>الصف</label>
-                  <input id="sgrade" class="inp" type="text" placeholder="مثال: تمريض / سنة أولى">
-
-                  <label>رقم الموبايل</label>
-                  <input id="sphone" class="inp" type="text" placeholder="01xxxxxxxxx">
-
-                  <label>المدفوع</label>
-                  <input id="spaid" class="inp" type="text" placeholder="مثال: 1500">
-                </div>
-
-                <div style="height:12px"></div>
-
-                <div class="row" style="gap:10px">
-                  <button id="saveStudentBtn" class="btn primary">حفظ البيانات</button>
-                  <button id="toggleTodayBtn" class="btn">تسجيل/إلغاء حضور اليوم</button>
-                </div>
-
-                <div id="studentMsg" class="msg"></div>
-
-                <div style="height:12px"></div>
-
-                <h3 style="margin:0">سجل الحضور (آخر 25 تاريخ)</h3>
-                <div class="muted">زر ✖ يحذف التاريخ من سجل الحضور.</div>
-                <div style="height:8px"></div>
-                <ul id="attList" class="list"></ul>
-              </div>
-            </div>
-          </div>
+        <h2>بيانات الطالب</h2>
+        <div id="studentPanel">
+          <p class="muted">افتح طالب من اليسار علشان تظهر بياناته هنا</p>
         </div>
       </div>
-    `;
 
-    $("#datePick").value = todayISO();
-  }
+      <div class="card">
+        <h2>إدارة البيانات</h2>
+        <p class="muted">
+          التصدير يطلع ملف Excel فيه شيتين (الطلاب + حضور اليوم).<br>
+          الاستيراد يرجّع الداتا من Excel على نفس الجهاز.<br>
+          <b>إعادة ضبط</b> تمسح كل الداتا من الجهاز (تحتاج كلمة المرور).
+        </p>
 
-  // -------- App Logic --------
-  let currentStudentId = null;
-
-  function showMsg(el, text, ok = true) {
-    if (!el) return;
-    el.textContent = text || "";
-    el.className = "msg " + (text ? (ok ? "ok" : "err") : "");
-  }
-
-  function openStudent(id) {
-    const chk = requireExistingId(id);
-    if (!chk.ok) {
-      showMsg($("#openOnlyMsg"), chk.msg, false);
-      showMsg($("#quickAttendMsg"), "", true);
-      return;
-    }
-
-    const rec = getOrCreateStudentRecord(id);
-    if (!rec) {
-      showMsg($("#openOnlyMsg"), "❌ غير موجود.", false);
-      return;
-    }
-
-    currentStudentId = id;
-
-    $("#studentHint").style.display = "none";
-    $("#studentBox").style.display = "block";
-
-    $("#sid").textContent = String(id);
-    $("#sname").value = rec.name || "";
-    $("#sgrade").value = rec.grade || "";
-    $("#sphone").value = rec.phone || "";
-    $("#spaid").value = rec.paid || "";
-
-    refreshTodayState();
-    renderAttendanceList();
-    showMsg($("#studentMsg"), "", true);
-  }
-
-  function refreshTodayState() {
-    if (!currentStudentId) return;
-    const rec = getOrCreateStudentRecord(currentStudentId);
-    const t = todayISO();
-    const has = Array.isArray(rec.attendance) && rec.attendance.includes(t);
-    $("#todayState").textContent = has ? "✅ حاضر" : "❌ غير حاضر";
-    $("#toggleTodayBtn").textContent = has ? "إلغاء حضور اليوم" : "تسجيل حضور اليوم";
-  }
-
-  function renderAttendanceList() {
-    if (!currentStudentId) return;
-    const rec = getOrCreateStudentRecord(currentStudentId);
-    const ul = $("#attList");
-    ul.innerHTML = "";
-
-    const att = Array.isArray(rec.attendance) ? [...rec.attendance] : [];
-    att.sort().reverse();
-    const slice = att.slice(0, 25);
-
-    if (slice.length === 0) {
-      const li = document.createElement("li");
-      li.textContent = "لا يوجد حضور مسجل.";
-      ul.appendChild(li);
-      return;
-    }
-
-    for (const d of slice) {
-      const li = document.createElement("li");
-      li.innerHTML = `
-        <div class="row" style="justify-content:space-between">
-          <span>${prettyDate(d)} <span class="muted">(${d})</span></span>
-          <button class="btn smallBtn" data-del="${d}">✖</button>
+        <div class="row">
+          <button id="resetBtn" class="btn danger">🗑 إعادة ضبط / مسح كل البيانات</button>
         </div>
-      `;
-      ul.appendChild(li);
+
+        <div id="adminMsg" class="msg"></div>
+      </div>
+
+    </div>
+  `;
+
+  // Events
+  document.getElementById("quickAttendBtn").addEventListener("click", quickAttend);
+  document.getElementById("openOnlyBtn").addEventListener("click", openOnly);
+
+  document.getElementById("addStudentBtn").addEventListener("click", addStudent);
+  document.getElementById("showAttendanceBtn").addEventListener("click", showAttendanceReport);
+
+  document.getElementById("searchBox").addEventListener("input", onSearch);
+
+  document.getElementById("resetBtn").addEventListener("click", resetAllData);
+
+  // أول عرض تقرير اليوم
+  showAttendanceReport();
+
+  // دعم فتح من لينك QR: ?id=25
+  handleQueryIdAuto();
+}
+
+// ====== فتح من QR: ?id=25 ======
+function handleQueryIdAuto() {
+  const params = new URLSearchParams(location.search);
+  const idParam = params.get("id");
+  if (!idParam) return;
+
+  const id = safeNumber(idParam);
+  const quickMsg = document.getElementById("quickMsg");
+  if (!Number.isFinite(id)) return;
+
+  // لو مش داخل: خليه يفتح صفحة الدخول فقط (بدون كشف بيانات)
+  if (!state.session.isLogged) {
+    return;
+  }
+
+  // لو داخل: افتح الطالب وسجل حضور تلقائي
+  const s = ensureIdExistsOrMsg(id, quickMsg);
+  if (!s) return;
+
+  openStudentPanel(s.id);
+  // حضور تلقائي
+  const ok = markAttendanceToday(s.id);
+  if (ok === "already") {
+    quickMsg.innerHTML = `ℹ️ الطالب ID <b>${esc(id)}</b> مسجل حضور اليوم بالفعل.`;
+  } else if (ok === true) {
+    quickMsg.innerHTML = `✅ تم تسجيل حضور اليوم تلقائيًا للطالب ID <b>${esc(id)}</b>`;
+    showAttendanceReport();
+  }
+}
+
+// ====== حضور سريع ======
+function quickAttend() {
+  const id = safeNumber(document.getElementById("quickAttendId").value);
+  const msg = document.getElementById("quickMsg");
+
+  if (!Number.isFinite(id)) {
+    msg.innerHTML = "❌ اكتب رقم ID صحيح";
+    return;
+  }
+
+  const s = ensureIdExistsOrMsg(id, msg);
+  if (!s) return;
+
+  openStudentPanel(id);
+
+  const res = markAttendanceToday(id);
+  if (res === "already") {
+    msg.innerHTML = `ℹ️ الطالب ID <b>${esc(id)}</b> مسجل حضور اليوم بالفعل`;
+  } else {
+    msg.innerHTML = `✅ تم تسجيل حضور اليوم للطالب ID <b>${esc(id)}</b>`;
+    showAttendanceReport();
+  }
+}
+
+// ====== فتح فقط ======
+function openOnly() {
+  const id = safeNumber(document.getElementById("openOnlyId").value);
+  const msg = document.getElementById("quickMsg");
+
+  if (!Number.isFinite(id)) {
+    msg.innerHTML = "❌ اكتب رقم ID صحيح";
+    return;
+  }
+
+  const s = ensureIdExistsOrMsg(id, msg);
+  if (!s) return;
+
+  openStudentPanel(id);
+  msg.innerHTML = `✅ تم فتح الطالب ID <b>${esc(id)}</b>`;
+}
+
+// ====== إضافة طالب جديد ======
+function addStudent() {
+  const msg = document.getElementById("quickMsg");
+
+  // اختار ID جديد: أكبر ID + 1
+  const ids = Object.keys(state.students).map(x => parseInt(x, 10)).filter(Number.isFinite);
+  const maxId = ids.length ? Math.max(...ids) : 0;
+  const newId = maxId + 1;
+
+  // أنشئ الطالب
+  state.students[String(newId)] = {
+    id: newId,
+    name: "",
+    grade: "",
+    phone: "",
+    paid: "",
+    attendance: []
+  };
+
+  saveState();
+  msg.innerHTML = `✅ تم إضافة طالب جديد بـ ID <b>${esc(newId)}</b>`;
+  openStudentPanel(newId);
+  showAttendanceReport();
+  onSearch(); // يحدث البحث
+}
+
+// ====== لوحة بيانات الطالب ======
+function openStudentPanel(id) {
+  const panel = document.getElementById("studentPanel");
+  const s = getStudentById(id);
+  if (!s) {
+    panel.innerHTML = `<p class="muted">❌ الطالب غير موجود</p>`;
+    return;
+  }
+
+  const tdy = todayISO();
+  const isTodayPresent = (s.attendance || []).includes(tdy);
+
+  panel.innerHTML = `
+    <div class="kv">
+      <div><b>ID:</b> ${esc(s.id)}</div>
+      <div><b>حضور اليوم:</b> ${isTodayPresent ? "✅ حاضر" : "❌ غير حاضر"}</div>
+      <div><b>عدد أيام الحضور:</b> ${(s.attendance || []).length}</div>
+    </div>
+
+    <hr>
+
+    <label class="lbl">الاسم</label>
+    <input id="stName" class="inp" type="text" placeholder="اسم الطالب" value="${esc(s.name)}">
+
+    <label class="lbl">الصف</label>
+    <input id="stGrade" class="inp" type="text" placeholder="مثال: تمريض / الصف الأول..." value="${esc(s.grade)}">
+
+    <label class="lbl">رقم الموبايل</label>
+    <input id="stPhone" class="inp" type="text" placeholder="01xxxxxxxxx" value="${esc(s.phone)}">
+
+    <label class="lbl">المدفوع</label>
+    <input id="stPaid" class="inp" type="text" placeholder="مثال: 1500" value="${esc(s.paid)}">
+
+    <div class="row">
+      <button id="saveStudentBtn" class="btn primary">💾 حفظ بيانات الطالب</button>
+      <button id="toggleTodayBtn" class="btn">${isTodayPresent ? "إلغاء حضور اليوم" : "تسجيل حضور اليوم"}</button>
+    </div>
+
+    <div id="studentMsg" class="msg"></div>
+
+    <hr>
+
+    <h3>سجل الحضور (آخر 25 تاريخ)</h3>
+    <div class="list">
+      ${(s.attendance || []).slice().reverse().slice(0, 25).map(d => `<div class="item">📅 ${esc(d)}</div>`).join("") || `<div class="muted">— لا يوجد —</div>`}
+    </div>
+  `;
+
+  document.getElementById("saveStudentBtn").addEventListener("click", () => saveStudentData(id));
+  document.getElementById("toggleTodayBtn").addEventListener("click", () => toggleTodayAttendance(id));
+}
+
+// حفظ بيانات الطالب
+function saveStudentData(id) {
+  const msg = document.getElementById("studentMsg");
+  const s = getStudentById(id);
+  if (!s) {
+    msg.innerHTML = "❌ الطالب غير موجود";
+    return;
+  }
+
+  s.name = (document.getElementById("stName").value || "").trim();
+  s.grade = (document.getElementById("stGrade").value || "").trim();
+  s.phone = (document.getElementById("stPhone").value || "").trim();
+  s.paid = (document.getElementById("stPaid").value || "").trim();
+
+  saveState();
+  msg.innerHTML = "✅ تم حفظ البيانات";
+  onSearch(); // تحديث البحث
+}
+
+// تسجيل حضور اليوم مع منع التكرار
+function markAttendanceToday(id) {
+  const s = getStudentById(id);
+  if (!s) return false;
+
+  const tdy = todayISO();
+  s.attendance = s.attendance || [];
+
+  if (s.attendance.includes(tdy)) return "already";
+  s.attendance.push(tdy);
+
+  saveState();
+  return true;
+}
+
+// إلغاء حضور اليوم
+function unmarkAttendanceToday(id) {
+  const s = getStudentById(id);
+  if (!s) return false;
+
+  const tdy = todayISO();
+  s.attendance = (s.attendance || []).filter(d => d !== tdy);
+
+  saveState();
+  return true;
+}
+
+function toggleTodayAttendance(id) {
+  const msg = document.getElementById("studentMsg");
+  const s = getStudentById(id);
+  if (!s) {
+    msg.innerHTML = "❌ الطالب غير موجود";
+    return;
+  }
+
+  const tdy = todayISO();
+  const isPresent = (s.attendance || []).includes(tdy);
+
+  if (isPresent) {
+    unmarkAttendanceToday(id);
+    msg.innerHTML = "✅ تم إلغاء حضور اليوم";
+  } else {
+    markAttendanceToday(id);
+    msg.innerHTML = "✅ تم تسجيل حضور اليوم";
+  }
+
+  openStudentPanel(id);
+  showAttendanceReport();
+}
+
+// ====== تقرير الحضور ======
+function getAttendanceForDate(dateISO) {
+  const list = [];
+  for (const k of Object.keys(state.students)) {
+    const s = state.students[k];
+    const att = s.attendance || [];
+    if (att.includes(dateISO)) {
+      list.push(s);
     }
+  }
+  // ترتيب حسب ID
+  list.sort((a, b) => a.id - b.id);
+  return list;
+}
 
-    ul.querySelectorAll("button[data-del]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const d = btn.getAttribute("data-del");
-        const res = unmarkAttendance(currentStudentId, d);
-        showMsg($("#studentMsg"), res.msg, res.ok);
-        refreshTodayState();
-        renderAttendanceList();
-        refreshDatePanel();
-      });
-    });
+function showAttendanceReport() {
+  const dateInp = document.getElementById("attendanceDate");
+  const dateISO = (dateInp.value || todayISO()).trim();
+
+  const attList = document.getElementById("attList");
+  const attDateLabel = document.getElementById("attDateLabel");
+  const attCountLabel = document.getElementById("attCountLabel");
+
+  const list = getAttendanceForDate(dateISO);
+
+  attDateLabel.textContent = `التاريخ: ${dateISO}`;
+  attCountLabel.textContent = `عدد الحضور: ${list.length}`;
+
+  if (!list.length) {
+    attList.innerHTML = `<p class="muted">— لا يوجد حضور في هذا التاريخ —</p>`;
+    return;
   }
 
-  function saveStudent() {
-    if (!currentStudentId) return;
-    const students = getStudents();
-    const rec = students[currentStudentId] || getOrCreateStudentRecord(currentStudentId);
-
-    rec.name = ($("#sname").value || "").trim();
-    rec.grade = ($("#sgrade").value || "").trim();
-    rec.phone = ($("#sphone").value || "").trim();
-    rec.paid = ($("#spaid").value || "").trim();
-
-    students[currentStudentId] = rec;
-    setStudents(students);
-
-    showMsg($("#studentMsg"), "✅ تم حفظ البيانات.", true);
-    // تحديث البحث (اختياري)
-    // لا شيء
-  }
-
-  function toggleToday() {
-    if (!currentStudentId) return;
-    const t = todayISO();
-    const rec = getOrCreateStudentRecord(currentStudentId);
-    const has = Array.isArray(rec.attendance) && rec.attendance.includes(t);
-
-    const res = has ? unmarkAttendance(currentStudentId, t) : markAttendance(currentStudentId, t);
-    showMsg($("#studentMsg"), res.msg, res.ok);
-    refreshTodayState();
-    renderAttendanceList();
-    refreshDatePanel();
-  }
-
-  function refreshDatePanel() {
-    const dp = $("#datePick");
-    const date = dp.value || todayISO();
-
-    $("#dateLabel").textContent = prettyDate(date);
-    const list = getAttendanceListByDate(date).sort((a,b)=>a.id-b.id);
-
-    $("#dateCount").textContent = String(list.length);
-
-    const ul = $("#dateList");
-    ul.innerHTML = "";
-
-    if (list.length === 0) {
-      const li = document.createElement("li");
-      li.textContent = "لا يوجد حضور في هذا التاريخ.";
-      ul.appendChild(li);
-      return;
-    }
-
-    for (const s of list) {
-      const li = document.createElement("li");
-      const name = (s.name || "").trim() || "بدون اسم";
-      li.innerHTML = `
-        <div class="row" style="justify-content:space-between">
-          <span><b>${escapeHTML(name)}</b> — ID: ${s.id}</span>
-          <button class="btn smallBtn" data-open="${s.id}">فتح</button>
+  attList.innerHTML = `
+    <div class="list">
+      ${list.map(s => `
+        <div class="item clickable" data-id="${esc(s.id)}">
+          <b>${esc(s.name || "بدون اسم")}</b> — ID: ${esc(s.id)} — ${esc(s.phone || "بدون موبايل")}
         </div>
-      `;
-      ul.appendChild(li);
-    }
+      `).join("")}
+    </div>
+  `;
 
-    ul.querySelectorAll("button[data-open]").forEach(btn => {
-      btn.addEventListener("click", () => openStudent(Number(btn.getAttribute("data-open"))));
+  attList.querySelectorAll(".clickable").forEach(el => {
+    el.addEventListener("click", () => {
+      const id = safeNumber(el.getAttribute("data-id"));
+      if (Number.isFinite(id)) openStudentPanel(id);
     });
-  }
+  });
+}
 
-  // -------- Search by name/phone --------
-  function runTextSearch(q) {
-    const query = (q || "").trim().toLowerCase();
-    const box = $("#searchResults");
-    box.innerHTML = "";
+// ====== البحث السريع ======
+function onSearch() {
+  const q = (document.getElementById("searchBox")?.value || "").trim().toLowerCase();
+  const out = document.getElementById("searchResults");
+  if (!out) return;
 
-    if (!query) {
-      box.style.display = "none";
-      return;
-    }
+  // لو فاضي: اعرض آخر 15 طالب "مليانين"
+  let candidates = Object.values(state.students);
 
-    const students = getStudents();
-    const ids = Object.keys(students).map(Number).filter(Number.isFinite).sort((a,b)=>a-b);
-
-    const results = [];
-    for (const id of ids) {
-      const s = students[id];
-      if (!isFilledStudent(s)) continue;
-
+  if (q) {
+    candidates = candidates.filter(s => {
+      const idStr = String(s.id);
       const name = (s.name || "").toLowerCase();
       const phone = (s.phone || "").toLowerCase();
       const grade = (s.grade || "").toLowerCase();
+      return idStr.includes(q) || name.includes(q) || phone.includes(q) || grade.includes(q);
+    });
+  } else {
+    candidates = candidates.filter(isFilledStudent).slice().reverse();
+  }
 
-      if (name.includes(query) || phone.includes(query) || grade.includes(query)) {
-        results.push(s);
-        if (results.length >= 30) break;
+  candidates.sort((a, b) => a.id - b.id);
+
+  const show = candidates.slice(0, 30);
+
+  if (!show.length) {
+    out.innerHTML = `<p class="muted">— لا يوجد نتائج —</p>`;
+    return;
+  }
+
+  out.innerHTML = `
+    <div class="list">
+      ${show.map(s => `
+        <div class="item clickable" data-id="${esc(s.id)}">
+          <b>${esc(s.name || "بدون اسم")}</b>
+          <div class="muted">ID: ${esc(s.id)} — ${esc(s.phone || "بدون موبايل")} — ${esc(s.grade || "")}</div>
+        </div>
+      `).join("")}
+    </div>
+  `;
+
+  out.querySelectorAll(".clickable").forEach(el => {
+    el.addEventListener("click", () => {
+      const id = safeNumber(el.getAttribute("data-id"));
+      if (Number.isFinite(id)) openStudentPanel(id);
+    });
+  });
+}
+
+// ====== التصدير Excel ======
+exportExcelBtn?.addEventListener("click", () => {
+  if (!window.XLSX) {
+    alert("مكتبة Excel غير موجودة. تأكد أنك حاطط XLSX في index.html");
+    return;
+  }
+
+  // شيت الطلاب: نصدر فقط اللي "مليان" + كمان نضمن وجود IDs كلها؟ (B: كل اللي مليان فقط)
+  const filled = Object.values(state.students).filter(isFilledStudent);
+
+  const studentsRows = [
+    ["ID", "الاسم", "الصف", "الموبايل", "المدفوع", "عدد أيام الحضور", "آخر حضور"]
+  ];
+
+  filled.sort((a, b) => a.id - b.id).forEach(s => {
+    const att = s.attendance || [];
+    const last = att.length ? att.slice().sort().slice(-1)[0] : "";
+    studentsRows.push([
+      s.id,
+      s.name || "",
+      s.grade || "",
+      s.phone || "",
+      s.paid || "",
+      att.length,
+      last
+    ]);
+  });
+
+  // شيت حضور اليوم
+  const tdy = todayISO();
+  const todayList = getAttendanceForDate(tdy);
+
+  const attendanceRows = [
+    ["التاريخ", tdy],
+    [],
+    ["ID", "الاسم", "الموبايل"]
+  ];
+
+  todayList.forEach(s => {
+    attendanceRows.push([s.id, s.name || "", s.phone || ""]);
+  });
+
+  const wb = XLSX.utils.book_new();
+  const ws1 = XLSX.utils.aoa_to_sheet(studentsRows);
+  const ws2 = XLSX.utils.aoa_to_sheet(attendanceRows);
+
+  XLSX.utils.book_append_sheet(wb, ws1, "الطلاب");
+  XLSX.utils.book_append_sheet(wb, ws2, "الحضور");
+
+  const fileName = `center-data-${tdy}.xlsx`;
+  XLSX.writeFile(wb, fileName);
+});
+
+// ====== الاستيراد Excel ======
+importExcelInput?.addEventListener("change", async (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  if (!window.XLSX) {
+    alert("مكتبة Excel غير موجودة. تأكد أنك حاطط XLSX في index.html");
+    return;
+  }
+
+  const pass = prompt("اكتب كلمة المرور للاستيراد:");
+  if (pass !== ADMIN_PASS) {
+    alert("❌ كلمة المرور غلط");
+    importExcelInput.value = "";
+    return;
+  }
+
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const wb = XLSX.read(arrayBuffer, { type: "array" });
+
+    // نقرأ شيت "الطلاب" لو موجود، أو أول شيت
+    const sheetName = wb.SheetNames.includes("الطلاب") ? "الطلاب" : wb.SheetNames[0];
+    const ws = wb.Sheets[sheetName];
+    const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
+
+    // نتوقع: header في أول صف
+    // ["ID","الاسم","الصف","الموبايل","المدفوع",...]
+    // نبني داتا جديدة مع الحفاظ على اللي مش موجود؟ (هنا: ندمج)
+    let importedCount = 0;
+
+    for (let i = 1; i < rows.length; i++) {
+      const r = rows[i];
+      if (!r || r.length < 1) continue;
+      const id = safeNumber(r[0]);
+      if (!Number.isFinite(id)) continue;
+
+      // لو الطالب مش موجود، ننشئه
+      if (!state.students[String(id)]) {
+        state.students[String(id)] = {
+          id,
+          name: "",
+          grade: "",
+          phone: "",
+          paid: "",
+          attendance: []
+        };
       }
+
+      const s = state.students[String(id)];
+      s.name = String(r[1] ?? "").trim();
+      s.grade = String(r[2] ?? "").trim();
+      s.phone = String(r[3] ?? "").trim();
+      s.paid = String(r[4] ?? "").trim();
+
+      importedCount++;
     }
 
-    if (results.length === 0) {
-      box.style.display = "block";
-      box.innerHTML = `<div class="resItem muted">لا توجد نتائج.</div>`;
-      return;
-    }
+    saveState();
+    alert(`✅ تم استيراد/تحديث ${importedCount} طالب`);
+    renderApp();
+  } catch (err) {
+    console.error(err);
+    alert("❌ حصل خطأ في الاستيراد. تأكد إن الملف هو نفس ملف التصدير.");
+  } finally {
+    importExcelInput.value = "";
+  }
+});
 
-    box.style.display = "block";
-    results.forEach(s => {
-      const div = document.createElement("div");
-      div.className = "resItem";
-      const nm = (s.name || "").trim() || "بدون اسم";
-      div.innerHTML = `<b>${escapeHTML(nm)}</b> <span class="muted">— ID: ${s.id} — ${escapeHTML(s.phone||"")}</span>`;
-      div.addEventListener("click", () => {
-        openStudent(s.id);
-        box.style.display = "none";
-      });
-      box.appendChild(div);
-    });
+// ====== Reset ======
+function resetAllData() {
+  const pass = prompt("⚠️ اكتب كلمة المرور لمسح كل البيانات:");
+  const adminMsg = document.getElementById("adminMsg");
+
+  if (pass !== ADMIN_PASS) {
+    adminMsg.innerHTML = "❌ كلمة المرور غلط";
+    return;
   }
 
-  // -------- QR deep link --------
-  function handleIncomingIdFromURL() {
-    const url = new URL(window.location.href);
-    const idParam = url.searchParams.get("id");
-    if (!idParam) return;
+  const ok = confirm("متأكد؟ سيتم مسح كل البيانات من هذا الجهاز نهائيًا.");
+  if (!ok) return;
 
-    const id = parseId(idParam);
-    if (!id) return;
+  localStorage.removeItem(LS_KEY);
+  state.students = {};
+  ensureDefault500();
+  adminMsg.innerHTML = "✅ تم مسح البيانات وإعادة إنشاء 500 ID";
+  renderApp();
+}
 
-    if (!isAuthed()) {
-      sessionStorage.setItem("ca_pending_id", String(id));
-      sessionStorage.setItem("ca_pending_mode", "attend");
-      return;
-    }
+// ====== تشغيل أول مرة ======
+(function init() {
+  loadState();
+  ensureDefault500();
 
-    const chk = requireExistingId(id);
-    if (!chk.ok) {
-      showMsg($("#quickAttendMsg"), chk.msg, false);
-      return;
-    }
+  // لو عايز تبقى جلسة الدخول كل مرة لا، خليها false دائمًا
+  // (حاليًا لازم تسجل دخول كل مرة تفتح الصفحة)
+  state.session.isLogged = false;
 
-    openStudent(id);
-    const res = markAttendance(id, todayISO());
-    showMsg($("#quickAttendMsg"), `ID=${id} — ${res.msg}`, res.ok);
-
-    url.searchParams.delete("id");
-    history.replaceState({}, "", url.toString());
-
-    refreshDatePanel();
-  }
-
-  function handlePendingAfterLogin() {
-    const pid = sessionStorage.getItem("ca_pending_id");
-    const mode = sessionStorage.getItem("ca_pending_mode");
-    if (!pid) return;
-
-    sessionStorage.removeItem("ca_pending_id");
-    sessionStorage.removeItem("ca_pending_mode");
-
-    const id = parseId(pid);
-    if (!id) return;
-
-    const chk = requireExistingId(id);
-    if (!chk.ok) {
-      showMsg($("#quickAttendMsg"), chk.msg, false);
-      return;
-    }
-
-    openStudent(id);
-    if (mode === "attend") {
-      const res = markAttendance(id, todayISO());
-      showMsg($("#quickAttendMsg"), `ID=${id} — ${res.msg}`, res.ok);
-      refreshDatePanel();
-    }
-  }
-
-  // -------- Reset with password --------
-  function resetDeviceWithPassword() {
-    const p = prompt("اكتب كلمة المرور لتأكيد المسح:");
-    if (p !== ADMIN_PASS) {
-      showMsg($("#resetMsg"), "❌ كلمة المرور غير صحيحة.", false);
-      return;
-    }
-    const ok = confirm("تحذير: سيتم مسح كل بيانات الطلاب والحضور من هذا الجهاز. متأكد؟");
-    if (!ok) {
-      showMsg($("#resetMsg"), "تم الإلغاء.", true);
-      return;
-    }
-
-    localStorage.removeItem(LS_STUDENTS);
-    localStorage.removeItem(LS_EXTRA_IDS);
-    localStorage.removeItem(LS_AUTH);
-
-    showMsg($("#resetMsg"), "✅ تم المسح. سيتم إعادة تحميل الصفحة.", true);
-    setTimeout(() => location.reload(), 800);
-  }
-
-  // -------- Bind Events --------
-  function bindEvents() {
-    $("#togglePass").addEventListener("click", () => {
-      const p = $("#pass");
-      p.type = (p.type === "password") ? "text" : "password";
-    });
-
-    $("#loginBtn").addEventListener("click", () => {
-      const u = ($("#user").value || "").trim();
-      const p = ($("#pass").value || "").trim();
-
-      if (u === ADMIN_USER && p === ADMIN_PASS) {
-        setAuthed(true);
-        showApp();
-        showMsg($("#loginMsg"), "", true);
-      } else {
-        showMsg($("#loginMsg"), "❌ بيانات الدخول غير صحيحة.", false);
-      }
-    });
-
-    $("#logoutBtn").addEventListener("click", () => {
-      setAuthed(false);
-      currentStudentId = null;
-      showLogin();
-    });
-
-    $("#quickAttendBtn").addEventListener("click", () => {
-      const id = parseId($("#quickAttendId").value);
-      if (!id) return showMsg($("#quickAttendMsg"), "❌ اكتب ID صحيح (أرقام فقط).", false);
-
-      const chk = requireExistingId(id);
-      if (!chk.ok) return showMsg($("#quickAttendMsg"), chk.msg, false);
-
-      openStudent(id);
-      const res = markAttendance(id, todayISO());
-      showMsg($("#quickAttendMsg"), `ID=${id} — ${res.msg}`, res.ok);
-      refreshDatePanel();
-    });
-
-    $("#openOnlyBtn").addEventListener("click", () => {
-      const id = parseId($("#openOnlyId").value);
-      if (!id) return showMsg($("#openOnlyMsg"), "❌ اكتب ID صحيح (أرقام فقط).", false);
-
-      const chk = requireExistingId(id);
-      if (!chk.ok) return showMsg($("#openOnlyMsg"), chk.msg, false);
-
-      openStudent(id);
-      showMsg($("#openOnlyMsg"), `✅ تم فتح بيانات ID=${id} بدون تسجيل حضور.`, true);
-    });
-
-    $("#addNewBtn").addEventListener("click", () => {
-      const res = addNewStudentId($("#addNewId").value);
-      showMsg($("#addNewMsg"), res.msg, res.ok);
-    });
-
-    $("#saveStudentBtn").addEventListener("click", saveStudent);
-    $("#toggleTodayBtn").addEventListener("click", toggleToday);
-
-    $("#showDateBtn").addEventListener("click", refreshDatePanel);
-    $("#datePick").addEventListener("change", refreshDatePanel);
-
-    $("#searchText").addEventListener("input", (e) => runTextSearch(e.target.value));
-
-    $("#exportAllBtn").addEventListener("click", exportAllExcelB);
-    $("#exportDateBtn").addEventListener("click", () => {
-      const dateISO = $("#datePick").value || todayISO();
-      exportDateExcel(dateISO);
-    });
-
-    $("#resetDeviceBtn").addEventListener("click", resetDeviceWithPassword);
-  }
-
-  function showLogin() {
-    $("#loginView").style.display = "block";
-    $("#appView").style.display = "none";
-  }
-
-  function showApp() {
-    $("#loginView").style.display = "none";
-    $("#appView").style.display = "block";
-
-    ensureBaseStudents();
-
-    $("#datePick").value = $("#datePick").value || todayISO();
-    refreshDatePanel();
-
-    handlePendingAfterLogin();
-    handleIncomingIdFromURL();
-  }
-
-  // -------- Boot --------
-  function boot() {
-    mountUI();
-    bindEvents();
-
-    if (isAuthed()) showApp();
-    else showLogin();
-  }
-
-  boot();
+  // عرض Login
+  showLogin();
 })();
