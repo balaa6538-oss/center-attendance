@@ -1,8 +1,11 @@
-/* =========================
+alert("JS شغال");
+
+/* ==========================
    Center Attendance - app.js
-   Storage: localStorage (على نفس الجهاز)
-   Excel: XLSX (موجودة في index.html)
-========================= */
+   Storage: localStorage
+   Excel: XLSX
+========================== */
+
 
 (() => {
   // ====== SETTINGS ======
