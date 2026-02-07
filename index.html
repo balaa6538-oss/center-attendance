@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>نظام حضور المركز V7</title>
+  <title>نظام حضور المركز V9</title>
 
-  <link rel="stylesheet" href="style.css?v=7">
+  <link rel="stylesheet" href="style.css?v=9">
 
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
@@ -38,17 +38,18 @@
           <span class="statItem clickable" id="openAllStudentsBtn" title="اضغط لعرض القائمة الكاملة">
             👥 مسجلين: <b id="totalStudentsCount">0</b>
           </span>
-          
           <span class="statItem">✅ حضور اليوم: <b id="todayCountTop">0</b></span>
           <span class="statItem">💰 إيراد اليوم: <b id="todayRevenue">0</b></span>
         </div>
       </div>
 
       <div class="topActions">
+        <button id="themeBtn" class="btn" title="الوضع الليلي">🌙</button>
+
         <div class="termFeeWrapper">
-          <span class="feeLabel">المطلوب (للترم):</span>
+          <span class="feeLabel">المطلوب:</span>
           <input id="termFeeInp" type="number" class="feeInp" placeholder="0">
-          <button id="saveFeeBtn" class="feeBtn" title="حفظ (محمي بكلمة سر)">🔒</button>
+          <button id="saveFeeBtn" class="feeBtn" title="حفظ">🔒</button>
         </div>
 
         <button id="exportExcelBtn" class="btn">تصدير Excel</button>
@@ -72,17 +73,14 @@
       <div class="card">
         <h2>بحث شامل</h2>
         <p class="muted">ابحث بالاسم، الموبايل، أو ID.</p>
-        
         <div class="row">
           <input id="openId" class="inp" inputmode="numeric" placeholder="فتح بـ ID مباشر">
           <button id="openBtn" class="btn">فتح</button>
         </div>
-
         <div class="row">
           <input id="searchAny" class="inp" placeholder="ابحث هنا...">
           <button id="searchAnyBtn" class="btn" style="display:none;">🔍</button>
         </div>
-        
         <div id="searchMsg" class="msg"></div>
       </div>
     </div>
@@ -102,18 +100,15 @@
         <h2>حضور وتوريد بتاريخ</h2>
         <button id="copyReportBtn" class="btn success smallBtn">نسخ الملخص 📋</button>
       </div>
-      
       <div class="row">
         <input id="reportDate" class="inp" type="date">
         <button id="reportBtn" class="btn">عرض</button>
       </div>
-
       <div class="badges">
         <span class="badge" id="reportDateLabel">التاريخ: —</span>
         <span class="badge" id="reportCount">عدد الحضور: 0</span>
         <span class="badge" style="color:#2ea44f;">إيراد الخزنة: <span id="reportMoney">0</span></span>
       </div>
-
       <div id="reportList" class="list mutedCenter">— لا يوجد حضور في هذا التاريخ —</div>
     </div>
 
@@ -131,8 +126,8 @@
         <label class="lbl">الاسم</label>
         <input id="stName" class="inp" placeholder="اسم الطالب رباعي">
 
-        <label class="lbl">الصف / المجموعة</label>
-        <input id="stClass" class="inp" placeholder="مثال: 3 ثانوي - مجموعة السبت">
+        <label class="lbl">الصف / المجموعة (هام للفلترة)</label>
+        <input id="stClass" class="inp" placeholder="مثال: 3ث - سبت">
 
         <label class="lbl">رقم الموبايل (مع واتساب)</label>
         <div class="row">
@@ -140,12 +135,13 @@
           <button id="waBtn" class="btn success" style="width:auto; padding:0 15px;" title="فتح واتساب">💬</button>
         </div>
 
-        <label class="lbl" style="margin-top:20px; border-top:1px dashed #ccc; padding-top:10px;">نظام المصاريف (الأقساط)</label>
+        <label class="lbl" style="margin-top:20px; border-top:1px dashed #ccc; padding-top:10px;">نظام المصاريف</label>
         
         <div class="paymentBox">
             <div class="payRow">
                 <span class="payLabel">💰 إجمالي المدفوع:</span>
-                <input id="stTotalPaid" class="inp" readonly style="background:#e9ecef; font-weight:bold; color:#2f6bff; width:120px; text-align:center;">
+                <input id="stTotalPaid" class="inp" readonly style="background:#e9ecef; font-weight:bold; color:#2f6bff; width:100px; text-align:center;">
+                <button id="correctPaymentBtn" class="btn warning smallBtn" title="خصم مبلغ (تصحيح)">↩️ خصم</button>
             </div>
 
             <div class="payRow">
@@ -159,15 +155,15 @@
         
         <div id="paymentBadge" class="paymentBadge hidden"></div>
 
-        <label class="lbl">ملاحظات (خاصة)</label>
-        <textarea id="stNotes" class="inp" rows="2" placeholder="اكتب ملاحظات عن الطالب..."></textarea>
+        <label class="lbl">ملاحظات (ذكية ومؤرخة)</label>
+        <textarea id="stNotes" class="inp" rows="3" placeholder="اكتب ملحوظة جديدة (سيتم إضافة التاريخ تلقائياً)..."></textarea>
 
         <div class="row wrap" style="margin-top:15px;">
           <button id="saveStudentBtn" class="btn primary">حفظ البيانات 💾</button>
           <button id="markTodayBtn" class="btn success">✅ حضور</button>
           <button id="unmarkTodayBtn" class="btn warning">✖ غياب</button>
+          <button id="deleteStudentBtn" class="btn danger" style="background:#a41b25;">🗑️ حذف الملف</button>
         </div>
-
         <div id="studentMsg" class="msg"></div>
       </div>
 
@@ -177,29 +173,33 @@
       </div>
     </div>
 
+    <div class="card" id="recycleBinCard">
+      <div class="flexBetween">
+        <h2>♻️ سلة المحذوفات</h2>
+        <button id="toggleBinBtn" class="btn smallBtn">عرض/إخفاء</button>
+      </div>
+      <div id="recycleBinList" class="hidden list" style="margin-top:10px; border-top:1px solid #eee; padding-top:10px;">
+        </div>
+      <button id="emptyBinBtn" class="btn danger smallBtn hidden" style="margin-top:10px; width:100%;">🔥 تفريغ السلة تماماً</button>
+    </div>
+
     <div class="card dangerZone">
       <h2>⚠️ إدارة البيانات (منطقة الخطر)</h2>
-      
       <div class="dangerSection">
         <h3>1. بدء ترم جديد (مسح جزئي)</h3>
-        <p class="muted">يمسح تواريخ الحضور والمصاريف فقط. (يحافظ على الأسماء).</p>
         <div class="row">
           <input id="termPass" class="inp" type="password" placeholder="كلمة المرور">
           <button id="resetTermBtn" class="btn warning">تصفير الترم</button>
         </div>
       </div>
-
       <hr style="margin:20px 0; border:0; border-top:1px solid #ddd;">
-
       <div class="dangerSection">
         <h3>2. إعادة ضبط المصنع (مسح كلي)</h3>
-        <p class="muted">يمسح كل شيء نهائياً.</p>
         <div class="row">
           <input id="resetPass" class="inp" type="password" placeholder="كلمة المرور">
           <button id="resetBtn" class="btn danger">مسح كل البيانات</button>
         </div>
       </div>
-      
       <div id="resetMsg" class="msg"></div>
     </div>
 
@@ -208,28 +208,39 @@
   <div id="allStudentsModal" class="modal hidden">
     <div class="modalContent">
       <div class="flexBetween">
-        <h2>قائمة جميع الطلاب</h2>
+        <h2>قائمة الطلاب</h2>
         <button id="closeModalBtn" class="btn danger smallBtn">إغلاق ❌</button>
       </div>
       
+      <div class="filtersRow" style="background:#f1f8ff; padding:10px; border-radius:8px; margin-bottom:10px; display:flex; gap:10px; flex-wrap:wrap;">
+        <select id="filterGroup" class="inp" style="flex:1;">
+            <option value="all">📚 كل المجموعات</option>
+            </select>
+        <select id="filterPayment" class="inp" style="flex:1;">
+            <option value="all">💰 كل الحالات المالية</option>
+            <option value="paid">✅ خالص المصاريف</option>
+            <option value="partial">⚠️ عليه فلوس (باقي)</option>
+            <option value="unpaid">🔴 لم يدفع شيئاً</option>
+        </select>
+      </div>
+
       <div class="tableWrap">
         <table id="allStudentsTable">
           <thead>
             <tr>
               <th>ID</th>
               <th>الاسم</th>
-              <th>الموبايل</th>
+              <th>المجموعة</th>
               <th>المدفوع</th>
               <th>الحالة</th>
             </tr>
           </thead>
-          <tbody>
-            </tbody>
+          <tbody></tbody>
         </table>
       </div>
     </div>
   </div>
 
-  <script src="app.js?v=7"></script>
+  <script src="app.js?v=9"></script>
 </body>
 </html>
