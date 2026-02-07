@@ -1,24 +1,31 @@
-/* ==========================
-   Center Attendance - app.js (Fixed Search Visibility)
-   Storage: localStorage
-   Excel: XLSX
-========================== */
+/* =============================================
+   Center Attendance System V3 - (Pro Version)
+   Features: Notes, Term Reset, WhatsApp, Stats
+   ============================================= */
 
 (() => {
   // ====== SETTINGS ======
   const ADMIN_USER = "Admin";
-  const ADMIN_PASS = "####1111";
+  const ADMIN_PASS = "####1111"; // باسوورد الأدمن والتصفير
   const BASE_MIN_ID = 1;
   const BASE_MAX_ID = 500;
+  
+  // 💰 مصاريف الترم (عدلها براحتك هنا)
+  // لو الطالب دافع الرقم ده أو أكتر هيظهر بالأخضر
+  const TERM_FEE = 0; 
 
   // ====== STORAGE KEYS ======
   const K_AUTH = "ca_auth";
-  const K_STUDENTS = "ca_students_v1";       
-  const K_EXTRA_IDS = "ca_extra_ids_v1";     
-  const K_ATT_BY_DATE = "ca_att_by_date_v1"; 
+  const K_STUDENTS = "ca_students_v3";       
+  const K_EXTRA_IDS = "ca_extra_ids_v3";     
+  const K_ATT_BY_DATE = "ca_att_by_date_v3"; 
 
-  // ====== DOM ======
+  // ====== DOM ELEMENTS ======
   const $ = (id) => document.getElementById(id);
+
+  // Stats (Top Bar)
+  const totalStudentsCount = $("totalStudentsCount");
+  const todayCountTop = $("todayCountTop");
 
   // Login
   const loginBox = $("loginBox");
@@ -29,24 +36,21 @@
   const loginBtn = $("loginBtn");
   const loginMsg = $("loginMsg");
 
-  // Top
+  // Actions
   const exportExcelBtn = $("exportExcelBtn");
   const importExcelInput = $("importExcelInput");
   const logoutBtn = $("logoutBtn");
 
-  // Quick
+  // Quick & Search
   const quickAttendId = $("quickAttendId");
   const quickAttendBtn = $("quickAttendBtn");
   const quickMsg = $("quickMsg");
-
-  // Open/search
   const openId = $("openId");
   const openBtn = $("openBtn");
   const searchAny = $("searchAny");
-  const searchAnyBtn = $("searchAnyBtn");
   const searchMsg = $("searchMsg");
-
-  // Add new
+  
+  // Add New
   const newId = $("newId");
   const addNewBtn = $("addNewBtn");
   const addMsg = $("addMsg");
@@ -57,28 +61,33 @@
   const reportDateLabel = $("reportDateLabel");
   const reportCount = $("reportCount");
   const reportList = $("reportList");
+  const copyReportBtn = $("copyReportBtn"); // New
 
-  // Student panel
+  // Student Form
   const studentIdPill = $("studentIdPill");
   const todayStatus = $("todayStatus");
   const lastAttend = $("lastAttend");
   const daysCount = $("daysCount");
+  const newBadge = $("newBadge"); // New
 
   const stName = $("stName");
   const stClass = $("stClass");
   const stPhone = $("stPhone");
+  const waBtn = $("waBtn"); // New WhatsApp Btn
   const stPaid = $("stPaid");
+  const stNotes = $("stNotes"); // New Notes Field
 
   const saveStudentBtn = $("saveStudentBtn");
   const markTodayBtn = $("markTodayBtn");
   const unmarkTodayBtn = $("unmarkTodayBtn");
   const studentMsg = $("studentMsg");
-
   const attList = $("attList");
 
-  // Reset
-  const resetPass = $("resetPass");
+  // Danger Zone
+  const resetTermBtn = $("resetTermBtn"); // New
+  const termPass = $("termPass");
   const resetBtn = $("resetBtn");
+  const resetPass = $("resetPass");
   const resetMsg = $("resetMsg");
 
   // ====== STATE ======
@@ -86,6 +95,21 @@
   let extraIds = [];              
   let attByDate = {};             
   let currentId = null;
+
+  // ====== SOUND ======
+  const playBeep = () => {
+    // صوت بسيط عند الحضور
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = "sine";
+    osc.frequency.value = 880; // A5
+    gain.gain.value = 0.1;
+    osc.start();
+    setTimeout(() => osc.stop(), 150);
+  };
 
   // ====== HELPERS ======
   const nowDateStr = () => {
@@ -108,49 +132,47 @@
   };
 
   const escapeHtml = (s) =>
-    String(s ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;");
+    String(s ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
 
   const showMsg = (el, text, type = "") => {
     if (!el) return;
     el.textContent = text || "";
     el.className = "msg" + (type ? ` ${type}` : "");
-    el.style.display = "block"; // Force show logic
+    el.style.display = "block"; // Force show
   };
 
   const isAuth = () => localStorage.getItem(K_AUTH) === "1";
+  const setAuth = (v) => v ? localStorage.setItem(K_AUTH, "1") : localStorage.removeItem(K_AUTH);
 
-  const setAuth = (v) => {
-    if (v) localStorage.setItem(K_AUTH, "1");
-    else localStorage.removeItem(K_AUTH);
-  };
-
+  // ====== DATA MANAGEMENT ======
   const saveAll = () => {
     localStorage.setItem(K_STUDENTS, JSON.stringify(students));
     localStorage.setItem(K_EXTRA_IDS, JSON.stringify(extraIds));
     localStorage.setItem(K_ATT_BY_DATE, JSON.stringify(attByDate));
+    updateTopStats(); // Update stats whenever saved
   };
 
   const loadAll = () => {
-    try {
-      students = JSON.parse(localStorage.getItem(K_STUDENTS) || "{}") || {};
-    } catch { students = {}; }
+    try { students = JSON.parse(localStorage.getItem(K_STUDENTS) || "{}") || {}; } catch { students = {}; }
+    try { extraIds = JSON.parse(localStorage.getItem(K_EXTRA_IDS) || "[]") || []; } catch { extraIds = []; }
+    try { attByDate = JSON.parse(localStorage.getItem(K_ATT_BY_DATE) || "{}") || {}; } catch { attByDate = {}; }
+    updateTopStats();
+  };
 
-    try {
-      extraIds = JSON.parse(localStorage.getItem(K_EXTRA_IDS) || "[]") || [];
-    } catch { extraIds = []; }
+  const updateTopStats = () => {
+    // 1. Total Registered (Have names)
+    const filledCount = Object.values(students).filter(st => st.name && st.name.trim().length > 0).length;
+    totalStudentsCount.textContent = filledCount;
 
-    try {
-      attByDate = JSON.parse(localStorage.getItem(K_ATT_BY_DATE) || "{}") || {};
-    } catch { attByDate = {}; }
+    // 2. Today Attendance
+    const today = nowDateStr();
+    const todayList = attByDate[today] || [];
+    todayCountTop.textContent = todayList.length;
   };
 
   const ensureBase500 = () => {
     const hasAny = Object.keys(students).length > 0;
     if (hasAny) return;
-
     for (let i = BASE_MIN_ID; i <= BASE_MAX_ID; i++) {
       students[String(i)] = makeEmptyStudent(i);
     }
@@ -165,40 +187,27 @@
     className: "",
     phone: "",
     paid: "",
+    notes: "", // New Notes field
     attendanceDates: [] 
   });
 
-  const existsId = (id) => {
-    const key = String(id);
-    return !!students[key];
-  };
+  const existsId = (id) => !!students[String(id)];
+  const getStudent = (id) => students[String(id)] || null;
+  const setStudent = (st) => { students[String(st.id)] = st; saveAll(); };
 
   const isFilledStudent = (st) => {
     if (!st) return false;
-    const hasInfo =
-      (st.name && st.name.trim()) ||
-      (st.className && st.className.trim()) ||
-      (st.phone && st.phone.trim()) ||
-      (String(st.paid || "").trim() && String(st.paid || "").trim() !== "0");
-    const hasAttend = Array.isArray(st.attendanceDates) && st.attendanceDates.length > 0;
-    return !!(hasInfo || hasAttend);
+    // Check if meaningful data exists
+    return !!((st.name && st.name.trim()) || (st.phone && st.phone.trim()) || (st.paid && st.paid != 0));
   };
 
-  const getStudent = (id) => students[String(id)] || null;
-
-  const setStudent = (st) => {
-    students[String(st.id)] = st;
-    saveAll();
-  };
-
+  // ====== ATTENDANCE LOGIC ======
   const addAttendance = (id, dateStr) => {
     const st = getStudent(id);
-    if (!st) return { ok: false, msg: "هذا الـ ID غير موجود." };
+    if (!st) return { ok: false, msg: "ID غير موجود" };
 
     st.attendanceDates = Array.isArray(st.attendanceDates) ? st.attendanceDates : [];
-    if (st.attendanceDates.includes(dateStr)) {
-      return { ok: false, msg: "مسجل حضور بالفعل اليوم." };
-    }
+    if (st.attendanceDates.includes(dateStr)) return { ok: false, msg: "حاضر بالفعل" };
 
     st.attendanceDates.push(dateStr);
     st.attendanceDates.sort();
@@ -208,151 +217,114 @@
 
     setStudent(st);
     saveAll();
+    playBeep(); // 🔊 Beep
 
-    return { ok: true, msg: "تم تسجيل حضور اليوم ✅" };
+    return { ok: true, msg: "تم تسجيل الحضور ✅" };
   };
 
   const removeAttendance = (id, dateStr) => {
     const st = getStudent(id);
-    if (!st) return { ok: false, msg: "هذا الـ ID غير موجود." };
+    if (!st) return { ok: false, msg: "غير موجود" };
 
-    st.attendanceDates = Array.isArray(st.attendanceDates) ? st.attendanceDates : [];
-    if (!st.attendanceDates.includes(dateStr)) {
-      return { ok: false, msg: "غير مسجل حضور اليوم." };
+    st.attendanceDates = st.attendanceDates.filter(d => d !== dateStr);
+    if (attByDate[dateStr]) {
+      attByDate[dateStr] = attByDate[dateStr].filter(x => x !== id);
     }
-
-    st.attendanceDates = st.attendanceDates.filter((d) => d !== dateStr);
-
-    if (Array.isArray(attByDate[dateStr])) {
-      attByDate[dateStr] = attByDate[dateStr].filter((x) => x !== id);
-      if (attByDate[dateStr].length === 0) delete attByDate[dateStr];
-    }
-
     setStudent(st);
     saveAll();
-
-    return { ok: true, msg: "تم إلغاء حضور اليوم ✖" };
+    return { ok: true, msg: "تم إلغاء الحضور ✖" };
   };
 
+  // ====== UI UPDATES ======
   const updateStudentUI = (id) => {
     const st = getStudent(id);
     currentId = st ? st.id : null;
 
     if (!st) {
       studentIdPill.textContent = "ID: —";
-      todayStatus.textContent = "حضور اليوم: —";
-      lastAttend.textContent = "آخر حضور: —";
-      daysCount.textContent = "عدد أيام الحضور: —";
+      todayStatus.textContent = "—";
+      lastAttend.textContent = "—";
+      daysCount.textContent = "—";
       stName.value = "";
       stClass.value = "";
       stPhone.value = "";
       stPaid.value = "";
-      attList.innerHTML = `<div class="mutedCenter">— افتح طالب علشان يظهر هنا —</div>`;
+      stNotes.value = ""; // Clear notes
+      newBadge.classList.add("hidden");
+      attList.innerHTML = `<div class="mutedCenter">— افتح طالب —</div>`;
       return;
     }
 
-    const today = nowDateStr();
-    const dates = Array.isArray(st.attendanceDates) ? st.attendanceDates : [];
-    const hasToday = dates.includes(today);
-
-    studentIdPill.textContent = `ID: ${st.id}`;
-    todayStatus.textContent = hasToday ? "حضور اليوم: حاضر ✅" : "حضور اليوم: غير حاضر ✖";
-    daysCount.textContent = `عدد أيام الحضور: ${dates.length}`;
-
-    const last = dates.length ? dates[dates.length - 1] : "";
-    lastAttend.textContent = `آخر حضور: ${last ? prettyDate(last) : "—"}`;
-
+    // Basic Data
     stName.value = st.name || "";
     stClass.value = st.className || "";
     stPhone.value = st.phone || "";
     stPaid.value = st.paid || "";
+    stNotes.value = st.notes || ""; // Load notes
 
-    const last25 = [...dates].sort().slice(-25).reverse();
-    if (!last25.length) {
-      attList.innerHTML = `<div class="mutedCenter">— لا يوجد حضور بعد —</div>`;
+    // Color Logic for Paid
+    const paidVal = parseInt(st.paid) || 0;
+    if (TERM_FEE > 0) {
+        stPaid.style.borderColor = paidVal >= TERM_FEE ? "#2ea44f" : "#cf222e";
     } else {
-      attList.innerHTML = last25
-        .map((d) => `<div class="item">${escapeHtml(prettyDate(d))}</div>`)
-        .join("");
+        stPaid.style.borderColor = "#d1d5da";
     }
+
+    // Stats
+    const today = nowDateStr();
+    const dates = st.attendanceDates || [];
+    const hasToday = dates.includes(today);
+
+    studentIdPill.textContent = `ID: ${st.id}`;
+    todayStatus.textContent = hasToday ? "حاضر ✅" : "غياب ✖";
+    todayStatus.style.color = hasToday ? "#2ea44f" : "#cf222e";
+    
+    daysCount.textContent = `${dates.length} مرة`;
+    const last = dates.length ? dates[dates.length - 1] : "";
+    lastAttend.textContent = last ? prettyDate(last) : "—";
+
+    // History List
+    const last25 = [...dates].sort().slice(-25).reverse();
+    attList.innerHTML = last25.length 
+      ? last25.map(d => `<div class="item">${escapeHtml(prettyDate(d))}</div>`).join("")
+      : `<div class="mutedCenter">— لا يوجد حضور —</div>`;
+      
+    // New Badge (Simple logic: if no attendance yet)
+    if (dates.length === 0 && st.name) newBadge.classList.remove("hidden");
+    else newBadge.classList.add("hidden");
   };
 
   const renderReport = (dateStr) => {
-    reportDateLabel.textContent = `التاريخ: ${prettyDate(dateStr)}`;
-    const ids = Array.isArray(attByDate[dateStr]) ? attByDate[dateStr] : [];
-    reportCount.textContent = `عدد الحضور: ${ids.length}`;
+    reportDateLabel.textContent = `تاريخ: ${prettyDate(dateStr)}`;
+    const ids = attByDate[dateStr] || [];
+    reportCount.textContent = `${ids.length} طالب`;
 
     if (!ids.length) {
-      reportList.innerHTML = `<div class="mutedCenter">— لا يوجد حضور في هذا التاريخ —</div>`;
+      reportList.innerHTML = `<div class="mutedCenter">— لا يوجد حضور —</div>`;
       return;
     }
 
-    const rows = ids
-      .slice()
-      .sort((a, b) => a - b)
-      .map((id) => {
-        const st = getStudent(id);
-        const name = (st && st.name && st.name.trim()) ? st.name.trim() : "بدون اسم";
-        return `<div class="item">(${id}) — ${escapeHtml(name)}</div>`;
-      });
-
+    const rows = ids.slice().sort((a,b)=>a-b).map(id => {
+      const st = getStudent(id);
+      const nm = (st && st.name) ? st.name : "بدون اسم";
+      return `<div class="item" onclick="document.getElementById('openId').value=${id};document.getElementById('openBtn').click();">(${id}) ${escapeHtml(nm)}</div>`;
+    });
     reportList.innerHTML = rows.join("");
   };
 
-  const openStudent = (id) => {
-    if (!Number.isFinite(id)) {
-      showMsg(searchMsg, "اكتب رقم ID صحيح.", "err");
-      return;
-    }
-    if (!existsId(id)) {
-      showMsg(searchMsg, "هذا الـ ID غير موجود في قاعدة البيانات.", "err");
-      updateStudentUI(null);
-      return;
-    }
-    // Clean up
-    searchMsg.innerHTML = "";
-    searchMsg.style.display = "none";
-    searchAny.value = ""; 
-
-    showMsg(searchMsg, "");
-    updateStudentUI(id);
-    const stPanel = document.querySelector(".studentHead");
-    if(stPanel) stPanel.scrollIntoView({ behavior: "smooth" });
-  };
-
-  const autoFromQuery = () => {
-    const url = new URL(window.location.href);
-    const idRaw = url.searchParams.get("id");
-    if (!idRaw) return;
-
-    const id = toInt(idRaw);
-    if (!id || !existsId(id)) return;
-
-    updateStudentUI(id);
-
-    if (isAuth()) {
-      const res = addAttendance(id, nowDateStr());
-      showMsg(quickMsg, res.msg, res.ok ? "ok" : "err");
-      updateStudentUI(id);
-      renderReport(nowDateStr());
-    }
-  };
-
-  // ============================================
-  // ✅ FIXED SEARCH FUNCTION (Force Display)
-  // ============================================
+  // ====== SEARCH (Fixed & Notes Hidden) ======
   const doSearchLive = () => {
     const q = String(searchAny.value || "").trim().toLowerCase();
     
     if (!q) {
-      searchMsg.innerHTML = "";
       searchMsg.style.display = "none";
       return;
     }
 
     const matches = Object.values(students)
-      .filter((st) => isFilledStudent(st))
-      .filter((st) => {
+      .filter(st => isFilledStudent(st))
+      .filter(st => {
+        // Search ONLY in Name, Phone, ID (NOT NOTES)
         const name = String(st.name || "").toLowerCase();
         const phone = String(st.phone || "").toLowerCase();
         const sId = String(st.id);
@@ -361,395 +333,256 @@
       .slice(0, 10);
 
     if (!matches.length) {
-      searchMsg.textContent = "لا توجد نتائج مطابقة...";
-      searchMsg.className = "msg err";
-      searchMsg.style.display = "block"; // Force show
+      searchMsg.innerHTML = `<div style="padding:10px; color:#cf222e;">لا توجد نتائج...</div>`;
+      searchMsg.style.display = "block";
       return;
     }
 
-    const html = matches
-      .map((st) => {
-        const nm = (st.name && st.name.trim()) ? st.name.trim() : "بدون اسم";
-        return `
-          <div class="item resultItem" data-id="${st.id}" style="border-bottom:1px solid #eee; margin-bottom:4px; padding:8px; background:#fff;">
-            <strong>${escapeHtml(nm)}</strong> 
-            <br>
-            <span class="muted" style="font-size:12px">ID: ${st.id} | 📞 ${escapeHtml(st.phone || "—")}</span>
-          </div>
-        `;
-      })
-      .join("");
+    const html = matches.map(st => {
+      const nm = st.name || "بدون اسم";
+      return `
+        <div class="resultItem" data-id="${st.id}">
+          <strong>${escapeHtml(nm)}</strong> 
+          <span style="float:left; font-size:12px; color:#666;">#${st.id}</span>
+          <br><span style="font-size:12px; color:#888;">📞 ${escapeHtml(st.phone || "—")}</span>
+        </div>
+      `;
+    }).join("");
 
-    searchMsg.innerHTML = `<div class="resultsList" style="max-height:200px; overflow-y:auto;">${html}</div>`;
-    searchMsg.className = "msg"; 
-    searchMsg.style.display = "block"; // ✅ Force show (The Fix)
+    searchMsg.innerHTML = `<div class="resultsList">${html}</div>`;
+    searchMsg.style.display = "block"; 
 
-    searchMsg.querySelectorAll(".resultItem").forEach((div) => {
+    searchMsg.querySelectorAll(".resultItem").forEach(div => {
       div.addEventListener("click", () => {
-        const id = toInt(div.getAttribute("data-id"));
-        if (id) openStudent(id);
+        openStudent(toInt(div.getAttribute("data-id")));
       });
-      div.style.cursor = "pointer";
     });
   };
 
-  // ====== EXCEL EXPORT / IMPORT ======
-  const exportExcel = () => {
-    if (typeof XLSX === "undefined") {
-      alert("مكتبة Excel (XLSX) غير موجودة.");
+  const openStudent = (id) => {
+    if (!id || !existsId(id)) {
+      showMsg(searchMsg, "ID غير موجود", "err");
       return;
     }
-
-    const filled = Object.values(students)
-      .filter((st) => isFilledStudent(st))
-      .sort((a, b) => a.id - b.id);
-
-    const wsStudentsData = [
-      ["ID", "الاسم", "الصف", "الموبايل", "المدفوع", "عدد أيام الحضور", "آخر حضور"]
-    ];
-
-    for (const st of filled) {
-      const dates = Array.isArray(st.attendanceDates) ? st.attendanceDates : [];
-      const last = dates.length ? dates[dates.length - 1] : "";
-      wsStudentsData.push([
-        st.id,
-        st.name || "",
-        st.className || "",
-        st.phone || "",
-        st.paid || "",
-        dates.length,
-        last || ""
-      ]);
-    }
-
-    const wsStudents = XLSX.utils.aoa_to_sheet(wsStudentsData);
-
-    const wsAttendData = [["التاريخ", "ID", "الاسم"]];
-    const datesSorted = Object.keys(attByDate).sort();
-    for (const d of datesSorted) {
-      const ids = Array.isArray(attByDate[d]) ? attByDate[d] : [];
-      for (const id of ids) {
-        const st = getStudent(id);
-        const nm = st && st.name ? st.name : "";
-        wsAttendData.push([d, id, nm]);
-      }
-    }
-    const wsAttend = XLSX.utils.aoa_to_sheet(wsAttendData);
-
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, wsStudents, "الطلاب");
-    XLSX.utils.book_append_sheet(wb, wsAttend, "الحضور");
-
-    const fileName = `center-data-${nowDateStr()}.xlsx`;
-    XLSX.writeFile(wb, fileName);
+    // Clear search
+    searchAny.value = "";
+    searchMsg.style.display = "none";
+    
+    updateStudentUI(id);
+    // Scroll to student panel
+    document.querySelector(".studentCard").scrollIntoView({ behavior: "smooth" });
   };
 
-  const normHeader = (h) =>
-    String(h || "")
-      .trim()
-      .toLowerCase()
-      .replace(/\s+/g, "");
-
-  const importExcel = async (file) => {
-    if (typeof XLSX === "undefined") {
-      alert("مكتبة Excel (XLSX) غير موجودة.");
+  // ====== BUTTON EVENTS ======
+  
+  // 1. WhatsApp
+  waBtn.addEventListener("click", () => {
+    const phone = stPhone.value.trim().replace(/[^0-9]/g, ""); // Keep numbers only
+    if (phone.length < 10) {
+      alert("رقم الهاتف غير صحيح");
       return;
     }
-    if (!file) return;
+    // Default to Egypt (+20) if no country code
+    const finalPhone = phone.startsWith("20") ? phone : "20" + phone;
+    window.open(`https://wa.me/${finalPhone}`, "_blank");
+  });
 
-    const buf = await file.arrayBuffer();
-    const wb = XLSX.read(buf, { type: "array" });
+  // 2. Copy Report
+  copyReportBtn.addEventListener("click", () => {
+     const d = reportDate.value || nowDateStr();
+     const count = reportCount.textContent;
+     const text = `📊 *تقرير السنتر*\n📅 التاريخ: ${prettyDate(d)}\n✅ الحضور: ${count}\n\n---\nتم الاستخراج من اللوحة`;
+     
+     navigator.clipboard.writeText(text).then(() => {
+       const originalText = copyReportBtn.textContent;
+       copyReportBtn.textContent = "تم النسخ 👍";
+       setTimeout(() => copyReportBtn.textContent = originalText, 2000);
+     });
+  });
 
-    const sheetStudentsName = wb.SheetNames.find((n) => n.includes("الطلاب")) || wb.SheetNames[0];
-    const sheetAttendName = wb.SheetNames.find((n) => n.includes("الحضور")) || wb.SheetNames[1];
-
-    const wsS = wb.Sheets[sheetStudentsName];
-    const wsA = sheetAttendName ? wb.Sheets[sheetAttendName] : null;
-
-    const rowsS = XLSX.utils.sheet_to_json(wsS, { header: 1, defval: "" });
-    if (!rowsS.length) {
-      alert("ملف Excel فاضي.");
+  // 3. Reset Term (The New Feature)
+  resetTermBtn.addEventListener("click", () => {
+    if (termPass.value !== ADMIN_PASS) {
+      showMsg(resetMsg, "كلمة المرور خطأ!", "err");
       return;
     }
+    if (!confirm("هل أنت متأكد؟ سيتم مسح (الحضور) و (المصاريف) فقط، وستبقى الأسماء كما هي.")) return;
 
-    const headerS = rowsS[0].map(normHeader);
-
-    const idx = (names) => {
-      for (let i = 0; i < headerS.length; i++) {
-        if (names.includes(headerS[i])) return i;
-      }
-      return -1;
-    };
-
-    const iID = idx(["id"]);
-    const iName = idx(["الاسم", "name"]);
-    const iClass = idx(["الصف", "class", "classname"]);
-    const iPhone = idx(["الموبايل", "الهاتف", "phone", "mobile"]);
-    const iPaid = idx(["المدفوع", "paid", "payment"]);
-
-    const newStudents = {};
-    for (let i = BASE_MIN_ID; i <= BASE_MAX_ID; i++) {
-      newStudents[String(i)] = makeEmptyStudent(i);
+    // Loop all students
+    for (const key in students) {
+      students[key].attendanceDates = []; // Clear dates
+      students[key].paid = "";            // Clear fees
+      // Name, Phone, Notes -> Stay Safe
     }
-
-    const newExtra = [];
-
-    for (let r = 1; r < rowsS.length; r++) {
-      const row = rowsS[r];
-      const id = toInt(row[iID]);
-      if (!id) continue;
-
-      if (!newStudents[String(id)]) {
-        newStudents[String(id)] = makeEmptyStudent(id);
-        if (id < BASE_MIN_ID || id > BASE_MAX_ID) newExtra.push(id);
-      }
-
-      const st = newStudents[String(id)];
-      if (iName !== -1) st.name = String(row[iName] || "");
-      if (iClass !== -1) st.className = String(row[iClass] || "");
-      if (iPhone !== -1) st.phone = String(row[iPhone] || "");
-      if (iPaid !== -1) st.paid = String(row[iPaid] || "");
-    }
-
-    const newAttByDate = {};
-    if (wsA) {
-      const rowsA = XLSX.utils.sheet_to_json(wsA, { header: 1, defval: "" });
-      if (rowsA.length) {
-        const headerA = rowsA[0].map(normHeader);
-        const idxA = (names) => {
-          for (let i = 0; i < headerA.length; i++) {
-            if (names.includes(headerA[i])) return i;
-          }
-          return -1;
-        };
-
-        const aDate = idxA(["التاريخ", "date"]);
-        const aID = idxA(["id"]);
-        for (let r = 1; r < rowsA.length; r++) {
-          const row = rowsA[r];
-          const d = String(row[aDate] || "").trim();
-          const id = toInt(row[aID]);
-          if (!d || !id) continue;
-
-          if (!newStudents[String(id)]) {
-            newStudents[String(id)] = makeEmptyStudent(id);
-            if (id < BASE_MIN_ID || id > BASE_MAX_ID) newExtra.push(id);
-          }
-
-          newAttByDate[d] = Array.isArray(newAttByDate[d]) ? newAttByDate[d] : [];
-          if (!newAttByDate[d].includes(id)) newAttByDate[d].push(id);
-        }
-      }
-    }
-
-    for (const st of Object.values(newStudents)) {
-      st.attendanceDates = [];
-    }
-    for (const d of Object.keys(newAttByDate)) {
-      for (const id of newAttByDate[d]) {
-        const st = newStudents[String(id)];
-        if (!st) continue;
-        st.attendanceDates = Array.isArray(st.attendanceDates) ? st.attendanceDates : [];
-        if (!st.attendanceDates.includes(d)) st.attendanceDates.push(d);
-      }
-    }
-    for (const st of Object.values(newStudents)) {
-      st.attendanceDates.sort();
-    }
-
-    students = newStudents;
-    extraIds = Array.from(new Set(newExtra)).sort((a, b) => a - b);
-    attByDate = newAttByDate;
-
+    attByDate = {}; // Clear daily logs
     saveAll();
-
-    showMsg(searchMsg, "تم الاستيراد بنجاح ✅", "ok");
-    currentId = null;
-    updateStudentUI(null);
+    
+    // UI Refresh
+    termPass.value = "";
+    showMsg(resetMsg, "تم تصفير الترم بنجاح! الأسماء موجودة، الحضور 0.", "ok");
+    updateStudentUI(currentId);
     renderReport(nowDateStr());
-  };
-
-  // ====== EVENTS ======
-
-  togglePassBtn?.addEventListener("click", () => {
-    passInp.type = passInp.type === "password" ? "text" : "password";
+    updateTopStats();
   });
 
-  loginBtn.addEventListener("click", () => {
-    const u = String(userInp.value || "").trim();
-    const p = String(passInp.value || "");
-    if (u === ADMIN_USER && p === ADMIN_PASS) {
-      setAuth(true);
-      showMsg(loginMsg, "");
-      showApp();
-    } else {
-      showMsg(loginMsg, "بيانات الدخول غير صحيحة.", "err");
-    }
-  });
-
-  passInp.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") loginBtn.click();
-  });
-
-  logoutBtn.addEventListener("click", () => {
-    setAuth(false);
-    showLogin();
-  });
-
-  quickAttendBtn.addEventListener("click", () => {
-    const id = toInt(quickAttendId.value);
-    if (!id) {
-      showMsg(quickMsg, "اكتب ID صحيح.", "err");
-      return;
-    }
-    if (!existsId(id)) {
-      showMsg(quickMsg, "هذا الـ ID غير موجود في قاعدة البيانات.", "err");
-      return;
-    }
-
-    const res = addAttendance(id, nowDateStr());
-    showMsg(quickMsg, res.msg, res.ok ? "ok" : "err");
-    updateStudentUI(id);
-    renderReport(nowDateStr());
-  });
-
-  openBtn.addEventListener("click", () => {
-    const id = toInt(openId.value);
-    openStudent(id);
-  });
-
-  searchAny.addEventListener("input", doSearchLive);
-  searchAnyBtn.addEventListener("click", doSearchLive);
-
-  addNewBtn.addEventListener("click", () => {
-    const id = toInt(newId.value);
-    if (!id) {
-      showMsg(addMsg, "اكتب ID صحيح.", "err");
-      return;
-    }
-    if (existsId(id)) {
-      showMsg(addMsg, "هذا الـ ID موجود بالفعل.", "err");
-      return;
-    }
-
-    students[String(id)] = makeEmptyStudent(id);
-    if (id < BASE_MIN_ID || id > BASE_MAX_ID) {
-      if (!extraIds.includes(id)) extraIds.push(id);
-      extraIds.sort((a, b) => a - b);
-    }
-    saveAll();
-    showMsg(addMsg, `تمت إضافة ID ${id} ✅`, "ok");
-    updateStudentUI(id);
-  });
-
-  saveStudentBtn.addEventListener("click", () => {
-    if (!currentId) {
-      showMsg(studentMsg, "افتح طالب أولاً.", "err");
-      return;
-    }
-    const st = getStudent(currentId);
-    if (!st) {
-      showMsg(studentMsg, "هذا الـ ID غير موجود.", "err");
-      return;
-    }
-
-    st.name = String(stName.value || "");
-    st.className = String(stClass.value || "");
-    st.phone = String(stPhone.value || "");
-    st.paid = String(stPaid.value || "");
-    st.attendanceDates = Array.isArray(st.attendanceDates) ? st.attendanceDates : [];
-
-    setStudent(st);
-    showMsg(studentMsg, "تم حفظ البيانات ✅", "ok");
-    updateStudentUI(currentId);
-    renderReport(reportDate.value || nowDateStr());
-  });
-
-  markTodayBtn.addEventListener("click", () => {
-    if (!currentId) {
-      showMsg(studentMsg, "افتح طالب أولاً.", "err");
-      return;
-    }
-    const res = addAttendance(currentId, nowDateStr());
-    showMsg(studentMsg, res.msg, res.ok ? "ok" : "err");
-    updateStudentUI(currentId);
-    renderReport(reportDate.value || nowDateStr());
-  });
-
-  unmarkTodayBtn.addEventListener("click", () => {
-    if (!currentId) {
-      showMsg(studentMsg, "افتح طالب أولاً.", "err");
-      return;
-    }
-    const res = removeAttendance(currentId, nowDateStr());
-    showMsg(studentMsg, res.msg, res.ok ? "ok" : "err");
-    updateStudentUI(currentId);
-    renderReport(reportDate.value || nowDateStr());
-  });
-
-  reportBtn.addEventListener("click", () => {
-    const d = reportDate.value || nowDateStr();
-    renderReport(d);
-  });
-
-  exportExcelBtn.addEventListener("click", exportExcel);
-
-  importExcelInput.addEventListener("change", async () => {
-    const file = importExcelInput.files && importExcelInput.files[0];
-    if (!file) return;
-    await importExcel(file);
-    importExcelInput.value = ""; 
-  });
-
+  // 4. Full Reset
   resetBtn.addEventListener("click", () => {
-    const p = String(resetPass.value || "");
-    if (p !== ADMIN_PASS) {
-      showMsg(resetMsg, "كلمة المرور غير صحيحة.", "err");
+    if (resetPass.value !== ADMIN_PASS) {
+      showMsg(resetMsg, "كلمة المرور خطأ!", "err");
       return;
     }
+    if (!confirm("تحذير! سيتم مسح كل شيء نهائياً. هل أنت متأكد؟")) return;
 
     localStorage.removeItem(K_STUDENTS);
     localStorage.removeItem(K_EXTRA_IDS);
     localStorage.removeItem(K_ATT_BY_DATE);
-
-    students = {};
-    extraIds = [];
-    attByDate = {};
-    currentId = null;
-
+    students = {}; extraIds = []; attByDate = {}; currentId = null;
+    
     ensureBase500();
     loadAll();
     updateStudentUI(null);
     renderReport(nowDateStr());
-    showMsg(resetMsg, "تمت إعادة الضبط ومسح البيانات من هذا الجهاز ✅", "ok");
+    showMsg(resetMsg, "تمت إعادة ضبط المصنع.", "ok");
   });
 
-  const showLogin = () => {
-    loginBox.classList.remove("hidden");
-    appBox.classList.add("hidden");
-  };
+  // 5. Standard Actions
+  loginBtn.addEventListener("click", () => {
+    if (userInp.value === ADMIN_USER && passInp.value === ADMIN_PASS) {
+      setAuth(true); showApp();
+    } else showMsg(loginMsg, "خطأ في البيانات", "err");
+  });
 
-  const showApp = () => {
-    loginBox.classList.add("hidden");
+  quickAttendBtn.addEventListener("click", () => {
+    const id = toInt(quickAttendId.value);
+    if (!id || !existsId(id)) { showMsg(quickMsg, "ID خطأ", "err"); return; }
+    const res = addAttendance(id, nowDateStr());
+    showMsg(quickMsg, res.msg, res.ok ? "ok" : "err");
+    updateStudentUI(id);
+    renderReport(nowDateStr());
+    quickAttendId.value = "";
+    quickAttendId.focus();
+  });
+
+  openBtn.addEventListener("click", () => openStudent(toInt(openId.value)));
+  searchAny.addEventListener("input", doSearchLive);
+  
+  saveStudentBtn.addEventListener("click", () => {
+    if (!currentId) return;
+    const st = getStudent(currentId);
+    st.name = stName.value.trim();
+    st.className = stClass.value.trim();
+    st.phone = stPhone.value.trim();
+    st.paid = stPaid.value.trim();
+    st.notes = stNotes.value.trim(); // Save Notes
+    
+    setStudent(st);
+    showMsg(studentMsg, "تم الحفظ ✅", "ok");
+    updateStudentUI(currentId);
+    updateTopStats();
+  });
+
+  markTodayBtn.addEventListener("click", () => {
+    if(!currentId) return;
+    const res = addAttendance(currentId, nowDateStr());
+    showMsg(studentMsg, res.msg, res.ok?"ok":"err");
+    updateStudentUI(currentId);
+    renderReport(reportDate.value);
+  });
+
+  unmarkTodayBtn.addEventListener("click", () => {
+    if(!currentId) return;
+    const res = removeAttendance(currentId, nowDateStr());
+    showMsg(studentMsg, res.msg, res.ok?"ok":"err");
+    updateStudentUI(currentId);
+    renderReport(reportDate.value);
+  });
+
+  reportBtn.addEventListener("click", () => renderReport(reportDate.value));
+  
+  // Excel
+  exportExcelBtn.addEventListener("click", () => {
+    if (typeof XLSX === "undefined") return alert("Excel Lib Missing");
+    
+    // Students Sheet
+    const filled = Object.values(students).filter(st => isFilledStudent(st)).sort((a,b)=>a.id-b.id);
+    const wsData = [["ID","الاسم","الصف","موبايل","مدفوع","ملاحظات","أيام الحضور"]];
+    filled.forEach(st => {
+       wsData.push([st.id, st.name, st.className, st.phone, st.paid, st.notes, st.attendanceDates.length]);
+    });
+    
+    // Attendance Sheet
+    const wsAtt = [["التاريخ","ID","الاسم"]];
+    Object.keys(attByDate).sort().forEach(d => {
+       attByDate[d].forEach(id => {
+         const st = getStudent(id);
+         wsAtt.push([d, id, st ? st.name : ""]);
+       });
+    });
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsData), "الطلاب");
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsAtt), "سجل الحضور");
+    XLSX.writeFile(wb, `Center_Data_${nowDateStr()}.xlsx`);
+  });
+
+  importExcelInput.addEventListener("change", async () => {
+    const f = importExcelInput.files[0];
+    if(!f) return;
+    const buf = await f.arrayBuffer();
+    const wb = XLSX.read(buf, {type:"array"});
+    
+    const sName = wb.SheetNames.find(n => n.includes("الطلاب")) || wb.SheetNames[0];
+    const rows = XLSX.utils.sheet_to_json(wb.Sheets[sName], {header:1, defval:""});
+    
+    // Simple Import Logic
+    const head = rows[0].map(x => String(x).toLowerCase().trim());
+    const iID = head.findIndex(x=>x.includes("id"));
+    const iName = head.findIndex(x=>x.includes("اسم")||x.includes("name"));
+    const iPhone = head.findIndex(x=>x.includes("موبايل")||x.includes("phone"));
+    const iPaid = head.findIndex(x=>x.includes("مدفوع")||x.includes("paid"));
+    const iNote = head.findIndex(x=>x.includes("ملاحظات")||x.includes("note"));
+
+    if (iID === -1) { alert("ملف الإكسيل لا يحتوي على عمود ID"); return; }
+
+    for(let r=1; r<rows.length; r++) {
+      const row = rows[r];
+      const id = toInt(row[iID]);
+      if(id) {
+        if(!students[id]) { students[id] = makeEmptyStudent(id); if(id>BASE_MAX_ID) extraIds.push(id); }
+        if(iName!==-1) students[id].name = row[iName];
+        if(iPhone!==-1) students[id].phone = row[iPhone];
+        if(iPaid!==-1) students[id].paid = row[iPaid];
+        if(iNote!==-1) students[id].notes = row[iNote];
+      }
+    }
+    saveAll();
+    alert("تم الاستيراد بنجاح");
+    location.reload(); // Refresh to show updates
+  });
+
+  // Init
+  togglePassBtn?.addEventListener("click", () => passInp.type = passInp.type==="password"?"text":"password");
+  logoutBtn.addEventListener("click", () => { setAuth(false); showLogin(); });
+
+  const showLogin = () => { loginBox.classList.remove("hidden"); appBox.classList.add("hidden"); };
+  const showApp = () => { 
+    loginBox.classList.add("hidden"); 
     appBox.classList.remove("hidden");
-
-    const today = nowDateStr();
-    reportDate.value = today;
-    renderReport(today);
-    autoFromQuery();
-  };
-
-  const init = () => {
-    loadAll();
-    ensureBase500();
-
-    if (isAuth()) showApp();
-    else showLogin();
-
     reportDate.value = nowDateStr();
     renderReport(nowDateStr());
-    updateStudentUI(null);
+    updateTopStats();
+    
+    // Auto Login from Query
+    const url = new URL(window.location.href);
+    const qId = toInt(url.searchParams.get("id"));
+    if(qId && existsId(qId)) {
+        updateStudentUI(qId);
+        addAttendance(qId, nowDateStr()); // Auto attend
+    }
   };
 
-  init();
+  loadAll();
+  ensureBase500();
+  isAuth() ? showApp() : showLogin();
+
 })();
