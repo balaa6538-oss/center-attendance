@@ -1,6 +1,6 @@
 /* =========================================
-   Center Attendance System V9 - Style
-   Features: Dark Mode, Bin, Filters
+   Center Attendance System V10 - Style
+   Features: Dark Mode, Bin, Filters, i18n
 ========================================= */
 
 :root {
@@ -68,7 +68,8 @@ body {
 
 .statItem {
   display: inline-block; background: rgba(47, 107, 255, 0.1); color: var(--primary);
-  padding: 2px 8px; border-radius: 6px; margin-left: 8px; border: 1px solid rgba(47, 107, 255, 0.2);
+  /* Use logical properties for RTL/LTR support */
+  padding: 2px 8px; border-radius: 6px; margin-inline-start: 8px; border: 1px solid rgba(47, 107, 255, 0.2);
 }
 .statItem.clickable { cursor: pointer; border: 1px dashed var(--primary); }
 .statItem.clickable:hover { background: var(--primary); color: #fff; }
@@ -78,11 +79,11 @@ body {
 /* Fee Input */
 .termFeeWrapper {
   display: flex; align-items: center; background: rgba(255, 193, 7, 0.2);
-  border: 1px solid var(--warning); padding: 4px 8px; border-radius: 8px; margin-left: 10px;
+  border: 1px solid var(--warning); padding: 4px 8px; border-radius: 8px; margin-inline-start: 10px;
 }
-.feeLabel { font-size: 13px; font-weight: bold; color: var(--warning); margin-left: 5px; }
+.feeLabel { font-size: 13px; font-weight: bold; color: var(--warning); margin-inline-end: 5px; }
 .feeInp { width: 70px; padding: 5px; border: 1px solid var(--border); border-radius: 6px; text-align: center; font-weight: bold; outline: none; background: var(--card-bg); color: var(--text); }
-.feeBtn { background: var(--warning); border: none; border-radius: 6px; padding: 6px 10px; cursor: pointer; margin-right: 5px; color: #fff; }
+.feeBtn { background: var(--warning); border: none; border-radius: 6px; padding: 6px 10px; cursor: pointer; margin-inline-end: 5px; color: #fff; }
 
 /* Inputs & Buttons */
 .lbl { display: block; margin: 12px 0 5px; font-size: 14px; font-weight: 600; opacity: 0.9; }
@@ -97,7 +98,7 @@ body {
 .btn:hover { opacity: 0.9; }
 .btn:active { transform: scale(0.96); }
 
-/* Default Btn (Gray) */
+/* Default Btn */
 .btn { background: #e0e0e0; color: #333; } 
 body.dark-mode .btn { background: #444; color: #fff; }
 
@@ -107,7 +108,7 @@ body.dark-mode .btn { background: #444; color: #fff; }
 .btn.danger { background: var(--danger); color: #fff; }
 .smallBtn { padding: 5px 10px; font-size: 12px; }
 
-/* Animation for Save */
+/* Animation */
 @keyframes softPulse {
   0% { box-shadow: 0 0 0 0 rgba(47, 107, 255, 0.4); }
   70% { box-shadow: 0 0 0 6px rgba(47, 107, 255, 0); }
@@ -148,7 +149,8 @@ body.dark-mode .btn { background: #444; color: #fff; }
 .tableWrap { flex: 1; overflow-y: auto; margin-top: 10px; border: 1px solid var(--border); border-radius: 8px; }
 
 table { width: 100%; border-collapse: collapse; min-width: 500px; color: var(--text); }
-th, td { padding: 12px 15px; text-align: right; border-bottom: 1px solid var(--border); }
+/* Use text-align: start to handle both LTR (English) and RTL (Arabic) correctly */
+th, td { padding: 12px 15px; text-align: start; border-bottom: 1px solid var(--border); }
 th { background: rgba(0,0,0,0.05); position: sticky; top: 0; font-weight: bold; }
 tr:hover { background: rgba(47, 107, 255, 0.05); }
 
