@@ -1,6 +1,6 @@
 /* =============================================
-   Center Attendance System V4 - (Final Pro)
-   Features: UI Fee Setting, Smart WhatsApp, Persistent Notes
+   Center Attendance System V5 - (Financial Pro)
+   Features: Daily Revenue, Payment Badges, Secure Fees
    ============================================= */
 
 (() => {
@@ -12,19 +12,21 @@
 
   // ====== STORAGE KEYS ======
   const K_AUTH = "ca_auth";
-  const K_STUDENTS = "ca_students_v4"; // New Key for V4       
-  const K_EXTRA_IDS = "ca_extra_ids_v4";     
-  const K_ATT_BY_DATE = "ca_att_by_date_v4"; 
-  const K_TERM_FEE = "ca_term_fee_v4"; // New Key for Fee
+  const K_STUDENTS = "ca_students_v5";       
+  const K_EXTRA_IDS = "ca_extra_ids_v5";     
+  const K_ATT_BY_DATE = "ca_att_by_date_v5"; 
+  const K_TERM_FEE = "ca_term_fee_v5"; 
+  const K_REVENUE = "ca_revenue_v5"; // New: Store daily revenue
 
   // ====== DOM ELEMENTS ======
   const $ = (id) => document.getElementById(id);
 
-  // Top Bar Stats & Fee
+  // Top Bar
   const totalStudentsCount = $("totalStudentsCount");
   const todayCountTop = $("todayCountTop");
-  const termFeeInp = $("termFeeInp"); // New Fee Input
-  const saveFeeBtn = $("saveFeeBtn"); // New Fee Save Btn
+  const todayRevenue = $("todayRevenue"); // New Stat
+  const termFeeInp = $("termFeeInp");
+  const saveFeeBtn = $("saveFeeBtn");
 
   // Login
   const loginBox = $("loginBox");
@@ -59,6 +61,7 @@
   const reportBtn = $("reportBtn");
   const reportDateLabel = $("reportDateLabel");
   const reportCount = $("reportCount");
+  const reportMoney = $("reportMoney"); // New
   const reportList = $("reportList");
   const copyReportBtn = $("copyReportBtn");
 
@@ -73,8 +76,12 @@
   const stClass = $("stClass");
   const stPhone = $("stPhone");
   const waBtn = $("waBtn");
-  const stPaid = $("stPaid");
-  const stNotes = $("stNotes"); // Notes Field
+  
+  const stPaid = $("stPaid"); // Now ReadOnly
+  const addMoneyBtn = $("addMoneyBtn"); // New Button
+  const paymentBadge = $("paymentBadge"); // New Badge
+  
+  const stNotes = $("stNotes");
 
   const saveStudentBtn = $("saveStudentBtn");
   const markTodayBtn = $("markTodayBtn");
@@ -93,8 +100,9 @@
   let students = {};              
   let extraIds = [];              
   let attByDate = {};             
+  let revenueByDate = {}; // date -> total money collected
   let currentId = null;
-  let termFee = 0; // State for Fee
+  let termFee = 0;
 
   // ====== SOUND ======
   const playBeep = () => {
@@ -150,45 +158,50 @@
     localStorage.setItem(K_STUDENTS, JSON.stringify(students));
     localStorage.setItem(K_EXTRA_IDS, JSON.stringify(extraIds));
     localStorage.setItem(K_ATT_BY_DATE, JSON.stringify(attByDate));
-    localStorage.setItem(K_TERM_FEE, String(termFee)); // Save Fee
+    localStorage.setItem(K_TERM_FEE, String(termFee));
+    localStorage.setItem(K_REVENUE, JSON.stringify(revenueByDate));
     updateTopStats();
   };
 
   const loadAll = () => {
-    // 1. Load Fee
+    // Fee
     termFee = toInt(localStorage.getItem(K_TERM_FEE)) || 0;
     termFeeInp.value = termFee > 0 ? termFee : "";
 
-    // 2. Load Data (Try V4, fallback to V3/V1 migration if needed, but let's start fresh for V4 structure or copy)
-    // To keep your data from V3, we will try to load V3 keys if V4 are empty.
+    // Data - Try V5 first, else fallbacks
     let sRaw = localStorage.getItem(K_STUDENTS);
-    if(!sRaw) sRaw = localStorage.getItem("ca_students_v3"); // Migration from V3
-    if(!sRaw) sRaw = localStorage.getItem("ca_students_v1"); // Migration from V1
-
+    // Backward compatibility loading (if V5 is empty)
+    if(!sRaw) sRaw = localStorage.getItem("ca_students_v4") || localStorage.getItem("ca_students_v3");
+    
     try { students = JSON.parse(sRaw || "{}") || {}; } catch { students = {}; }
+    
+    // Revenue
+    try { revenueByDate = JSON.parse(localStorage.getItem(K_REVENUE) || "{}") || {}; } catch { revenueByDate = {}; }
 
-    // Fix: Ensure all students have 'notes' field
-    for(let k in students) {
-        if(!students[k].notes) students[k].notes = "";
-    }
+    // Extras
+    try { extraIds = JSON.parse(localStorage.getItem(K_EXTRA_IDS) || "[]") || []; } catch { extraIds = []; }
 
-    let eRaw = localStorage.getItem(K_EXTRA_IDS);
-    if(!eRaw) eRaw = localStorage.getItem("ca_extra_ids_v3");
-    try { extraIds = JSON.parse(eRaw || "[]") || []; } catch { extraIds = []; }
-
+    // Attendance
     let aRaw = localStorage.getItem(K_ATT_BY_DATE);
-    if(!aRaw) aRaw = localStorage.getItem("ca_att_by_date_v3");
+    if(!aRaw) aRaw = localStorage.getItem("ca_att_by_date_v4");
     try { attByDate = JSON.parse(aRaw || "{}") || {}; } catch { attByDate = {}; }
 
     updateTopStats();
   };
 
   const updateTopStats = () => {
+    // 1. Registered
     const filledCount = Object.values(students).filter(st => st.name && st.name.trim().length > 0).length;
     totalStudentsCount.textContent = filledCount;
+
+    // 2. Today Attendance
     const today = nowDateStr();
     const todayList = attByDate[today] || [];
     todayCountTop.textContent = todayList.length;
+
+    // 3. Today Revenue
+    const money = revenueByDate[today] || 0;
+    todayRevenue.textContent = money + " ج";
   };
 
   const ensureBase500 = () => {
@@ -207,8 +220,9 @@
     name: "",
     className: "",
     phone: "",
-    paid: "",
+    paid: 0, // Number now
     notes: "", 
+    joinedDate: nowDateStr(), // Track join date for "New Students" report
     attendanceDates: [] 
   });
 
@@ -218,7 +232,7 @@
 
   const isFilledStudent = (st) => {
     if (!st) return false;
-    return !!((st.name && st.name.trim()) || (st.phone && st.phone.trim()) || (st.paid && st.paid != 0));
+    return !!((st.name && st.name.trim()) || (st.phone && st.phone.trim()) || (st.paid > 0));
   };
 
   // ====== ATTENDANCE LOGIC ======
@@ -261,6 +275,7 @@
     currentId = st ? st.id : null;
 
     if (!st) {
+      // Clear UI
       studentIdPill.textContent = "ID: —";
       todayStatus.textContent = "—";
       lastAttend.textContent = "—";
@@ -269,37 +284,51 @@
       stClass.value = "";
       stPhone.value = "";
       stPaid.value = "";
-      stNotes.value = ""; 
-      stPaid.style.borderColor = "#d1d5da"; // reset color
-      stPaid.style.background = "#fff";
+      stNotes.value = "";
       newBadge.classList.add("hidden");
+      paymentBadge.classList.add("hidden");
+      paymentBadge.className = "paymentBadge hidden";
       attList.innerHTML = `<div class="mutedCenter">— افتح طالب —</div>`;
       return;
     }
 
-    // Basic Data
+    // Data
     stName.value = st.name || "";
     stClass.value = st.className || "";
     stPhone.value = st.phone || "";
-    stPaid.value = st.paid || "";
-    stNotes.value = st.notes || ""; // ✅ Load Notes Correctly
+    stPaid.value = st.paid || 0; // Show total paid
+    stNotes.value = st.notes || ""; 
 
-    // Color Logic for Paid (Green/Red)
+    // --- PAYMENT BADGE LOGIC ---
     const paidVal = parseInt(st.paid) || 0;
+    paymentBadge.classList.remove("hidden");
+    
     if (termFee > 0) {
-        if(paidVal >= termFee) {
-            stPaid.style.borderColor = "#2ea44f";
-            stPaid.style.background = "#f0fff4"; // Light green bg
-        } else {
-            stPaid.style.borderColor = "#cf222e";
-            stPaid.style.background = "#fff5f5"; // Light red bg
-        }
+      if (paidVal >= termFee) {
+        paymentBadge.textContent = "✅ خالص المصاريف";
+        paymentBadge.className = "paymentBadge paid";
+      } else if (paidVal > 0) {
+        const remaining = termFee - paidVal;
+        paymentBadge.textContent = `⚠️ دافع جزء (باقي ${remaining})`;
+        paymentBadge.className = "paymentBadge partial";
+      } else {
+        paymentBadge.textContent = "🔴 لم يدفع شيئاً";
+        paymentBadge.className = "paymentBadge unpaid";
+      }
     } else {
-        stPaid.style.borderColor = "#d1d5da";
-        stPaid.style.background = "#fff";
+      // No term fee set
+      if (paidVal > 0) {
+         paymentBadge.textContent = `💰 تم دفع: ${paidVal}`;
+         paymentBadge.className = "paymentBadge partial";
+      } else {
+         paymentBadge.textContent = "— لم يتم تحديد مصاريف —";
+         paymentBadge.className = "paymentBadge";
+         paymentBadge.style.background = "#eee";
+         paymentBadge.style.borderColor = "#ddd";
+      }
     }
 
-    // Stats
+    // Attendance UI
     const today = nowDateStr();
     const dates = st.attendanceDates || [];
     const hasToday = dates.includes(today);
@@ -312,22 +341,29 @@
     const last = dates.length ? dates[dates.length - 1] : "";
     lastAttend.textContent = last ? prettyDate(last) : "—";
 
-    // History List
     const last25 = [...dates].sort().slice(-25).reverse();
     attList.innerHTML = last25.length 
       ? last25.map(d => `<div class="item">${escapeHtml(prettyDate(d))}</div>`).join("")
       : `<div class="mutedCenter">— لا يوجد حضور —</div>`;
       
-    // New Badge
-    if (dates.length === 0 && st.name) newBadge.classList.remove("hidden");
+    // New Student Badge (based on joinedDate if exists, or no attendance)
+    const isNewToday = st.joinedDate === nowDateStr();
+    if (isNewToday || (dates.length === 0 && st.name)) newBadge.classList.remove("hidden");
     else newBadge.classList.add("hidden");
   };
 
   const renderReport = (dateStr) => {
     reportDateLabel.textContent = `تاريخ: ${prettyDate(dateStr)}`;
+    
+    // 1. Attendance Count
     const ids = attByDate[dateStr] || [];
     reportCount.textContent = `${ids.length} طالب`;
 
+    // 2. Revenue Count
+    const money = revenueByDate[dateStr] || 0;
+    reportMoney.textContent = money + " ج";
+
+    // List
     if (!ids.length) {
       reportList.innerHTML = `<div class="mutedCenter">— لا يوجد حضور —</div>`;
       return;
@@ -353,7 +389,6 @@
     const matches = Object.values(students)
       .filter(st => isFilledStudent(st))
       .filter(st => {
-        // Search ONLY in Name, Phone, ID (NOT NOTES)
         const name = String(st.name || "").toLowerCase();
         const phone = String(st.phone || "").toLowerCase();
         const sId = String(st.id);
@@ -401,54 +436,114 @@
 
   // ====== BUTTON EVENTS ======
   
-  // 1. WhatsApp (FIXED)
+  // 1. WhatsApp
   waBtn.addEventListener("click", () => {
     const phone = stPhone.value.trim().replace(/[^0-9]/g, ""); 
-    if (phone.length < 10) {
-      alert("رقم الهاتف غير صحيح أو فارغ");
-      return;
-    }
-    // Auto add Egypt code +20 if missing
+    if (phone.length < 10) return alert("رقم الهاتف غير صحيح");
+    
     let finalPhone = phone;
     if(!finalPhone.startsWith("20")) {
-        // Simple check: if starts with 01, remove 0 and add 20
         if(finalPhone.startsWith("01")) finalPhone = "20" + finalPhone.substring(1);
-        else finalPhone = "20" + finalPhone; // Fallback
+        else finalPhone = "20" + finalPhone; 
     }
     window.open(`https://wa.me/${finalPhone}`, "_blank");
   });
 
-  // 2. Copy Report (FIXED with Clipboard API)
+  // 2. Add Money Button (The Safe Logic)
+  addMoneyBtn.addEventListener("click", () => {
+    if(!currentId) return alert("افتح طالب أولاً");
+    
+    const amountStr = prompt("أدخل المبلغ المراد إضافته (أو اكتب رقم بالسالب للخصم):");
+    if(!amountStr) return;
+
+    const amount = parseInt(amountStr);
+    if(isNaN(amount) || amount === 0) return alert("مبلغ غير صحيح");
+
+    const st = getStudent(currentId);
+    
+    // Update Student Total
+    const oldTotal = parseInt(st.paid) || 0;
+    st.paid = oldTotal + amount;
+    
+    // Update Daily Revenue
+    const today = nowDateStr();
+    const currentRev = revenueByDate[today] || 0;
+    revenueByDate[today] = currentRev + amount;
+
+    setStudent(st);
+    saveAll(); // Saves both student and revenue
+
+    alert(`تم تسجيل ${amount} ج بنجاح ✅\nإجمالي المدفوع للطالب: ${st.paid}\nإيراد اليوم زاد.`);
+    updateStudentUI(currentId);
+    renderReport(reportDate.value || today);
+  });
+
+  // 3. Secure Fee Save
+  saveFeeBtn.addEventListener("click", () => {
+      const pass = prompt("🔐 أدخل كلمة مرور المسؤول لتعديل المصاريف:");
+      if(pass !== ADMIN_PASS) return alert("كلمة المرور خطأ! لم يتم الحفظ.");
+
+      const val = toInt(termFeeInp.value);
+      termFee = val > 0 ? val : 0;
+      saveAll();
+      alert(`تم حفظ مصاريف الترم: ${termFee}\nسيتم تحديث ألوان الطلاب.`);
+      if(currentId) updateStudentUI(currentId); 
+  });
+
+  // 4. Add New Student (Fixed)
+  addNewBtn.addEventListener("click", () => {
+    const id = toInt(newId.value);
+    if (!id) { showMsg(addMsg, "اكتب ID صحيح", "err"); return; }
+    if (existsId(id)) { showMsg(addMsg, "ID موجود بالفعل", "err"); return; }
+
+    // Create
+    students[String(id)] = makeEmptyStudent(id);
+    if (id < BASE_MIN_ID || id > BASE_MAX_ID) extraIds.push(id);
+    saveAll();
+
+    // Feedback & Open
+    showMsg(addMsg, `تمت إضافة ID ${id} بنجاح ✅`, "ok");
+    newId.value = "";
+    openStudent(id); // Open immediately
+  });
+
+  // 5. Copy Full Report
   copyReportBtn.addEventListener("click", () => {
      const d = reportDate.value || nowDateStr();
-     const count = reportCount.textContent;
-     const total = totalStudentsCount.textContent;
+     const count = reportCount.textContent; // "X طالب"
+     const money = reportMoney.textContent; // "X ج"
      
-     // Calculate Money Collected Today (Approx)
-     // This is complex, so let's keep it simple for now:
-     const text = `📊 *تقرير السنتر اليومي*\n📅 التاريخ: ${prettyDate(d)}\n✅ الحضور: ${count}\n👥 المسجلين: ${total}\n\n---\nتم الاستخراج من اللوحة 🎓`;
+     // Count new students today
+     const newStCount = Object.values(students).filter(s => s.joinedDate === d).length;
+
+     const text = 
+`📊 *تقرير السنتر اليومي*
+📅 التاريخ: ${prettyDate(d)}
+
+👥 *الطلاب:*
+- الحضور: ${count}
+- تسجيل جديد: ${newStCount} طالب
+
+💰 *الماليات (الخزنة):*
+- إيراد اليوم: ${money}
+
+---
+تم الاستخراج من اللوحة 🎓`;
      
      if(navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(() => {
+        navigator.clipboard.writeText(text)
+        .then(() => {
             const originalText = copyReportBtn.textContent;
-            copyReportBtn.textContent = "تم النسخ بنجاح ✅";
+            copyReportBtn.textContent = "تم النسخ ✅";
             setTimeout(() => copyReportBtn.textContent = originalText, 2000);
-        }).catch(err => alert("تعذر النسخ، المتصفح يمنع ذلك."));
+        })
+        .catch(() => alert("النسخ التلقائي غير مدعوم، انسخ يدوياً."));
      } else {
          alert("المتصفح لا يدعم النسخ التلقائي.");
      }
   });
 
-  // 3. Save Fee (New)
-  saveFeeBtn.addEventListener("click", () => {
-      const val = toInt(termFeeInp.value);
-      termFee = val > 0 ? val : 0;
-      saveAll();
-      alert(`تم حفظ مصاريف الترم: ${termFee}\nسيتم تحديث ألوان الطلاب الآن.`);
-      if(currentId) updateStudentUI(currentId); // Refresh current student
-  });
-
-  // 4. Reset Term
+  // 6. Reset Term
   resetTermBtn.addEventListener("click", () => {
     if (termPass.value !== ADMIN_PASS) {
       showMsg(resetMsg, "كلمة المرور خطأ!", "err");
@@ -458,19 +553,19 @@
 
     for (const key in students) {
       students[key].attendanceDates = []; 
-      students[key].paid = "";            
+      students[key].paid = 0;            
     }
     attByDate = {}; 
+    revenueByDate = {}; // Clear revenue log too
     saveAll();
     
     termPass.value = "";
     showMsg(resetMsg, "تم تصفير الترم بنجاح!", "ok");
     updateStudentUI(currentId);
     renderReport(nowDateStr());
-    updateTopStats();
   });
 
-  // 5. Full Reset
+  // 7. Full Reset
   resetBtn.addEventListener("click", () => {
     if (resetPass.value !== ADMIN_PASS) {
       showMsg(resetMsg, "كلمة المرور خطأ!", "err");
@@ -478,11 +573,8 @@
     }
     if (!confirm("تحذير! سيتم مسح كل شيء نهائياً.")) return;
 
-    localStorage.removeItem(K_STUDENTS);
-    localStorage.removeItem(K_EXTRA_IDS);
-    localStorage.removeItem(K_ATT_BY_DATE);
-    localStorage.removeItem(K_TERM_FEE);
-    students = {}; extraIds = []; attByDate = {}; currentId = null; termFee=0;
+    localStorage.clear(); // Wipe everything
+    students = {}; extraIds = []; attByDate = {}; revenueByDate={}; currentId = null; termFee=0;
     
     ensureBase500();
     loadAll();
@@ -491,7 +583,7 @@
     showMsg(resetMsg, "تمت إعادة ضبط المصنع.", "ok");
   });
 
-  // 6. Standard Actions
+  // Login & Standard Actions
   loginBtn.addEventListener("click", () => {
     if (userInp.value === ADMIN_USER && passInp.value === ADMIN_PASS) {
       setAuth(true); showApp();
@@ -512,15 +604,14 @@
   openBtn.addEventListener("click", () => openStudent(toInt(openId.value)));
   searchAny.addEventListener("input", doSearchLive);
   
-  // SAVE BUTTON (UPDATED: Saves Notes)
   saveStudentBtn.addEventListener("click", () => {
     if (!currentId) return;
     const st = getStudent(currentId);
     st.name = stName.value.trim();
     st.className = stClass.value.trim();
     st.phone = stPhone.value.trim();
-    st.paid = stPaid.value.trim();
-    st.notes = stNotes.value.trim(); // ✅ Save Notes Logic
+    st.notes = stNotes.value.trim();
+    // Paid is handled via Add Money button now
     
     setStudent(st);
     showMsg(studentMsg, "تم الحفظ ✅", "ok");
@@ -546,18 +637,16 @@
 
   reportBtn.addEventListener("click", () => renderReport(reportDate.value));
   
-  // Excel
+  // Excel Export
   exportExcelBtn.addEventListener("click", () => {
     if (typeof XLSX === "undefined") return alert("Excel Lib Missing");
     
-    // Students Sheet
     const filled = Object.values(students).filter(st => isFilledStudent(st)).sort((a,b)=>a.id-b.id);
     const wsData = [["ID","الاسم","الصف","موبايل","مدفوع","ملاحظات","أيام الحضور"]];
     filled.forEach(st => {
        wsData.push([st.id, st.name, st.className, st.phone, st.paid, st.notes, st.attendanceDates.length]);
     });
     
-    // Attendance Sheet
     const wsAtt = [["التاريخ","ID","الاسم"]];
     Object.keys(attByDate).sort().forEach(d => {
        attByDate[d].forEach(id => {
@@ -581,7 +670,6 @@
     const sName = wb.SheetNames.find(n => n.includes("الطلاب")) || wb.SheetNames[0];
     const rows = XLSX.utils.sheet_to_json(wb.Sheets[sName], {header:1, defval:""});
     
-    // Simple Import Logic
     const head = rows[0].map(x => String(x).toLowerCase().trim());
     const iID = head.findIndex(x=>x.includes("id"));
     const iName = head.findIndex(x=>x.includes("اسم")||x.includes("name"));
@@ -598,7 +686,7 @@
         if(!students[id]) { students[id] = makeEmptyStudent(id); if(id>BASE_MAX_ID) extraIds.push(id); }
         if(iName!==-1) students[id].name = row[iName];
         if(iPhone!==-1) students[id].phone = row[iPhone];
-        if(iPaid!==-1) students[id].paid = row[iPaid];
+        if(iPaid!==-1) students[id].paid = toInt(row[iPaid]) || 0;
         if(iNote!==-1) students[id].notes = row[iNote];
       }
     }
@@ -619,12 +707,11 @@
     renderReport(nowDateStr());
     updateTopStats();
     
-    // Auto Login from Query
     const url = new URL(window.location.href);
     const qId = toInt(url.searchParams.get("id"));
     if(qId && existsId(qId)) {
         updateStudentUI(qId);
-        addAttendance(qId, nowDateStr()); // Auto attend
+        addAttendance(qId, nowDateStr());
     }
   };
 
