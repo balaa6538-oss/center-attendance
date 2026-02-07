@@ -1,6 +1,6 @@
 /* =========================================
-   Center Attendance System V3 - Style
-   Theme: Clean, Modern, RTL Support
+   Center Attendance System V4 - Style
+   Features: Fee Input, WhatsApp, Notes
 ========================================= */
 
 body {
@@ -92,7 +92,59 @@ h2 { font-size: 1.2em; border-bottom: 2px solid #f0f2f5; padding-bottom: 8px; ma
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+  align-items: center;
 }
+
+/* --- NEW: Term Fee Input Styling --- */
+.termFeeWrapper {
+  display: flex;
+  align-items: center;
+  background: #fff9db; /* Light Yellow */
+  border: 1px solid #f0e68c;
+  padding: 4px 8px;
+  border-radius: 8px;
+  margin-left: 10px;
+}
+
+.feeLabel {
+  font-size: 13px;
+  font-weight: bold;
+  color: #b58900;
+  margin-left: 5px;
+}
+
+.feeInp {
+  width: 70px;
+  padding: 5px;
+  border: 1px solid #e0d060;
+  border-radius: 6px;
+  text-align: center;
+  font-weight: bold;
+  color: #333;
+  outline: none;
+}
+
+.feeInp:focus {
+  border-color: #b58900;
+  background: #fff;
+}
+
+.feeBtn {
+  background: #ffd43b;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 8px;
+  cursor: pointer;
+  margin-right: 5px;
+  font-size: 14px;
+  transition: 0.2s;
+}
+
+.feeBtn:hover {
+  background: #fcc419;
+}
+/* ----------------------------------- */
+
 
 /* Inputs & Forms */
 .lbl {
@@ -149,13 +201,13 @@ textarea.inp {
 .btn.primary { background: #2f6bff; color: #fff; border-color: #2f6bff; }
 .btn.primary:hover { background: #2558d6; }
 
-.btn.success { background: #2ea44f; color: #fff; border-color: #2ea44f; } /* Green */
+.btn.success { background: #2ea44f; color: #fff; border-color: #2ea44f; }
 .btn.success:hover { background: #2c974b; }
 
-.btn.warning { background: #d29922; color: #fff; border-color: #d29922; } /* Orange */
+.btn.warning { background: #d29922; color: #fff; border-color: #d29922; }
 .btn.warning:hover { background: #ac7d19; }
 
-.btn.danger { background: #cf222e; color: #fff; border-color: #cf222e; } /* Red */
+.btn.danger { background: #cf222e; color: #fff; border-color: #cf222e; }
 .btn.danger:hover { background: #a41b25; }
 
 .smallBtn { padding: 5px 10px; font-size: 12px; }
@@ -173,7 +225,7 @@ textarea.inp {
   padding: 12px;
   border-radius: 8px;
   font-size: 14px;
-  display: none; /* JS toggles this */
+  display: none; 
 }
 
 .msg.ok { display: block; background: #dafbe1; color: #1a7f37; border: 1px solid #2ea44f; }
