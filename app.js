@@ -1,11 +1,8 @@
-alert("JS شغال");
-
 /* ==========================
-   Center Attendance - app.js
+   Center Attendance - app.js (Updated with Live Search)
    Storage: localStorage
    Excel: XLSX
 ========================== */
-
 
 (() => {
   // ====== SETTINGS ======
@@ -16,9 +13,9 @@ alert("JS شغال");
 
   // ====== STORAGE KEYS ======
   const K_AUTH = "ca_auth";
-  const K_STUDENTS = "ca_students_v1";       // { "1":{...}, "2":{...} }
-  const K_EXTRA_IDS = "ca_extra_ids_v1";     // [501, 502 ...]
-  const K_ATT_BY_DATE = "ca_att_by_date_v1"; // { "2026-02-06":[25,30,...] }
+  const K_STUDENTS = "ca_students_v1";       
+  const K_EXTRA_IDS = "ca_extra_ids_v1";     
+  const K_ATT_BY_DATE = "ca_att_by_date_v1"; 
 
   // ====== DOM ======
   const $ = (id) => document.getElementById(id);
@@ -85,9 +82,9 @@ alert("JS شغال");
   const resetMsg = $("resetMsg");
 
   // ====== STATE ======
-  let students = {};              // { id: {id,name,className,phone,paid,attendanceDates:[] } }
-  let extraIds = [];              // [501...]
-  let attByDate = {};             // { "YYYY-MM-DD":[id,id] }
+  let students = {};              
+  let extraIds = [];              
+  let attByDate = {};             
   let currentId = null;
 
   // ====== HELPERS ======
@@ -315,9 +312,17 @@ alert("JS شغال");
       updateStudentUI(null);
       return;
     }
+    // مسح نتائج البحث بعد الفتح عشان القائمة تختفي
+    searchMsg.innerHTML = "";
+    searchMsg.className = "msg";
+    searchAny.value = ""; 
+
     showMsg(searchMsg, "");
     updateStudentUI(id);
-    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+    // نطلع للطالب (اختياري لو الشاشة صغيرة)
+    // window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+    const stPanel = document.querySelector(".studentHead");
+    if(stPanel) stPanel.scrollIntoView({ behavior: "smooth" });
   };
 
   const autoFromQuery = () => {
@@ -342,53 +347,62 @@ alert("JS شغال");
     }
   };
 
-  const doSearchAny = () => {
-    const q = String(searchAny.value || "").trim();
+  // ============================================
+  // ✅ دالة البحث الجديدة (لحظية - Live Search)
+  // ============================================
+  const doSearchLive = () => {
+    const q = String(searchAny.value || "").trim().toLowerCase();
+    
+    // لو مفيش كلام، اخفي القائمة
     if (!q) {
-      showMsg(searchMsg, "اكتب اسم أو موبايل أو ID.", "err");
+      searchMsg.innerHTML = "";
+      searchMsg.className = "msg";
       return;
     }
 
-    // لو رقم -> افتح مباشرة
-    const asId = toInt(q);
-    if (asId !== null && existsId(asId)) {
-      showMsg(searchMsg, "");
-      openStudent(asId);
-      return;
-    }
-
-    // بحث بالاسم أو الموبايل
-    const lower = q.toLowerCase();
+    // البحث في الاسم أو الموبايل
     const matches = Object.values(students)
       .filter((st) => isFilledStudent(st))
       .filter((st) => {
         const name = String(st.name || "").toLowerCase();
         const phone = String(st.phone || "").toLowerCase();
-        return name.includes(lower) || phone.includes(lower);
+        // لو ID برضه
+        const sId = String(st.id);
+        return name.includes(q) || phone.includes(q) || sId.includes(q);
       })
-      .slice(0, 20);
+      .slice(0, 10); // هات أول 10 نتايج بس عشان الزحمة
 
     if (!matches.length) {
-      showMsg(searchMsg, "لا يوجد نتائج.", "err");
+      searchMsg.textContent = "لا توجد نتائج مطابقة...";
+      searchMsg.className = "msg err";
       return;
     }
 
-    // اعرض نتائج كقائمة قابلة للضغط
+    // رسم القائمة
     const html = matches
       .map((st) => {
         const nm = (st.name && st.name.trim()) ? st.name.trim() : "بدون اسم";
-        return `<button class="resultBtn" data-id="${st.id}">(${st.id}) — ${escapeHtml(nm)} — ${escapeHtml(st.phone || "")}</button>`;
+        return `
+          <div class="item resultItem" data-id="${st.id}" style="border-bottom:1px solid #eee; margin-bottom:4px;">
+            <strong>${escapeHtml(nm)}</strong> 
+            <br>
+            <span class="muted" style="font-size:12px">ID: ${st.id} | 📞 ${escapeHtml(st.phone || "—")}</span>
+          </div>
+        `;
       })
       .join("");
 
-    searchMsg.innerHTML = `<div class="results">${html}</div>`;
-    searchMsg.className = "msg";
+    searchMsg.innerHTML = `<div class="resultsList">${html}</div>`;
+    searchMsg.className = "msg"; 
 
-    searchMsg.querySelectorAll(".resultBtn").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const id = toInt(btn.getAttribute("data-id"));
+    // تشغيل الضغط على العناصر
+    searchMsg.querySelectorAll(".resultItem").forEach((div) => {
+      div.addEventListener("click", () => {
+        const id = toInt(div.getAttribute("data-id"));
         if (id) openStudent(id);
       });
+      // تغيير شكل الماوس
+      div.style.cursor = "pointer";
     });
   };
 
@@ -633,8 +647,13 @@ alert("JS شغال");
     openStudent(id);
   });
 
-  // Search any
-  searchAnyBtn.addEventListener("click", doSearchAny);
+  // ============================================
+  // ✅ ربط البحث الجديد (type + click)
+  // ============================================
+  // لما تكتب: شغل البحث اللحظي
+  searchAny.addEventListener("input", doSearchLive);
+  // لما تدوس على زرار البحث: برضو شغل البحث (تصليح الزرار)
+  searchAnyBtn.addEventListener("click", doSearchLive);
 
   // Add new ID
   addNewBtn.addEventListener("click", () => {
