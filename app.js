@@ -1,6 +1,6 @@
 /* =============================================
-   Center Attendance System V8 - (Data Integrity Edition)
-   Features: Full History Import/Export, Revenue Tracking
+   Center Attendance System V9 - (Final Masterpiece)
+   Features: Filters, Recycle Bin, Payment Correction, Smart Notes, Dark Mode
    ============================================= */
 
 (() => {
@@ -17,6 +17,8 @@
   const K_ATT_BY_DATE = "ca_att_by_date_v6"; 
   const K_TERM_FEE = "ca_term_fee_v6"; 
   const K_REVENUE = "ca_revenue_v6"; 
+  const K_BIN = "ca_recycle_bin_v9"; // New Key
+  const K_THEME = "ca_theme_mode";   // New Key
 
   // ====== DOM ELEMENTS ======
   const $ = (id) => document.getElementById(id);
@@ -28,6 +30,7 @@
   const todayRevenue = $("todayRevenue"); 
   const termFeeInp = $("termFeeInp");
   const saveFeeBtn = $("saveFeeBtn");
+  const themeBtn = $("themeBtn"); // Dark Mode
 
   // Login
   const loginBox = $("loginBox");
@@ -82,6 +85,7 @@
   const stTotalPaid = $("stTotalPaid"); 
   const newPaymentInput = $("newPaymentInput"); 
   const addPaymentBtn = $("addPaymentBtn"); 
+  const correctPaymentBtn = $("correctPaymentBtn"); // Correction
   const paymentBadge = $("paymentBadge");
   
   const stNotes = $("stNotes");
@@ -89,13 +93,22 @@
   const saveStudentBtn = $("saveStudentBtn");
   const markTodayBtn = $("markTodayBtn");
   const unmarkTodayBtn = $("unmarkTodayBtn");
+  const deleteStudentBtn = $("deleteStudentBtn"); // Delete
   const studentMsg = $("studentMsg");
   const attList = $("attList");
+
+  // Recycle Bin Elements
+  const recycleBinCard = $("recycleBinCard");
+  const toggleBinBtn = $("toggleBinBtn");
+  const recycleBinList = $("recycleBinList");
+  const emptyBinBtn = $("emptyBinBtn");
 
   // Modal Elements
   const allStudentsModal = $("allStudentsModal");
   const closeModalBtn = $("closeModalBtn");
   const allStudentsTable = $("allStudentsTable").querySelector("tbody");
+  const filterGroup = $("filterGroup");     // Filter 1
+  const filterPayment = $("filterPayment"); // Filter 2
 
   // Danger Zone
   const resetTermBtn = $("resetTermBtn");
@@ -109,6 +122,7 @@
   let extraIds = [];              
   let attByDate = {};             
   let revenueByDate = {}; 
+  let recycleBin = []; // New State
   let currentId = null;
   let termFee = 0;
 
@@ -121,7 +135,7 @@
       osc.connect(gain);
       gain.connect(ctx.destination);
       osc.type = "sine";
-      osc.frequency.value = type === "success" ? 880 : 600; 
+      osc.frequency.value = type === "success" ? 880 : (type === "error" ? 300 : 600); 
       gain.gain.value = 0.1;
       osc.start();
       setTimeout(() => osc.stop(), 150);
@@ -168,12 +182,19 @@
     localStorage.setItem(K_ATT_BY_DATE, JSON.stringify(attByDate));
     localStorage.setItem(K_TERM_FEE, String(termFee));
     localStorage.setItem(K_REVENUE, JSON.stringify(revenueByDate));
+    localStorage.setItem(K_BIN, JSON.stringify(recycleBin)); // Save Bin
     updateTopStats();
+    renderRecycleBin();
   };
 
   const loadAll = () => {
     termFee = toInt(localStorage.getItem(K_TERM_FEE)) || 0;
     termFeeInp.value = termFee > 0 ? termFee : "";
+
+    // Load Theme
+    if (localStorage.getItem(K_THEME) === "dark") {
+        document.body.classList.add("dark-mode");
+    }
 
     let sRaw = localStorage.getItem(K_STUDENTS);
     if(!sRaw) sRaw = localStorage.getItem("ca_students_v5") || localStorage.getItem("ca_students_v4");
@@ -181,11 +202,14 @@
     try { students = JSON.parse(sRaw || "{}") || {}; } catch { students = {}; }
     try { revenueByDate = JSON.parse(localStorage.getItem(K_REVENUE) || "{}") || {}; } catch { revenueByDate = {}; }
     try { extraIds = JSON.parse(localStorage.getItem(K_EXTRA_IDS) || "[]") || []; } catch { extraIds = []; }
+    try { recycleBin = JSON.parse(localStorage.getItem(K_BIN) || "[]") || []; } catch { recycleBin = []; }
+    
     let aRaw = localStorage.getItem(K_ATT_BY_DATE);
     if(!aRaw) aRaw = localStorage.getItem("ca_att_by_date_v5");
     try { attByDate = JSON.parse(aRaw || "{}") || {}; } catch { attByDate = {}; }
 
     updateTopStats();
+    renderRecycleBin();
   };
 
   const updateTopStats = () => {
@@ -265,6 +289,7 @@
     currentId = st ? st.id : null;
 
     if (!st) {
+      // Clear UI
       studentIdPill.textContent = "ID: —";
       todayStatus.textContent = "—";
       lastAttend.textContent = "—";
@@ -285,7 +310,20 @@
     stName.value = st.name || "";
     stClass.value = st.className || "";
     stPhone.value = st.phone || "";
-    stNotes.value = st.notes || ""; 
+
+    // SMART NOTES: Prepend Date if empty or new line needed
+    // This gives the "WhatsApp Chat" feel
+    const todayDateTag = `[${nowDateStr()}]`;
+    let currentNotes = st.notes || "";
+    if (!currentNotes.endsWith(" ")) currentNotes += " "; // ensure space
+    
+    // Only append date if the last entry wasn't today (simple check)
+    if (!currentNotes.includes(todayDateTag)) {
+        if(currentNotes.trim().length > 0) currentNotes += "\n\n";
+        currentNotes += `${todayDateTag} `;
+    }
+    stNotes.value = currentNotes.trimStart(); 
+
     
     // Payment UI
     stTotalPaid.value = (st.paid || 0) + " جنيه"; 
@@ -361,15 +399,42 @@
     reportList.innerHTML = rows.join("");
   };
 
-  // ====== MODAL LIST ======
-  openAllStudentsBtn.addEventListener("click", () => {
-    const filled = Object.values(students).filter(st => isFilledStudent(st)).sort((a,b)=>a.id-b.id);
-    allStudentsTable.innerHTML = "";
+  // ====== MODAL & FILTERS ======
+  const renderModalTable = () => {
+    // 1. Get raw list
+    let list = Object.values(students).filter(st => isFilledStudent(st));
     
-    if(filled.length === 0) {
-      allStudentsTable.innerHTML = `<tr><td colspan="5" class="mutedCenter">لا يوجد طلاب مسجلين</td></tr>`;
-    } else {
-      filled.forEach(st => {
+    // 2. Apply Filters
+    const gVal = filterGroup.value;
+    const pVal = filterPayment.value;
+
+    // Filter by Group
+    if (gVal !== "all") {
+        list = list.filter(st => (st.className || "").trim() === gVal);
+    }
+
+    // Filter by Payment
+    if (pVal !== "all") {
+        list = list.filter(st => {
+            const paid = st.paid || 0;
+            if (pVal === "paid") return termFee > 0 && paid >= termFee;
+            if (pVal === "unpaid") return paid === 0;
+            if (pVal === "partial") return paid > 0 && (termFee === 0 || paid < termFee);
+            return true;
+        });
+    }
+
+    // 3. Sort by ID
+    list.sort((a,b) => a.id - b.id);
+
+    // 4. Render
+    allStudentsTable.innerHTML = "";
+    if (list.length === 0) {
+        allStudentsTable.innerHTML = `<tr><td colspan="5" class="mutedCenter">لا توجد نتائج مطابقة للفلاتر</td></tr>`;
+        return;
+    }
+
+    list.forEach(st => {
         const tr = document.createElement("tr");
         const paid = st.paid || 0;
         let status = "—";
@@ -386,7 +451,7 @@
         tr.innerHTML = `
           <td>${st.id}</td>
           <td>${escapeHtml(st.name)}</td>
-          <td>${escapeHtml(st.phone)}</td>
+          <td>${escapeHtml(st.className)}</td>
           <td>${paid}</td>
           <td style="color:${statusColor}; font-weight:bold;">${status}</td>
         `;
@@ -396,12 +461,151 @@
             openStudent(st.id);
         };
         allStudentsTable.appendChild(tr);
-      });
-    }
+    });
+  };
+
+  openAllStudentsBtn.addEventListener("click", () => {
+    // Populate Group Filter Dynamically
+    const groups = new Set();
+    Object.values(students).forEach(st => {
+        if(st.className && st.className.trim()) groups.add(st.className.trim());
+    });
+    
+    filterGroup.innerHTML = `<option value="all">📚 كل المجموعات</option>`;
+    groups.forEach(g => {
+        const op = document.createElement("option");
+        op.value = g;
+        op.textContent = g;
+        filterGroup.appendChild(op);
+    });
+
+    // Reset Filters
+    filterGroup.value = "all";
+    filterPayment.value = "all";
+
+    renderModalTable();
     allStudentsModal.classList.remove("hidden");
   });
 
+  // Re-render on filter change
+  filterGroup.addEventListener("change", renderModalTable);
+  filterPayment.addEventListener("change", renderModalTable);
+
   closeModalBtn.addEventListener("click", () => allStudentsModal.classList.add("hidden"));
+
+  // ====== RECYCLE BIN LOGIC ======
+  const renderRecycleBin = () => {
+    if (recycleBin.length === 0) {
+        recycleBinList.innerHTML = `<div class="mutedCenter">السلة فارغة ✅</div>`;
+        emptyBinBtn.classList.add("hidden");
+        return;
+    }
+    
+    emptyBinBtn.classList.remove("hidden");
+    recycleBinList.innerHTML = recycleBin.map((st, index) => `
+        <div class="binItem">
+            <span>#${st.id} - ${escapeHtml(st.name)}</span>
+            <div>
+                <button class="btn success smallBtn" onclick="window.restoreStudent(${index})">استعادة</button>
+            </div>
+        </div>
+    `).join("");
+  };
+
+  // Global functions for inline HTML calls (Restore)
+  window.restoreStudent = (index) => {
+    const st = recycleBin[index];
+    if (existsId(st.id)) {
+        alert(`لا يمكن الاستعادة! الـ ID ${st.id} مستخدم حالياً لطالب آخر.`);
+        return;
+    }
+    // Restore
+    students[String(st.id)] = st;
+    recycleBin.splice(index, 1);
+    saveAll();
+    alert("تم استعادة الطالب بنجاح ✅");
+  };
+
+  toggleBinBtn.addEventListener("click", () => {
+      recycleBinList.classList.toggle("hidden");
+      emptyBinBtn.classList.toggle("hidden"); // Toggle Empty btn too if bin not empty
+      if(recycleBin.length === 0) emptyBinBtn.classList.add("hidden"); 
+  });
+
+  emptyBinBtn.addEventListener("click", () => {
+      if(!confirm("⚠️ هل أنت متأكد؟ سيتم حذف هؤلاء الطلاب نهائياً ولا يمكن استرجاعهم.")) return;
+      recycleBin = [];
+      saveAll();
+      alert("تم تفريغ السلة");
+  });
+
+  // ====== DELETE STUDENT (The Red Button) ======
+  deleteStudentBtn.addEventListener("click", () => {
+      if(!currentId) return;
+      if(!confirm("⚠️ تحذير هام!\nهل أنت متأكد من حذف هذا الطالب؟\nسيتم نقله إلى سلة المحذوفات.")) return;
+
+      const st = getStudent(currentId);
+      
+      // Move to Bin
+      recycleBin.push(st);
+      
+      // Remove from Active
+      delete students[String(currentId)];
+      
+      // If it was an extra ID, clean it up
+      const idx = extraIds.indexOf(currentId);
+      if(idx > -1) extraIds.splice(idx, 1);
+
+      // Create a fresh empty slot if it was a base ID
+      if(currentId >= BASE_MIN_ID && currentId <= BASE_MAX_ID) {
+          students[String(currentId)] = makeEmptyStudent(currentId);
+      }
+
+      saveAll();
+      playBeep("success"); // Confirmed sound
+      alert("تم حذف الطالب ونقله للسلة ♻️");
+      
+      // Clear UI
+      currentId = null;
+      updateStudentUI(null);
+  });
+
+  // ====== PAYMENT CORRECTION (DEDUCT) ======
+  correctPaymentBtn.addEventListener("click", () => {
+    if(!currentId) return;
+    const st = getStudent(currentId);
+    
+    const amount = prompt(`⚠️ تصحيح الرصيد (خصم)\nالطالب دافع حالياً: ${st.paid} ج\nأدخل المبلغ المراد خصمه (مثال: 100):`);
+    if(!amount) return;
+    
+    const val = parseInt(amount);
+    if(isNaN(val) || val <= 0) return alert("مبلغ غير صحيح");
+    
+    if(val > st.paid) return alert("خطأ! المبلغ المراد خصمه أكبر من المدفوع.");
+
+    // Apply Deduction
+    st.paid -= val;
+    
+    // Deduct from Revenue too
+    const today = nowDateStr();
+    if(revenueByDate[today]) {
+        revenueByDate[today] -= val;
+        if(revenueByDate[today] < 0) revenueByDate[today] = 0; // Safety
+    }
+
+    setStudent(st);
+    saveAll();
+    alert(`تم خصم ${val} ج بنجاح. الرصيد الجديد: ${st.paid}`);
+    updateStudentUI(currentId);
+    renderReport(today);
+  });
+
+  // ====== DARK MODE ======
+  themeBtn.addEventListener("click", () => {
+      document.body.classList.toggle("dark-mode");
+      const isDark = document.body.classList.contains("dark-mode");
+      localStorage.setItem(K_THEME, isDark ? "dark" : "light");
+  });
 
   // ====== SEARCH & OPEN ======
   const openStudent = (id) => {
@@ -529,7 +733,7 @@
     st.name = stName.value.trim();
     st.className = stClass.value.trim();
     st.phone = stPhone.value.trim();
-    st.notes = stNotes.value.trim();
+    st.notes = stNotes.value.trim(); // Save whatever is in the box
     setStudent(st);
     playBeep("success"); 
     showMsg(studentMsg, "تم الحفظ ✅", "ok");
@@ -569,6 +773,7 @@
     if (!confirm("تحذير! مسح كلي؟")) return;
     localStorage.clear(); 
     students = {}; extraIds = []; attByDate = {}; revenueByDate={}; currentId = null; termFee=0;
+    recycleBin = []; // Clear bin too
     ensureBase500(); loadAll(); updateStudentUI(null); renderReport(nowDateStr());
     showMsg(resetMsg, "تمت إعادة الضبط.", "ok");
   });
@@ -589,7 +794,7 @@
   logoutBtn.addEventListener("click", () => { setAuth(false); showLogin(); });
   togglePassBtn?.addEventListener("click", () => passInp.type = passInp.type==="password"?"text":"password");
 
-  // ====== EXCEL EXPORT/IMPORT (V8 - FIXED DATA INTEGRITY) ======
+  // ====== EXCEL EXPORT/IMPORT ======
   exportExcelBtn.addEventListener("click", () => {
     if (typeof XLSX === "undefined") return alert("Excel Lib Missing");
     
@@ -598,13 +803,13 @@
     const wsData = [["ID","الاسم","الصف","موبايل","مدفوع","ملاحظات"]];
     filled.forEach(st => wsData.push([st.id, st.name, st.className, st.phone, st.paid, st.notes]));
     
-    // Sheet 2: Attendance History (FIXED)
+    // Sheet 2: Attendance History
     const wsAtt = [["التاريخ","ID"]];
     Object.keys(attByDate).sort().forEach(d => {
        attByDate[d].forEach(id => wsAtt.push([d, id]));
     });
 
-    // Sheet 3: Revenue History (FIXED)
+    // Sheet 3: Revenue History
     const wsRev = [["التاريخ", "الإيراد"]];
     Object.keys(revenueByDate).sort().forEach(d => {
         wsRev.push([d, revenueByDate[d]]);
@@ -633,8 +838,8 @@
     const iPaid = head.findIndex(x=>x.includes("مدفوع")||x.includes("paid"));
     const iNote = head.findIndex(x=>x.includes("ملاحظات")||x.includes("note"));
 
-    // Reset Data before import to ensure clean state
-    students = {}; extraIds = []; attByDate = {}; revenueByDate = {};
+    // Reset Data
+    students = {}; extraIds = []; attByDate = {}; revenueByDate = {}; recycleBin = [];
     ensureBase500();
 
     // Fill Students
@@ -649,28 +854,24 @@
       }
     }
 
-    // 2. Import Attendance Log (The Fix)
+    // 2. Import Attendance Log
     const attSheetName = wb.SheetNames.find(n => n.includes("Attendance"));
     if(attSheetName) {
         const attRows = XLSX.utils.sheet_to_json(wb.Sheets[attSheetName], {header:1});
-        // Skip header row
         for(let r=1; r<attRows.length; r++) {
             const dateStr = attRows[r][0];
             const sId = attRows[r][1];
             if(dateStr && sId) {
                 if(!attByDate[dateStr]) attByDate[dateStr] = [];
                 attByDate[dateStr].push(sId);
-                // Also update student object
-                if(students[sId]) {
-                    if(!students[sId].attendanceDates.includes(dateStr)) {
-                        students[sId].attendanceDates.push(dateStr);
-                    }
+                if(students[sId] && !students[sId].attendanceDates.includes(dateStr)) {
+                    students[sId].attendanceDates.push(dateStr);
                 }
             }
         }
     }
 
-    // 3. Import Revenue Log (The Fix)
+    // 3. Import Revenue Log
     const revSheetName = wb.SheetNames.find(n => n.includes("Revenue"));
     if(revSheetName) {
         const revRows = XLSX.utils.sheet_to_json(wb.Sheets[revSheetName], {header:1});
