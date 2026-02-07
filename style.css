@@ -1,6 +1,6 @@
 /* =========================================
-   Center Attendance System V4 - Style
-   Features: Fee Input, WhatsApp, Notes
+   Center Attendance System V5 - Style
+   Features: Payment Badges, Secure Fee Input
 ========================================= */
 
 body {
@@ -95,12 +95,12 @@ h2 { font-size: 1.2em; border-bottom: 2px solid #f0f2f5; padding-bottom: 8px; ma
   align-items: center;
 }
 
-/* --- NEW: Term Fee Input Styling --- */
+/* --- V5 NEW: Secure Fee Input --- */
 .termFeeWrapper {
   display: flex;
   align-items: center;
-  background: #fff9db; /* Light Yellow */
-  border: 1px solid #f0e68c;
+  background: #fff3cd; /* Yellow warning bg */
+  border: 1px solid #ffeeba;
   padding: 4px 8px;
   border-radius: 8px;
   margin-left: 10px;
@@ -109,14 +109,14 @@ h2 { font-size: 1.2em; border-bottom: 2px solid #f0f2f5; padding-bottom: 8px; ma
 .feeLabel {
   font-size: 13px;
   font-weight: bold;
-  color: #b58900;
+  color: #856404;
   margin-left: 5px;
 }
 
 .feeInp {
   width: 70px;
   padding: 5px;
-  border: 1px solid #e0d060;
+  border: 1px solid #d6d8db;
   border-radius: 6px;
   text-align: center;
   font-weight: bold;
@@ -124,26 +124,19 @@ h2 { font-size: 1.2em; border-bottom: 2px solid #f0f2f5; padding-bottom: 8px; ma
   outline: none;
 }
 
-.feeInp:focus {
-  border-color: #b58900;
-  background: #fff;
-}
-
 .feeBtn {
-  background: #ffd43b;
+  background: #ffc107;
   border: none;
   border-radius: 6px;
-  padding: 6px 8px;
+  padding: 6px 10px;
   cursor: pointer;
   margin-right: 5px;
   font-size: 14px;
   transition: 0.2s;
 }
 
-.feeBtn:hover {
-  background: #fcc419;
-}
-/* ----------------------------------- */
+.feeBtn:hover { background: #e0a800; }
+/* -------------------------------- */
 
 
 /* Inputs & Forms */
@@ -169,6 +162,11 @@ h2 { font-size: 1.2em; border-bottom: 2px solid #f0f2f5; padding-bottom: 8px; ma
   border-color: #2f6bff;
   box-shadow: 0 0 0 3px rgba(47, 107, 255, 0.15);
   outline: none;
+}
+/* Disabled inputs look different */
+.inp:disabled {
+  background-color: #e9ecef;
+  cursor: not-allowed;
 }
 
 textarea.inp {
@@ -287,4 +285,34 @@ textarea.inp {
 .newBadge {
   background: #d63384; color: #fff; font-size: 0.7em; padding: 2px 6px;
   border-radius: 4px; vertical-align: middle; margin-right: 5px;
+}
+
+/* --- V5 NEW: Payment Badge (The Big Sign) --- */
+.paymentBadge {
+  margin: 15px 0;
+  padding: 15px;
+  border-radius: 10px;
+  text-align: center;
+  font-weight: 800;
+  font-size: 1.1em;
+  border-width: 2px;
+  border-style: solid;
+}
+/* Green */
+.paymentBadge.paid {
+  background-color: #d1fae5;
+  color: #065f46;
+  border-color: #34d399;
+}
+/* Red */
+.paymentBadge.unpaid {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border-color: #f87171;
+}
+/* Orange (Partial) */
+.paymentBadge.partial {
+  background-color: #ffedd5;
+  color: #9a3412;
+  border-color: #fb923c;
 }
