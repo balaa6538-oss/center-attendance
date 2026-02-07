@@ -3,23 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>نظام حضور المركز V9 (Final)</title>
-  <link rel="stylesheet" href="style.css?v=9">
+  <title>Center System V10 (Final)</title>
+  <link rel="stylesheet" href="style.css?v=10">
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 
   <div id="loginBox" class="card">
-    <h1>دخول لوحة السنتر</h1>
-    <p class="muted">الدخول للمسؤول فقط</p>
+    <h1 data-i18n="login_title">دخول لوحة السنتر</h1>
+    <p class="muted" data-i18n="login_desc">الدخول للمسؤول فقط</p>
     <label class="lbl">Username</label>
-    <input id="user" class="inp" type="text" placeholder="اسم المستخدم">
+    <input id="user" class="inp" type="text" placeholder="Admin">
     <label class="lbl">Password</label>
     <div class="passWrap">
-      <input id="pass" class="inp" type="password" placeholder="كلمة المرور">
-      <button id="togglePass" class="eyeBtn" type="button" title="إظهار/إخفاء">👁️</button>
+      <input id="pass" class="inp" type="password" placeholder="Password">
+      <button id="togglePass" class="eyeBtn" type="button">👁️</button>
     </div>
-    <button id="loginBtn" class="btn primary">دخول</button>
+    <button id="loginBtn" class="btn primary" data-i18n="login_btn">دخول</button>
     <div id="loginMsg" class="msg"></div>
   </div>
 
@@ -27,162 +27,167 @@
 
     <div class="topbar">
       <div class="brand">
-        لوحة السنتر
+        <span data-i18n="brand_name">لوحة السنتر</span>
         <div class="topStats">
-          <span class="statItem clickable" id="openAllStudentsBtn" title="اضغط لعرض القائمة الكاملة">
-            👥 مسجلين: <b id="totalStudentsCount">0</b>
+          <span class="statItem clickable" id="openAllStudentsBtn">
+            <span data-i18n="stat_students">👥 مسجلين:</span> <b id="totalStudentsCount">0</b>
           </span>
-          <span class="statItem">✅ حضور اليوم: <b id="todayCountTop">0</b></span>
-          <span class="statItem">💰 إيراد اليوم: <b id="todayRevenue">0</b></span>
+          <span class="statItem">
+            <span data-i18n="stat_attend">✅ حضور اليوم:</span> <b id="todayCountTop">0</b>
+          </span>
+          <span class="statItem">
+            <span data-i18n="stat_revenue">💰 إيراد اليوم:</span> <b id="todayRevenue">0</b>
+          </span>
         </div>
       </div>
 
       <div class="topActions">
-        <button id="darkModeBtn" class="btn smallBtn" title="الوضع الليلي">🌙</button>
+        <button id="langBtn" class="btn smallBtn" style="font-weight:bold;">EN</button>
+        <button id="darkModeBtn" class="btn smallBtn">🌙</button>
         
         <div class="termFeeWrapper">
-          <span class="feeLabel">المطلوب:</span>
+          <span class="feeLabel" data-i18n="term_fee_label">المطلوب:</span>
           <input id="termFeeInp" type="number" class="feeInp" placeholder="0">
-          <button id="saveFeeBtn" class="feeBtn" title="حفظ">🔒</button>
+          <button id="saveFeeBtn" class="feeBtn">🔒</button>
         </div>
 
-        <button id="exportExcelBtn" class="btn">تصدير Excel</button>
-        <label class="btn fileBtn" for="importExcelInput">استيراد Excel</label>
+        <button id="exportExcelBtn" class="btn" data-i18n="btn_export">تصدير Excel</button>
+        <label class="btn fileBtn" for="importExcelInput" data-i18n="btn_import">استيراد Excel</label>
         <input id="importExcelInput" type="file" accept=".xlsx,.xls" style="display:none;">
-        <button id="logoutBtn" class="btn danger">خروج</button>
+        <button id="logoutBtn" class="btn danger" data-i18n="btn_logout">خروج</button>
       </div>
     </div>
 
     <div class="grid2">
       <div class="card">
-        <h2>سريع (QR)</h2>
+        <h2 data-i18n="quick_title">سريع (QR)</h2>
         <div class="row">
-          <input id="quickAttendId" class="inp" inputmode="numeric" placeholder="اكتب ID هنا">
-          <button id="quickAttendBtn" class="btn primary">سجل حضور</button>
+          <input id="quickAttendId" class="inp" inputmode="numeric" placeholder="ID">
+          <button id="quickAttendBtn" class="btn primary" data-i18n="btn_record">سجل حضور</button>
         </div>
         <div id="quickMsg" class="msg"></div>
       </div>
 
       <div class="card">
-        <h2>بحث شامل</h2>
+        <h2 data-i18n="search_title">بحث شامل</h2>
         <div class="row">
-          <input id="openId" class="inp" inputmode="numeric" placeholder="فتح بـ ID مباشر">
-          <button id="openBtn" class="btn">فتح</button>
+          <input id="openId" class="inp" inputmode="numeric" placeholder="ID">
+          <button id="openBtn" class="btn" data-i18n="btn_open">فتح</button>
         </div>
         <div class="row">
-          <input id="searchAny" class="inp" placeholder="ابحث هنا...">
+          <input id="searchAny" class="inp" placeholder="...">
         </div>
         <div id="searchMsg" class="msg"></div>
       </div>
     </div>
 
     <div class="card">
-      <h2>+ إضافة طالب جديد</h2>
+      <h2 data-i18n="add_title">+ إضافة طالب جديد</h2>
       <div class="row">
-        <input id="newId" class="inp" inputmode="numeric" placeholder="اكتب ID جديد (مثال 601)">
-        <button id="addNewBtn" class="btn">إضافة وفتح</button>
+        <input id="newId" class="inp" inputmode="numeric" placeholder="ID (ex: 601)">
+        <button id="addNewBtn" class="btn" data-i18n="btn_add_open">إضافة وفتح</button>
       </div>
       <div id="addMsg" class="msg"></div>
     </div>
 
     <div class="card">
       <div class="flexBetween">
-        <h2>حضور وتوريد بتاريخ</h2>
-        <button id="copyReportBtn" class="btn success smallBtn">نسخ الملخص 📋</button>
+        <h2 data-i18n="report_title">حضور وتوريد بتاريخ</h2>
+        <button id="copyReportBtn" class="btn success smallBtn" data-i18n="btn_copy_report">نسخ الملخص 📋</button>
       </div>
       <div class="row">
         <input id="reportDate" class="inp" type="date">
-        <button id="reportBtn" class="btn">عرض</button>
+        <button id="reportBtn" class="btn" data-i18n="btn_show">عرض</button>
       </div>
       <div class="badges">
-        <span class="badge" id="reportDateLabel">التاريخ: —</span>
-        <span class="badge" id="reportCount">عدد الحضور: 0</span>
-        <span class="badge" style="color:#2ea44f;">إيراد الخزنة: <span id="reportMoney">0</span></span>
+        <span class="badge"><span data-i18n="rep_date">التاريخ:</span> <span id="reportDateLabel">—</span></span>
+        <span class="badge"><span data-i18n="rep_count">العدد:</span> <span id="reportCount">0</span></span>
+        <span class="badge" style="color:#2ea44f;"><span data-i18n="rep_money">الإيراد:</span> <span id="reportMoney">0</span></span>
       </div>
-      <div id="reportList" class="list mutedCenter">— لا يوجد حضور في هذا التاريخ —</div>
+      <div id="reportList" class="list mutedCenter">...</div>
     </div>
 
     <div class="grid2">
       <div class="card studentCard">
-        <h2>بيانات الطالب <span id="newBadge" class="newBadge hidden">جديد</span></h2>
+        <h2><span data-i18n="st_details">بيانات الطالب</span> <span id="newBadge" class="newBadge hidden">جديد</span></h2>
 
         <div class="studentHead">
           <div class="pill" id="studentIdPill">ID: —</div>
-          <div class="pill" id="todayStatus">اليوم: —</div>
-          <div class="pill" id="lastAttend">آخر حضور: —</div>
-          <div class="pill" id="daysCount">مرات الحضور: —</div>
+          <div class="pill" id="todayStatus">—</div>
+          <div class="pill" id="lastAttend">—</div>
+          <div class="pill" id="daysCount">—</div>
         </div>
 
-        <label class="lbl">الاسم</label>
-        <input id="stName" class="inp" placeholder="اسم الطالب رباعي">
+        <label class="lbl" data-i18n="lbl_name">الاسم</label>
+        <input id="stName" class="inp">
 
-        <label class="lbl">الصف / المجموعة</label>
-        <input id="stClass" class="inp" placeholder="مثال: 3 ثانوي - مجموعة السبت">
+        <label class="lbl" data-i18n="lbl_class">الصف / المجموعة</label>
+        <input id="stClass" class="inp">
 
-        <label class="lbl">رقم الموبايل</label>
+        <label class="lbl" data-i18n="lbl_phone">رقم الموبايل</label>
         <div class="row">
-          <input id="stPhone" class="inp" inputmode="tel" placeholder="01xxxxxxxxx">
-          <button id="waBtn" class="btn success" title="فتح واتساب">💬</button>
+          <input id="stPhone" class="inp" inputmode="tel">
+          <button id="waBtn" class="btn success">💬</button>
         </div>
 
-        <label class="lbl" style="margin-top:20px; border-top:1px dashed #ccc; padding-top:10px;">نظام المصاريف</label>
+        <label class="lbl" style="margin-top:20px; border-top:1px dashed #ccc; padding-top:10px;" data-i18n="lbl_finance">نظام المصاريف</label>
         <div class="paymentBox">
             <div class="payRow">
-                <span class="payLabel">💰 إجمالي المدفوع:</span>
+                <span class="payLabel" data-i18n="pay_total">💰 إجمالي المدفوع:</span>
                 <input id="stTotalPaid" class="inp" readonly style="background:#e9ecef; font-weight:bold; color:#2f6bff; width:100px; text-align:center;">
-                <button id="correctPayBtn" class="btn warning smallBtn" title="تصحيح/خصم مبلغ">⚠️ خصم</button>
+                <button id="correctPayBtn" class="btn warning smallBtn" data-i18n="btn_deduct">⚠️ خصم</button>
             </div>
             <div class="payRow">
-                <span class="payLabel">➕ دفعة جديدة:</span>
+                <span class="payLabel" data-i18n="pay_new">➕ دفعة جديدة:</span>
                 <div class="row" style="flex:1;">
-                    <input id="newPaymentInput" type="number" class="inp" placeholder="المبلغ">
-                    <button id="addPaymentBtn" class="btn success">إيداع</button>
+                    <input id="newPaymentInput" type="number" class="inp">
+                    <button id="addPaymentBtn" class="btn success" data-i18n="btn_deposit">إيداع</button>
                 </div>
             </div>
         </div>
         <div id="paymentBadge" class="paymentBadge hidden"></div>
 
-        <label class="lbl">ملاحظات (مؤرخة)</label>
+        <label class="lbl" data-i18n="lbl_notes">ملاحظات (مؤرخة)</label>
         <div class="row">
-            <input id="newNoteInp" class="inp" placeholder="اكتب ملحوظة جديدة...">
-            <button id="addNoteBtn" class="btn">إضافة</button>
+            <input id="newNoteInp" class="inp">
+            <button id="addNoteBtn" class="btn" data-i18n="btn_add">إضافة</button>
         </div>
         <textarea id="stNotes" class="inp" rows="3" readonly style="background:#f9f9f9; margin-top:5px; font-size:0.9em;"></textarea>
 
         <div class="row wrap" style="margin-top:15px;">
-          <button id="saveStudentBtn" class="btn primary">حفظ البيانات 💾</button>
-          <button id="markTodayBtn" class="btn success">✅ حضور</button>
-          <button id="unmarkTodayBtn" class="btn warning">✖ غياب</button>
-          <button id="deleteStudentBtn" class="btn danger" style="margin-right:auto;">🗑️ حذف</button>
+          <button id="saveStudentBtn" class="btn primary" data-i18n="btn_save">حفظ البيانات 💾</button>
+          <button id="markTodayBtn" class="btn success" data-i18n="btn_attend">✅ حضور</button>
+          <button id="unmarkTodayBtn" class="btn warning" data-i18n="btn_absent">✖ غياب</button>
+          <button id="deleteStudentBtn" class="btn danger" style="margin-right:auto;" data-i18n="btn_delete">🗑️ حذف</button>
         </div>
         <div id="studentMsg" class="msg"></div>
       </div>
 
       <div class="card">
-        <h2>سجل التواريخ (آخر 25)</h2>
-        <div id="attList" class="list mutedCenter">— افتح طالب —</div>
+        <h2 data-i18n="history_title">سجل التواريخ</h2>
+        <div id="attList" class="list mutedCenter">...</div>
       </div>
     </div>
 
     <div style="text-align: center; margin-top: 30px;">
-        <button id="openBinBtn" class="btn" style="background:#444; color:#fff;">♻️ سلة المحذوفات</button>
+        <button id="openBinBtn" class="btn" style="background:#444; color:#fff;" data-i18n="btn_recycle">♻️ سلة المحذوفات</button>
     </div>
 
     <div class="card dangerZone" style="margin-top:20px;">
-      <h2>⚠️ إدارة البيانات</h2>
+      <h2 data-i18n="danger_title">⚠️ إدارة البيانات</h2>
       <div class="dangerSection">
-        <h3>1. تصفير الترم</h3>
+        <h3 data-i18n="danger_term">1. تصفير الترم</h3>
         <div class="row">
-          <input id="termPass" class="inp" type="password" placeholder="كلمة المرور">
-          <button id="resetTermBtn" class="btn warning">تصفير</button>
+          <input id="termPass" class="inp" type="password">
+          <button id="resetTermBtn" class="btn warning" data-i18n="btn_reset">تصفير</button>
         </div>
       </div>
       <hr>
       <div class="dangerSection">
-        <h3>2. ضبط المصنع</h3>
+        <h3 data-i18n="danger_factory">2. ضبط المصنع</h3>
         <div class="row">
-          <input id="resetPass" class="inp" type="password" placeholder="كلمة المرور">
-          <button id="resetBtn" class="btn danger">مسح الكل</button>
+          <input id="resetPass" class="inp" type="password">
+          <button id="resetBtn" class="btn danger" data-i18n="btn_wipe">مسح الكل</button>
         </div>
       </div>
       <div id="resetMsg" class="msg"></div>
@@ -192,19 +197,17 @@
   <div id="allStudentsModal" class="modal hidden">
     <div class="modalContent">
       <div class="flexBetween">
-        <h2>قائمة الطلاب</h2>
+        <h2 data-i18n="list_title">قائمة الطلاب</h2>
         <button id="closeModalBtn" class="btn danger smallBtn">❌</button>
       </div>
       
       <div class="row" style="background:#f0f2f5; padding:10px; border-radius:8px; margin-bottom:10px;">
-        <select id="filterClass" class="inp" style="width:auto;">
-            <option value="all">-- كل المجموعات --</option>
-            </select>
+        <select id="filterClass" class="inp" style="width:auto;"></select>
         <select id="filterStatus" class="inp" style="width:auto;">
-            <option value="all">-- كل الحالات --</option>
-            <option value="paid">✅ خالص</option>
-            <option value="partial">⚠️ عليه فلوس</option>
-            <option value="unpaid">🔴 لم يدفع</option>
+            <option value="all">-- Status / الحالة --</option>
+            <option value="paid">✅ Paid</option>
+            <option value="partial">⚠️ Partial</option>
+            <option value="unpaid">🔴 Unpaid</option>
         </select>
       </div>
 
@@ -213,10 +216,10 @@
           <thead>
             <tr>
               <th>ID</th>
-              <th>الاسم</th>
-              <th>المجموعة</th>
-              <th>المدفوع</th>
-              <th>الحالة</th>
+              <th data-i18n="th_name">الاسم</th>
+              <th data-i18n="th_class">المجموعة</th>
+              <th data-i18n="th_paid">المدفوع</th>
+              <th data-i18n="th_status">الحالة</th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -228,18 +231,16 @@
   <div id="recycleBinModal" class="modal hidden">
     <div class="modalContent" style="max-width:600px;">
       <div class="flexBetween">
-        <h2 style="color:#d9534f;">🗑️ سلة المحذوفات</h2>
-        <button id="closeBinBtn" class="btn smallBtn">إغلاق</button>
+        <h2 style="color:#d9534f;" data-i18n="bin_title">🗑️ سلة المحذوفات</h2>
+        <button id="closeBinBtn" class="btn smallBtn">X</button>
       </div>
-      <div id="binList" class="list" style="max-height:400px; overflow-y:auto; margin-top:10px;">
-        <div class="mutedCenter">السلة فارغة</div>
-      </div>
+      <div id="binList" class="list" style="max-height:400px; overflow-y:auto; margin-top:10px;"></div>
       <div style="margin-top:15px; text-align:right;">
-          <button id="emptyBinBtn" class="btn danger">إفراغ السلة نهائياً</button>
+          <button id="emptyBinBtn" class="btn danger" data-i18n="btn_empty_bin">إفراغ السلة نهائياً</button>
       </div>
     </div>
   </div>
 
-  <script src="app.js?v=9"></script>
+  <script src="app.js?v=10"></script>
 </body>
 </html>
