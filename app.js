@@ -1,6 +1,6 @@
 /* =============================================
-   Center Attendance System V9.1 - (Emergency Fix)
-   Features: Auto-Migration & Conflict Resolution
+   Center Attendance System V9.2 - (Manager Safety Edition)
+   Features: Fix Attendance, Financial Integrity on Delete
    ============================================= */
 
 (() => {
@@ -10,15 +10,14 @@
   const BASE_MIN_ID = 1;
   const BASE_MAX_ID = 500;
 
-  // ====== STORAGE KEYS (Unified to fix conflict) ======
+  // ====== STORAGE KEYS (Fixed) ======
   const K_AUTH = "ca_auth";
-  // We go back to V6 keys to recover your OLD DATA safely!
   const K_STUDENTS = "ca_students_v6";      
   const K_EXTRA_IDS = "ca_extra_ids_v6";     
   const K_ATT_BY_DATE = "ca_att_by_date_v6"; 
   const K_TERM_FEE = "ca_term_fee_v6"; 
   const K_REVENUE = "ca_revenue_v6"; 
-  const K_DELETED = "ca_deleted_v9"; // New for Bin
+  const K_DELETED = "ca_deleted_v9"; 
   const K_DARK_MODE = "ca_dark_mode";
 
   // ====== DOM ELEMENTS ======
@@ -33,7 +32,7 @@
   const saveFeeBtn = $("saveFeeBtn");
   const darkModeBtn = $("darkModeBtn");
 
-  // Login
+  // Login & Main App
   const loginBox = $("loginBox");
   const appBox = $("appBox");
   const userInp = $("user");
@@ -41,11 +40,11 @@
   const togglePassBtn = $("togglePass");
   const loginBtn = $("loginBtn");
   const loginMsg = $("loginMsg");
+  const logoutBtn = $("logoutBtn");
 
-  // Actions
+  // Excel
   const exportExcelBtn = $("exportExcelBtn");
   const importExcelInput = $("importExcelInput");
-  const logoutBtn = $("logoutBtn");
 
   // Quick & Search
   const quickAttendId = $("quickAttendId");
@@ -89,7 +88,7 @@
   const correctPayBtn = $("correctPayBtn");
   const paymentBadge = $("paymentBadge");
   
-  // Smart Notes
+  // Notes
   const newNoteInp = $("newNoteInp");
   const addNoteBtn = $("addNoteBtn");
   const stNotes = $("stNotes");
@@ -101,14 +100,13 @@
   const studentMsg = $("studentMsg");
   const attList = $("attList");
 
-  // Modal: List
+  // Modals
   const allStudentsModal = $("allStudentsModal");
   const closeModalBtn = $("closeModalBtn");
   const allStudentsTable = $("allStudentsTable") ? $("allStudentsTable").querySelector("tbody") : null;
   const filterClass = $("filterClass"); 
   const filterStatus = $("filterStatus");
 
-  // Modal: Recycle Bin
   const recycleBinModal = $("recycleBinModal");
   const closeBinBtn = $("closeBinBtn");
   const binList = $("binList");
@@ -209,6 +207,10 @@
     try { extraIds = JSON.parse(localStorage.getItem(K_EXTRA_IDS) || "[]") || []; } catch { extraIds = []; }
     try { attByDate = JSON.parse(localStorage.getItem(K_ATT_BY_DATE) || "{}") || {}; } catch { attByDate = {}; }
 
+    // Fix Nulls
+    if(!attByDate) attByDate = {};
+    if(!revenueByDate) revenueByDate = {};
+
     updateTopStats();
   };
 
@@ -228,7 +230,7 @@
     const hasAny = Object.keys(students).length > 0;
     if (hasAny) return;
     for (let i = BASE_MIN_ID; i <= BASE_MAX_ID; i++) {
-      if(!students[i]) students[String(i)] = makeEmptyStudent(i);
+      if(!students[String(i)]) students[String(i)] = makeEmptyStudent(i);
     }
     saveAll();
   };
@@ -247,19 +249,84 @@
     return !!((st.name && st.name.trim()) || (st.phone && st.phone.trim()) || (st.paid > 0));
   };
 
-  // ====== RECYCLE BIN LOGIC ======
+  // ====== ATTENDANCE LOGIC (FIXED) ======
+  const addAttendance = (id, dateStr) => {
+    const st = getStudent(id);
+    if (!st) return { ok: false, msg: "ID غير موجود" };
+
+    // Ensure array exists
+    if (!Array.isArray(st.attendanceDates)) st.attendanceDates = [];
+    if (st.attendanceDates.includes(dateStr)) return { ok: false, msg: "حاضر بالفعل" };
+
+    st.attendanceDates.push(dateStr);
+    st.attendanceDates.sort();
+
+    // Ensure Daily Log Exists
+    if (!attByDate[dateStr]) attByDate[dateStr] = [];
+    if (!attByDate[dateStr].includes(id)) attByDate[dateStr].push(id);
+
+    setStudent(st);
+    saveAll();
+    playBeep("success"); 
+
+    return { ok: true, msg: "تم تسجيل الحضور ✅" };
+  };
+
+  const removeAttendance = (id, dateStr) => {
+    const st = getStudent(id);
+    if (!st) return { ok: false, msg: "غير موجود" };
+
+    if(st.attendanceDates) st.attendanceDates = st.attendanceDates.filter(d => d !== dateStr);
+    
+    if (attByDate[dateStr]) {
+      attByDate[dateStr] = attByDate[dateStr].filter(x => x !== id);
+    }
+    setStudent(st);
+    saveAll();
+    return { ok: true, msg: "تم إلغاء الحضور ✖" };
+  };
+
+  // ====== RECYCLE BIN & FINANCIAL INTEGRITY (FIXED) ======
   const moveToBin = (id) => {
       const st = getStudent(id);
-      if(!st || !isFilledStudent(st)) return; 
+      if(!st || !isFilledStudent(st)) {
+          alert("الطالب فارغ بالفعل");
+          return; 
+      }
+
+      // --- FINANCIAL CHECK (THE MANAGER FIX) ---
+      let deductMoney = false;
+      if (st.paid > 0) {
+          // Ask Manager Logic
+          if(confirm(`⚠️ تنبيه مالي هام!\nهذا الطالب دفع مبلغ (${st.paid} ج).\n\nهل تريد خصم هذا المبلغ من خزنة اليوم (إيراد اليوم) قبل الحذف؟\n(اضغط OK للخصم .. اضغط Cancel للحذف فقط)`)) {
+              deductMoney = true;
+          }
+      }
+
+      if(deductMoney) {
+          const today = nowDateStr();
+          revenueByDate[today] = (revenueByDate[today] || 0) - st.paid;
+          // Ensure Revenue doesn't go below 0 visually? (Optional, but let's keep math real)
+      }
+
+      // Move to Bin
       deletedStudents[id] = JSON.parse(JSON.stringify(st));
+      
+      // Clear Slot
       students[id] = makeEmptyStudent(id);
       if(id > BASE_MAX_ID) {
           delete students[id];
           extraIds = extraIds.filter(x => x !== id);
       }
+      
       saveAll();
-      alert("تم نقل الطالب إلى سلة المحذوفات 🗑️");
+      
+      let msg = "تم نقل الطالب للسلة 🗑️";
+      if(deductMoney) msg += "\nوتم خصم المبلغ من الخزنة 📉";
+      alert(msg);
+      
       updateStudentUI(null);
+      renderReport(nowDateStr()); // Update Report immediately
   };
 
   const restoreFromBin = (id) => {
@@ -282,33 +349,6 @@
       recycleBinModal.classList.add("hidden");
       openStudent(id);
       alert("تمت الاستعادة ✅");
-  };
-
-  const renderBinList = () => {
-      const ids = Object.keys(deletedStudents);
-      if(ids.length === 0) {
-          binList.innerHTML = `<div class="mutedCenter">السلة فارغة</div>`;
-          return;
-      }
-      binList.innerHTML = ids.map(id => {
-          const st = deletedStudents[id];
-          return `
-            <div class="binItem">
-                <div><b>(${st.id}) ${escapeHtml(st.name)}</b></div>
-                <div>
-                    <button class="btn success smallBtn" onclick="window.restoreSt(${st.id})">استعادة</button>
-                    <button class="btn danger smallBtn" onclick="window.permaDelete(${st.id})">حذف</button>
-                </div>
-            </div>`;
-      }).join("");
-  };
-
-  window.restoreSt = restoreFromBin;
-  window.permaDelete = (id) => {
-      if(!confirm("حذف نهائي؟")) return;
-      delete deletedStudents[id];
-      saveAll();
-      renderBinList();
   };
 
   // ====== DARK MODE ======
@@ -400,6 +440,7 @@
 
   const renderReport = (dateStr) => {
     reportDateLabel.textContent = `تاريخ: ${prettyDate(dateStr)}`;
+    // Check Date Key Exists
     const ids = attByDate[dateStr] || [];
     reportCount.textContent = `${ids.length} طالب`;
     const money = revenueByDate[dateStr] || 0;
@@ -417,6 +458,75 @@
     reportList.innerHTML = rows.join("");
   };
 
+  // ====== BIN RENDER ======
+  const renderBinList = () => {
+      const ids = Object.keys(deletedStudents);
+      if(ids.length === 0) {
+          binList.innerHTML = `<div class="mutedCenter">السلة فارغة</div>`;
+          return;
+      }
+      binList.innerHTML = ids.map(id => {
+          const st = deletedStudents[id];
+          return `
+            <div class="binItem">
+                <div><b>(${st.id}) ${escapeHtml(st.name)}</b></div>
+                <div>
+                    <button class="btn success smallBtn" onclick="window.restoreSt(${st.id})">استعادة</button>
+                    <button class="btn danger smallBtn" onclick="window.permaDelete(${st.id})">حذف</button>
+                </div>
+            </div>`;
+      }).join("");
+  };
+
+  // Global onclicks
+  window.restoreSt = restoreFromBin;
+  window.permaDelete = (id) => {
+      if(!confirm("حذف نهائي؟")) return;
+      delete deletedStudents[id];
+      saveAll();
+      renderBinList();
+  };
+
+  // ====== LISTENERS ======
+  if(deleteStudentBtn) deleteStudentBtn.addEventListener("click", () => {
+      if(!currentId) return;
+      if(confirm(`⚠️ تحذير!\nهل تريد حذف الطالب (${currentId})؟`)) moveToBin(currentId);
+  });
+
+  // Attendance Buttons (The Fix)
+  markTodayBtn.addEventListener("click", () => {
+    if(!currentId) return;
+    const res = addAttendance(currentId, nowDateStr());
+    showMsg(studentMsg, res.msg, res.ok?"ok":"err");
+    updateStudentUI(currentId); renderReport(nowDateStr());
+  });
+
+  unmarkTodayBtn.addEventListener("click", () => {
+    if(!currentId) return;
+    const res = removeAttendance(currentId, nowDateStr());
+    showMsg(studentMsg, res.msg, res.ok?"ok":"err");
+    updateStudentUI(currentId); renderReport(nowDateStr());
+  });
+
+  quickAttendBtn.addEventListener("click", () => {
+    const id = toInt(quickAttendId.value);
+    if (!id || !existsId(id)) { showMsg(quickMsg, "ID خطأ", "err"); return; }
+    const res = addAttendance(id, nowDateStr());
+    showMsg(quickMsg, res.msg, res.ok?"ok":"err");
+    updateStudentUI(id); renderReport(nowDateStr()); quickAttendId.value = ""; quickAttendId.focus();
+  });
+
+  // Other Actions
+  if(openAllStudentsBtn) openAllStudentsBtn.addEventListener("click", () => { 
+      // Need to define renderAllStudents inside or scope logic? 
+      // Simplified Logic for Modal
+      if(!allStudentsTable) return;
+      allStudentsModal.classList.remove("hidden");
+      // Trigger render
+      filterClass.dispatchEvent(new Event('change'));
+  });
+
+  // Need to define renderAllStudents function here to be accessible
   const renderAllStudents = () => {
       if(!allStudentsTable) return;
       const fClass = filterClass.value.toLowerCase();
@@ -462,18 +572,16 @@
         Array.from(classes).sort().map(c => `<option value="${c}">${c}</option>`).join("");
   };
 
-  // ====== LISTENERS ======
-  if(openAllStudentsBtn) openAllStudentsBtn.addEventListener("click", () => { updateClassFilter(); renderAllStudents(); allStudentsModal.classList.remove("hidden"); });
   if(filterClass) filterClass.addEventListener("change", renderAllStudents);
   if(filterStatus) filterStatus.addEventListener("change", renderAllStudents);
+  if(openAllStudentsBtn) openAllStudentsBtn.addEventListener("click", () => {
+      updateClassFilter();
+      renderAllStudents();
+      allStudentsModal.classList.remove("hidden");
+  });
   if(closeModalBtn) closeModalBtn.addEventListener("click", () => allStudentsModal.classList.add("hidden"));
 
   if(darkModeBtn) darkModeBtn.addEventListener("click", () => toggleDarkMode());
-
-  if(deleteStudentBtn) deleteStudentBtn.addEventListener("click", () => {
-      if(!currentId) return;
-      if(confirm(`⚠️ تحذير!\nهل أنت متأكد من حذف الطالب (${currentId})؟`)) moveToBin(currentId);
-  });
 
   if(openBinBtn) openBinBtn.addEventListener("click", () => { renderBinList(); recycleBinModal.classList.remove("hidden"); });
   if(closeBinBtn) closeBinBtn.addEventListener("click", () => recycleBinModal.classList.add("hidden"));
@@ -502,36 +610,6 @@
       revenueByDate[today] = Math.max(0, (revenueByDate[today] || 0) - val);
       setStudent(st); saveAll(); 
       alert(`تم خصم ${val} ج ✅`); updateStudentUI(currentId); renderReport(reportDate.value || today);
-  });
-
-  // Standard Auth & Actions
-  const openStudent = (id) => {
-    if (!id || !existsId(id)) { showMsg(searchMsg, "ID غير موجود", "err"); return; }
-    searchAny.value = ""; searchMsg.style.display = "none";
-    updateStudentUI(id);
-    document.querySelector(".studentCard").scrollIntoView({ behavior: "smooth" });
-  };
-  openBtn.addEventListener("click", () => openStudent(toInt(openId.value)));
-
-  searchAny.addEventListener("input", () => {
-    const q = String(searchAny.value || "").trim().toLowerCase();
-    if (!q) { searchMsg.style.display = "none"; return; }
-    const matches = Object.values(students).filter(st => isFilledStudent(st))
-      .filter(st => {
-        const name = String(st.name || "").toLowerCase();
-        const phone = String(st.phone || "").toLowerCase();
-        const sId = String(st.id);
-        return name.includes(q) || phone.includes(q) || sId.includes(q);
-      }).slice(0, 10);
-    if (!matches.length) { searchMsg.innerHTML = `<div style="padding:10px; color:#cf222e;">لا توجد نتائج...</div>`; searchMsg.style.display = "block"; return; }
-    const html = matches.map(st => `
-        <div class="resultItem" data-id="${st.id}">
-          <strong>${escapeHtml(st.name||"بدون اسم")}</strong> 
-          <span style="float:left; font-size:12px; color:#666;">#${st.id}</span>
-          <br><span style="font-size:12px; color:#888;">📞 ${escapeHtml(st.phone || "—")}</span>
-        </div>`).join("");
-    searchMsg.innerHTML = `<div class="resultsList">${html}</div>`; searchMsg.style.display = "block"; 
-    searchMsg.querySelectorAll(".resultItem").forEach(div => { div.addEventListener("click", () => openStudent(toInt(div.getAttribute("data-id")))); });
   });
 
   waBtn.addEventListener("click", () => {
@@ -594,18 +672,6 @@
     updateStudentUI(currentId); updateTopStats();
   });
 
-  markTodayBtn.addEventListener("click", () => {
-    if(!currentId) return;
-    const res = addAttendance(currentId, nowDateStr());
-    showMsg(studentMsg, res.msg, res.ok?"ok":"err");
-    updateStudentUI(currentId); renderReport(reportDate.value);
-  });
-  unmarkTodayBtn.addEventListener("click", () => {
-    if(!currentId) return;
-    const res = removeAttendance(currentId, nowDateStr());
-    showMsg(studentMsg, res.msg, res.ok?"ok":"err");
-    updateStudentUI(currentId); renderReport(reportDate.value);
-  });
   reportBtn.addEventListener("click", () => renderReport(reportDate.value));
 
   resetTermBtn.addEventListener("click", () => {
@@ -628,13 +694,7 @@
   loginBtn.addEventListener("click", () => {
     if (userInp.value === ADMIN_USER && passInp.value === ADMIN_PASS) { setAuth(true); showApp(); } else showMsg(loginMsg, "خطأ!", "err");
   });
-  quickAttendBtn.addEventListener("click", () => {
-    const id = toInt(quickAttendId.value);
-    if (!id || !existsId(id)) { showMsg(quickMsg, "ID خطأ", "err"); return; }
-    const res = addAttendance(id, nowDateStr());
-    showMsg(quickMsg, res.msg, res.ok?"ok":"err");
-    updateStudentUI(id); renderReport(nowDateStr()); quickAttendId.value = ""; quickAttendId.focus();
-  });
+
   logoutBtn.addEventListener("click", () => { setAuth(false); showLogin(); });
   togglePassBtn?.addEventListener("click", () => passInp.type = passInp.type==="password"?"text":"password");
 
