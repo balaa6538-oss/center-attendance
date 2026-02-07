@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>نظام حضور المركز</title>
+  <title>نظام حضور المركز V3</title>
 
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=3">
 
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
@@ -32,68 +32,67 @@
   <div id="appBox" class="hidden">
 
     <div class="topbar">
-      <div class="brand">لوحة السنتر</div>
+      <div class="brand">
+        لوحة السنتر
+        <div class="topStats">
+          <span class="statItem">👥 مسجلين: <b id="totalStudentsCount">0</b></span>
+          <span class="statItem">✅ حضور اليوم: <b id="todayCountTop">0</b></span>
+        </div>
+      </div>
 
       <div class="topActions">
         <button id="exportExcelBtn" class="btn">تصدير Excel</button>
-
         <label class="btn fileBtn" for="importExcelInput">استيراد Excel</label>
         <input id="importExcelInput" type="file" accept=".xlsx,.xls" style="display:none;">
-
         <button id="logoutBtn" class="btn danger">خروج</button>
       </div>
     </div>
 
     <div class="grid2">
       <div class="card">
-        <h2>سريع</h2>
-        <p class="muted">
-          لو بتسكان بالموبايل، QR هيفتح الموقع على طول بـ id=25
-          ويسجل حضور تلقائي (لو إنت داخل).
-        </p>
-
+        <h2>سريع (QR)</h2>
+        <p class="muted">تسجيل حضور فوري برقم ID.</p>
         <div class="row">
           <input id="quickAttendId" class="inp" inputmode="numeric" placeholder="اكتب ID هنا">
           <button id="quickAttendBtn" class="btn primary">سجل حضور</button>
         </div>
-
         <div id="quickMsg" class="msg"></div>
       </div>
 
       <div class="card">
-        <h2>بحث فقط</h2>
-        <p class="muted">يفتح بيانات الطالب بدون تسجيل حضور.</p>
-
+        <h2>بحث شامل</h2>
+        <p class="muted">ابحث بالاسم، الموبايل، أو ID.</p>
+        
         <div class="row">
-          <input id="openId" class="inp" inputmode="numeric" placeholder="اكتب ID هنا">
+          <input id="openId" class="inp" inputmode="numeric" placeholder="فتح بـ ID مباشر">
           <button id="openBtn" class="btn">فتح</button>
         </div>
 
         <div class="row">
-          <input id="searchAny" class="inp" placeholder="ابحث بالاسم أو الموبايل أو ID">
-          <button id="searchAnyBtn" class="btn">بحث</button>
+          <input id="searchAny" class="inp" placeholder="ابحث هنا...">
+          <button id="searchAnyBtn" class="btn" style="display:none;">🔍</button>
         </div>
-
+        
         <div id="searchMsg" class="msg"></div>
       </div>
     </div>
 
     <div class="card">
-      <h2>+ إضافة طالب جديد (ID جديد)</h2>
-      <p class="muted">اختياري: تقدر تضيف ID جديد غير 1..500 لو احتجت.</p>
-
+      <h2>+ إضافة طالب جديد</h2>
+      <p class="muted">السيستم فيه 500 مكان جاهز، استخدم ده لو عايز تضيف زيادة.</p>
       <div class="row">
         <input id="newId" class="inp" inputmode="numeric" placeholder="اكتب ID جديد (مثال 501)">
         <button id="addNewBtn" class="btn">إضافة</button>
       </div>
-
       <div id="addMsg" class="msg"></div>
     </div>
 
     <div class="card">
-      <h2>حضور بتاريخ</h2>
-      <p class="muted">اليوم تلقائي. تقدر تختار تاريخ تاني لو حبيت.</p>
-
+      <div class="flexBetween">
+        <h2>حضور بتاريخ</h2>
+        <button id="copyReportBtn" class="btn success smallBtn">نسخ الملخص 📋</button>
+      </div>
+      
       <div class="row">
         <input id="reportDate" class="inp" type="date">
         <button id="reportBtn" class="btn">عرض</button>
@@ -108,58 +107,77 @@
     </div>
 
     <div class="grid2">
-      <div class="card">
-        <h2>بيانات الطالب</h2>
+      <div class="card studentCard">
+        <h2>بيانات الطالب <span id="newBadge" class="newBadge hidden">جديد</span></h2>
 
         <div class="studentHead">
           <div class="pill" id="studentIdPill">ID: —</div>
-          <div class="pill" id="todayStatus">حضور اليوم: —</div>
+          <div class="pill" id="todayStatus">اليوم: —</div>
           <div class="pill" id="lastAttend">آخر حضور: —</div>
-          <div class="pill" id="daysCount">عدد أيام الحضور: —</div>
+          <div class="pill" id="daysCount">عدد مرات الحضور: —</div>
         </div>
 
         <label class="lbl">الاسم</label>
-        <input id="stName" class="inp" placeholder="اسم الطالب">
+        <input id="stName" class="inp" placeholder="اسم الطالب رباعي">
 
-        <label class="lbl">الصف</label>
-        <input id="stClass" class="inp" placeholder="مثال: تمريض / الصف الأول ...">
+        <label class="lbl">الصف / المجموعة</label>
+        <input id="stClass" class="inp" placeholder="مثال: 3 ثانوي - مجموعة السبت">
 
-        <label class="lbl">رقم الموبايل</label>
-        <input id="stPhone" class="inp" inputmode="tel" placeholder="01xxxxxxxxx">
+        <label class="lbl">رقم الموبايل (مع واتساب)</label>
+        <div class="row">
+          <input id="stPhone" class="inp" inputmode="tel" placeholder="01xxxxxxxxx">
+          <button id="waBtn" class="btn success" style="width:auto; padding:0 15px;" title="فتح واتساب">💬</button>
+        </div>
 
-        <label class="lbl">المدفوع</label>
-        <input id="stPaid" class="inp" inputmode="numeric" placeholder="مثال: 1500">
+        <label class="lbl">المصاريف (المدفوع)</label>
+        <input id="stPaid" class="inp" inputmode="numeric" placeholder="المبلغ المدفوع">
 
-        <div class="row wrap">
+        <label class="lbl">ملاحظات (خاصة لا تظهر في البحث)</label>
+        <textarea id="stNotes" class="inp" rows="2" placeholder="اكتب ملاحظات عن الطالب..."></textarea>
+
+        <div class="row wrap" style="margin-top:15px;">
           <button id="saveStudentBtn" class="btn primary">حفظ البيانات</button>
-
-          <button id="markTodayBtn" class="btn success">✅ تسجيل حضور اليوم</button>
-          <button id="unmarkTodayBtn" class="btn warning">✖ إلغاء حضور اليوم</button>
+          <button id="markTodayBtn" class="btn success">✅ حضور</button>
+          <button id="unmarkTodayBtn" class="btn warning">✖ غياب</button>
         </div>
 
         <div id="studentMsg" class="msg"></div>
       </div>
 
       <div class="card">
-        <h2>سجل الحضور (آخر 25 تاريخ)</h2>
-        <div id="attList" class="list mutedCenter">— افتح طالب علشان يظهر هنا —</div>
+        <h2>سجل التواريخ (آخر 25)</h2>
+        <div id="attList" class="list mutedCenter">— افتح طالب —</div>
       </div>
     </div>
 
-    <div class="card">
-      <h2>إدارة البيانات</h2>
-      <p class="muted">تحذير: المسح النهائي يمسح كل الداتا على هذا الجهاز فقط.</p>
-
-      <div class="row">
-        <input id="resetPass" class="inp" type="password" placeholder="اكتب كلمة المرور للتأكيد">
-        <button id="resetBtn" class="btn danger">إعادة ضبط (مسح كل البيانات)</button>
+    <div class="card dangerZone">
+      <h2>⚠️ إدارة البيانات (منطقة الخطر)</h2>
+      
+      <div class="dangerSection">
+        <h3>1. بدء ترم جديد (مسح جزئي)</h3>
+        <p class="muted">يمسح تواريخ الحضور والمصاريف فقط. (يحافظ على الأسماء).</p>
+        <div class="row">
+          <input id="termPass" class="inp" type="password" placeholder="كلمة المرور">
+          <button id="resetTermBtn" class="btn warning">تصفير الترم</button>
+        </div>
       </div>
 
+      <hr style="margin:20px 0; border:0; border-top:1px solid #ddd;">
+
+      <div class="dangerSection">
+        <h3>2. إعادة ضبط المصنع (مسح كلي)</h3>
+        <p class="muted">يمسح كل شيء (الأسماء والحضور) ويرجع السيستم جديد.</p>
+        <div class="row">
+          <input id="resetPass" class="inp" type="password" placeholder="كلمة المرور">
+          <button id="resetBtn" class="btn danger">مسح كل البيانات</button>
+        </div>
+      </div>
+      
       <div id="resetMsg" class="msg"></div>
     </div>
 
   </div>
 
-  <script src="app.js?v=2"></script>
+  <script src="app.js?v=3"></script>
 </body>
 </html>
