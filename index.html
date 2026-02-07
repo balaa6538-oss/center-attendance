@@ -7,13 +7,11 @@
 
   <link rel="stylesheet" href="style.css">
 
-  <!-- مكتبة Excel للاستيراد/التصدير -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 
 <body>
 
-  <!-- LOGIN -->
   <div id="loginBox" class="card">
     <h1>دخول لوحة السنتر</h1>
     <p class="muted">الدخول للمسؤول فقط</p>
@@ -31,7 +29,6 @@
     <div id="loginMsg" class="msg"></div>
   </div>
 
-  <!-- APP -->
   <div id="appBox" class="hidden">
 
     <div class="topbar">
@@ -47,7 +44,6 @@
       </div>
     </div>
 
-    <!-- QUICK -->
     <div class="grid2">
       <div class="card">
         <h2>سريع</h2>
@@ -82,7 +78,6 @@
       </div>
     </div>
 
-    <!-- ADD NEW -->
     <div class="card">
       <h2>+ إضافة طالب جديد (ID جديد)</h2>
       <p class="muted">اختياري: تقدر تضيف ID جديد غير 1..500 لو احتجت.</p>
@@ -95,7 +90,6 @@
       <div id="addMsg" class="msg"></div>
     </div>
 
-    <!-- REPORT -->
     <div class="card">
       <h2>حضور بتاريخ</h2>
       <p class="muted">اليوم تلقائي. تقدر تختار تاريخ تاني لو حبيت.</p>
@@ -113,7 +107,6 @@
       <div id="reportList" class="list mutedCenter">— لا يوجد حضور في هذا التاريخ —</div>
     </div>
 
-    <!-- STUDENT -->
     <div class="grid2">
       <div class="card">
         <h2>بيانات الطالب</h2>
@@ -153,7 +146,6 @@
       </div>
     </div>
 
-    <!-- RESET (اختياري) -->
     <div class="card">
       <h2>إدارة البيانات</h2>
       <p class="muted">تحذير: المسح النهائي يمسح كل الداتا على هذا الجهاز فقط.</p>
@@ -168,6 +160,6 @@
 
   </div>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=2"></script>
 </body>
 </html>
