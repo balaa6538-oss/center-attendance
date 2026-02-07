@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>نظام حضور المركز V3</title>
+  <title>نظام حضور المركز V4</title>
 
-  <link rel="stylesheet" href="style.css?v=3">
+  <link rel="stylesheet" href="style.css?v=4">
 
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
@@ -41,6 +41,12 @@
       </div>
 
       <div class="topActions">
+        <div class="termFeeWrapper">
+          <span class="feeLabel">مطلوب:</span>
+          <input id="termFeeInp" type="number" class="feeInp" placeholder="0">
+          <button id="saveFeeBtn" class="feeBtn" title="حفظ قيمة المصاريف">💾</button>
+        </div>
+
         <button id="exportExcelBtn" class="btn">تصدير Excel</button>
         <label class="btn fileBtn" for="importExcelInput">استيراد Excel</label>
         <input id="importExcelInput" type="file" accept=".xlsx,.xls" style="display:none;">
@@ -178,6 +184,6 @@
 
   </div>
 
-  <script src="app.js?v=3"></script>
+  <script src="app.js?v=4"></script>
 </body>
 </html>
