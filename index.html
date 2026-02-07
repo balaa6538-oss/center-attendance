@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>نظام حضور المركز V4</title>
+  <title>نظام حضور المركز V5</title>
 
-  <link rel="stylesheet" href="style.css?v=4">
+  <link rel="stylesheet" href="style.css?v=5">
 
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
@@ -37,14 +37,14 @@
         <div class="topStats">
           <span class="statItem">👥 مسجلين: <b id="totalStudentsCount">0</b></span>
           <span class="statItem">✅ حضور اليوم: <b id="todayCountTop">0</b></span>
-        </div>
+          <span class="statItem">💰 إيراد اليوم: <b id="todayRevenue">0</b></span> </div>
       </div>
 
       <div class="topActions">
         <div class="termFeeWrapper">
           <span class="feeLabel">مطلوب:</span>
           <input id="termFeeInp" type="number" class="feeInp" placeholder="0">
-          <button id="saveFeeBtn" class="feeBtn" title="حفظ قيمة المصاريف">💾</button>
+          <button id="saveFeeBtn" class="feeBtn" title="حفظ (محمي بكلمة سر)">🔒</button>
         </div>
 
         <button id="exportExcelBtn" class="btn">تصدير Excel</button>
@@ -95,7 +95,7 @@
 
     <div class="card">
       <div class="flexBetween">
-        <h2>حضور بتاريخ</h2>
+        <h2>حضور وتوريد بتاريخ</h2>
         <button id="copyReportBtn" class="btn success smallBtn">نسخ الملخص 📋</button>
       </div>
       
@@ -107,6 +107,7 @@
       <div class="badges">
         <span class="badge" id="reportDateLabel">التاريخ: —</span>
         <span class="badge" id="reportCount">عدد الحضور: 0</span>
+        <span class="badge" style="color:#2ea44f;">إيراد اليوم: <span id="reportMoney">0</span></span>
       </div>
 
       <div id="reportList" class="list mutedCenter">— لا يوجد حضور في هذا التاريخ —</div>
@@ -120,7 +121,7 @@
           <div class="pill" id="studentIdPill">ID: —</div>
           <div class="pill" id="todayStatus">اليوم: —</div>
           <div class="pill" id="lastAttend">آخر حضور: —</div>
-          <div class="pill" id="daysCount">عدد مرات الحضور: —</div>
+          <div class="pill" id="daysCount">مرات الحضور: —</div>
         </div>
 
         <label class="lbl">الاسم</label>
@@ -136,9 +137,14 @@
         </div>
 
         <label class="lbl">المصاريف (المدفوع)</label>
-        <input id="stPaid" class="inp" inputmode="numeric" placeholder="المبلغ المدفوع">
+        <div class="row">
+           <input id="stPaid" class="inp" inputmode="numeric" placeholder="المبلغ المدفوع (تراكمي)" disabled style="background:#f9f9f9; color:#555;">
+           <button id="addMoneyBtn" class="btn success" style="min-width:120px;" title="إضافة دفعة جديدة">➕ دفع</button>
+        </div>
+        
+        <div id="paymentBadge" class="paymentBadge hidden"></div>
 
-        <label class="lbl">ملاحظات (خاصة لا تظهر في البحث)</label>
+        <label class="lbl">ملاحظات (خاصة)</label>
         <textarea id="stNotes" class="inp" rows="2" placeholder="اكتب ملاحظات عن الطالب..."></textarea>
 
         <div class="row wrap" style="margin-top:15px;">
@@ -172,7 +178,7 @@
 
       <div class="dangerSection">
         <h3>2. إعادة ضبط المصنع (مسح كلي)</h3>
-        <p class="muted">يمسح كل شيء (الأسماء والحضور) ويرجع السيستم جديد.</p>
+        <p class="muted">يمسح كل شيء نهائياً.</p>
         <div class="row">
           <input id="resetPass" class="inp" type="password" placeholder="كلمة المرور">
           <button id="resetBtn" class="btn danger">مسح كل البيانات</button>
@@ -184,6 +190,6 @@
 
   </div>
 
-  <script src="app.js?v=4"></script>
+  <script src="app.js?v=5"></script>
 </body>
 </html>
