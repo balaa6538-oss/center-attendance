@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>نظام حضور المركز V5</title>
+  <title>نظام حضور المركز V6</title>
 
-  <link rel="stylesheet" href="style.css?v=5">
+  <link rel="stylesheet" href="style.css?v=6">
 
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
@@ -37,12 +37,13 @@
         <div class="topStats">
           <span class="statItem">👥 مسجلين: <b id="totalStudentsCount">0</b></span>
           <span class="statItem">✅ حضور اليوم: <b id="todayCountTop">0</b></span>
-          <span class="statItem">💰 إيراد اليوم: <b id="todayRevenue">0</b></span> </div>
+          <span class="statItem">💰 إيراد اليوم: <b id="todayRevenue">0</b></span>
+        </div>
       </div>
 
       <div class="topActions">
         <div class="termFeeWrapper">
-          <span class="feeLabel">مطلوب:</span>
+          <span class="feeLabel">المطلوب (للترم):</span>
           <input id="termFeeInp" type="number" class="feeInp" placeholder="0">
           <button id="saveFeeBtn" class="feeBtn" title="حفظ (محمي بكلمة سر)">🔒</button>
         </div>
@@ -85,10 +86,10 @@
 
     <div class="card">
       <h2>+ إضافة طالب جديد</h2>
-      <p class="muted">السيستم فيه 500 مكان جاهز، استخدم ده لو عايز تضيف زيادة.</p>
+      <p class="muted">أكتب رقم ID جديد واضغط إضافة (سيتم فتح الطالب تلقائياً).</p>
       <div class="row">
-        <input id="newId" class="inp" inputmode="numeric" placeholder="اكتب ID جديد (مثال 501)">
-        <button id="addNewBtn" class="btn">إضافة</button>
+        <input id="newId" class="inp" inputmode="numeric" placeholder="اكتب ID جديد (مثال 601)">
+        <button id="addNewBtn" class="btn">إضافة وفتح</button>
       </div>
       <div id="addMsg" class="msg"></div>
     </div>
@@ -107,7 +108,7 @@
       <div class="badges">
         <span class="badge" id="reportDateLabel">التاريخ: —</span>
         <span class="badge" id="reportCount">عدد الحضور: 0</span>
-        <span class="badge" style="color:#2ea44f;">إيراد اليوم: <span id="reportMoney">0</span></span>
+        <span class="badge" style="color:#2ea44f;">إيراد الخزنة: <span id="reportMoney">0</span></span>
       </div>
 
       <div id="reportList" class="list mutedCenter">— لا يوجد حضور في هذا التاريخ —</div>
@@ -136,10 +137,21 @@
           <button id="waBtn" class="btn success" style="width:auto; padding:0 15px;" title="فتح واتساب">💬</button>
         </div>
 
-        <label class="lbl">المصاريف (المدفوع)</label>
-        <div class="row">
-           <input id="stPaid" class="inp" inputmode="numeric" placeholder="المبلغ المدفوع (تراكمي)" disabled style="background:#f9f9f9; color:#555;">
-           <button id="addMoneyBtn" class="btn success" style="min-width:120px;" title="إضافة دفعة جديدة">➕ دفع</button>
+        <label class="lbl" style="margin-top:20px; border-top:1px dashed #ccc; padding-top:10px;">نظام المصاريف (الأقساط)</label>
+        
+        <div class="paymentBox">
+            <div class="payRow">
+                <span class="payLabel">💰 إجمالي المدفوع:</span>
+                <input id="stTotalPaid" class="inp" readonly style="background:#e9ecef; font-weight:bold; color:#2f6bff; width:120px; text-align:center;">
+            </div>
+
+            <div class="payRow">
+                <span class="payLabel">➕ دفعة جديدة:</span>
+                <div class="row" style="flex:1;">
+                    <input id="newPaymentInput" type="number" class="inp" placeholder="المبلغ (مثال 1000)">
+                    <button id="addPaymentBtn" class="btn success">إيداع</button>
+                </div>
+            </div>
         </div>
         
         <div id="paymentBadge" class="paymentBadge hidden"></div>
@@ -190,6 +202,6 @@
 
   </div>
 
-  <script src="app.js?v=5"></script>
+  <script src="app.js?v=6"></script>
 </body>
 </html>
