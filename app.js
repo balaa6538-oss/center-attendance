@@ -1,5 +1,5 @@
 /* ==========================
-   Center Attendance - app.js (Updated with Live Search)
+   Center Attendance - app.js (Fixed Search Visibility)
    Storage: localStorage
    Excel: XLSX
 ========================== */
@@ -89,7 +89,6 @@
 
   // ====== HELPERS ======
   const nowDateStr = () => {
-    // YYYY-MM-DD
     const d = new Date();
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -118,6 +117,7 @@
     if (!el) return;
     el.textContent = text || "";
     el.className = "msg" + (type ? ` ${type}` : "");
+    el.style.display = "block"; // Force show logic
   };
 
   const isAuth = () => localStorage.getItem(K_AUTH) === "1";
@@ -148,7 +148,6 @@
   };
 
   const ensureBase500 = () => {
-    // لو مفيش أي داتا → أنشئ 1..500
     const hasAny = Object.keys(students).length > 0;
     if (hasAny) return;
 
@@ -166,7 +165,7 @@
     className: "",
     phone: "",
     paid: "",
-    attendanceDates: [] // ["YYYY-MM-DD", ...]
+    attendanceDates: [] 
   });
 
   const existsId = (id) => {
@@ -268,7 +267,6 @@
     stPhone.value = st.phone || "";
     stPaid.value = st.paid || "";
 
-    // سجل آخر 25 تاريخ (عكسي)
     const last25 = [...dates].sort().slice(-25).reverse();
     if (!last25.length) {
       attList.innerHTML = `<div class="mutedCenter">— لا يوجد حضور بعد —</div>`;
@@ -289,7 +287,6 @@
       return;
     }
 
-    // قائمة (اسم + ID)
     const rows = ids
       .slice()
       .sort((a, b) => a - b)
@@ -312,21 +309,18 @@
       updateStudentUI(null);
       return;
     }
-    // مسح نتائج البحث بعد الفتح عشان القائمة تختفي
+    // Clean up
     searchMsg.innerHTML = "";
-    searchMsg.className = "msg";
+    searchMsg.style.display = "none";
     searchAny.value = ""; 
 
     showMsg(searchMsg, "");
     updateStudentUI(id);
-    // نطلع للطالب (اختياري لو الشاشة صغيرة)
-    // window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
     const stPanel = document.querySelector(".studentHead");
     if(stPanel) stPanel.scrollIntoView({ behavior: "smooth" });
   };
 
   const autoFromQuery = () => {
-    // لو الرابط فيه ?id=25
     const url = new URL(window.location.href);
     const idRaw = url.searchParams.get("id");
     if (!idRaw) return;
@@ -334,56 +328,50 @@
     const id = toInt(idRaw);
     if (!id || !existsId(id)) return;
 
-    // افتح الطالب
     updateStudentUI(id);
 
-    // سجل حضور تلقائي لو داخل
     if (isAuth()) {
       const res = addAttendance(id, nowDateStr());
       showMsg(quickMsg, res.msg, res.ok ? "ok" : "err");
       updateStudentUI(id);
-      // تحديث تقرير اليوم تلقائي
       renderReport(nowDateStr());
     }
   };
 
   // ============================================
-  // ✅ دالة البحث الجديدة (لحظية - Live Search)
+  // ✅ FIXED SEARCH FUNCTION (Force Display)
   // ============================================
   const doSearchLive = () => {
     const q = String(searchAny.value || "").trim().toLowerCase();
     
-    // لو مفيش كلام، اخفي القائمة
     if (!q) {
       searchMsg.innerHTML = "";
-      searchMsg.className = "msg";
+      searchMsg.style.display = "none";
       return;
     }
 
-    // البحث في الاسم أو الموبايل
     const matches = Object.values(students)
       .filter((st) => isFilledStudent(st))
       .filter((st) => {
         const name = String(st.name || "").toLowerCase();
         const phone = String(st.phone || "").toLowerCase();
-        // لو ID برضه
         const sId = String(st.id);
         return name.includes(q) || phone.includes(q) || sId.includes(q);
       })
-      .slice(0, 10); // هات أول 10 نتايج بس عشان الزحمة
+      .slice(0, 10);
 
     if (!matches.length) {
       searchMsg.textContent = "لا توجد نتائج مطابقة...";
       searchMsg.className = "msg err";
+      searchMsg.style.display = "block"; // Force show
       return;
     }
 
-    // رسم القائمة
     const html = matches
       .map((st) => {
         const nm = (st.name && st.name.trim()) ? st.name.trim() : "بدون اسم";
         return `
-          <div class="item resultItem" data-id="${st.id}" style="border-bottom:1px solid #eee; margin-bottom:4px;">
+          <div class="item resultItem" data-id="${st.id}" style="border-bottom:1px solid #eee; margin-bottom:4px; padding:8px; background:#fff;">
             <strong>${escapeHtml(nm)}</strong> 
             <br>
             <span class="muted" style="font-size:12px">ID: ${st.id} | 📞 ${escapeHtml(st.phone || "—")}</span>
@@ -392,33 +380,30 @@
       })
       .join("");
 
-    searchMsg.innerHTML = `<div class="resultsList">${html}</div>`;
+    searchMsg.innerHTML = `<div class="resultsList" style="max-height:200px; overflow-y:auto;">${html}</div>`;
     searchMsg.className = "msg"; 
+    searchMsg.style.display = "block"; // ✅ Force show (The Fix)
 
-    // تشغيل الضغط على العناصر
     searchMsg.querySelectorAll(".resultItem").forEach((div) => {
       div.addEventListener("click", () => {
         const id = toInt(div.getAttribute("data-id"));
         if (id) openStudent(id);
       });
-      // تغيير شكل الماوس
       div.style.cursor = "pointer";
     });
   };
 
-  // ====== EXCEL EXPORT / IMPORT (A: Sheet حضور مستقل) ======
+  // ====== EXCEL EXPORT / IMPORT ======
   const exportExcel = () => {
     if (typeof XLSX === "undefined") {
       alert("مكتبة Excel (XLSX) غير موجودة.");
       return;
     }
 
-    // B: تصدير الطلاب "المليانة" فقط (وإلا هتطلع 500 صف فاضي)
     const filled = Object.values(students)
       .filter((st) => isFilledStudent(st))
       .sort((a, b) => a.id - b.id);
 
-    // Sheet: الطلاب
     const wsStudentsData = [
       ["ID", "الاسم", "الصف", "الموبايل", "المدفوع", "عدد أيام الحضور", "آخر حضور"]
     ];
@@ -439,7 +424,6 @@
 
     const wsStudents = XLSX.utils.aoa_to_sheet(wsStudentsData);
 
-    // Sheet: الحضور (سجل بالتاريخ)
     const wsAttendData = [["التاريخ", "ID", "الاسم"]];
     const datesSorted = Object.keys(attByDate).sort();
     for (const d of datesSorted) {
@@ -482,7 +466,6 @@
     const wsS = wb.Sheets[sheetStudentsName];
     const wsA = sheetAttendName ? wb.Sheets[sheetAttendName] : null;
 
-    // اقرأ الطلاب
     const rowsS = XLSX.utils.sheet_to_json(wsS, { header: 1, defval: "" });
     if (!rowsS.length) {
       alert("ملف Excel فاضي.");
@@ -504,7 +487,6 @@
     const iPhone = idx(["الموبايل", "الهاتف", "phone", "mobile"]);
     const iPaid = idx(["المدفوع", "paid", "payment"]);
 
-    // هنعيد بناء students من الموجود + نضمن 1..500
     const newStudents = {};
     for (let i = BASE_MIN_ID; i <= BASE_MAX_ID; i++) {
       newStudents[String(i)] = makeEmptyStudent(i);
@@ -527,10 +509,8 @@
       if (iClass !== -1) st.className = String(row[iClass] || "");
       if (iPhone !== -1) st.phone = String(row[iPhone] || "");
       if (iPaid !== -1) st.paid = String(row[iPaid] || "");
-      // attendanceDates هتتجاب من شيت "الحضور"
     }
 
-    // اقرأ الحضور (التاريخ + ID)
     const newAttByDate = {};
     if (wsA) {
       const rowsA = XLSX.utils.sheet_to_json(wsA, { header: 1, defval: "" });
@@ -551,7 +531,6 @@
           const id = toInt(row[aID]);
           if (!d || !id) continue;
 
-          // لازم الطالب يبقى موجود (أو أضيفه كـ extra)
           if (!newStudents[String(id)]) {
             newStudents[String(id)] = makeEmptyStudent(id);
             if (id < BASE_MIN_ID || id > BASE_MAX_ID) newExtra.push(id);
@@ -563,7 +542,6 @@
       }
     }
 
-    // طبق الحضور على كل طالب
     for (const st of Object.values(newStudents)) {
       st.attendanceDates = [];
     }
@@ -585,7 +563,6 @@
 
     saveAll();
 
-    // تحديث واجهة
     showMsg(searchMsg, "تم الاستيراد بنجاح ✅", "ok");
     currentId = null;
     updateStudentUI(null);
@@ -594,12 +571,10 @@
 
   // ====== EVENTS ======
 
-  // Toggle password eye
   togglePassBtn?.addEventListener("click", () => {
     passInp.type = passInp.type === "password" ? "text" : "password";
   });
 
-  // Login
   loginBtn.addEventListener("click", () => {
     const u = String(userInp.value || "").trim();
     const p = String(passInp.value || "");
@@ -612,18 +587,15 @@
     }
   });
 
-  // Enter = login
   passInp.addEventListener("keydown", (e) => {
     if (e.key === "Enter") loginBtn.click();
   });
 
-  // Logout
   logoutBtn.addEventListener("click", () => {
     setAuth(false);
     showLogin();
   });
 
-  // Quick attend
   quickAttendBtn.addEventListener("click", () => {
     const id = toInt(quickAttendId.value);
     if (!id) {
@@ -641,21 +613,14 @@
     renderReport(nowDateStr());
   });
 
-  // Open student by ID
   openBtn.addEventListener("click", () => {
     const id = toInt(openId.value);
     openStudent(id);
   });
 
-  // ============================================
-  // ✅ ربط البحث الجديد (type + click)
-  // ============================================
-  // لما تكتب: شغل البحث اللحظي
   searchAny.addEventListener("input", doSearchLive);
-  // لما تدوس على زرار البحث: برضو شغل البحث (تصليح الزرار)
   searchAnyBtn.addEventListener("click", doSearchLive);
 
-  // Add new ID
   addNewBtn.addEventListener("click", () => {
     const id = toInt(newId.value);
     if (!id) {
@@ -677,7 +642,6 @@
     updateStudentUI(id);
   });
 
-  // Save student
   saveStudentBtn.addEventListener("click", () => {
     if (!currentId) {
       showMsg(studentMsg, "افتح طالب أولاً.", "err");
@@ -701,7 +665,6 @@
     renderReport(reportDate.value || nowDateStr());
   });
 
-  // Mark today
   markTodayBtn.addEventListener("click", () => {
     if (!currentId) {
       showMsg(studentMsg, "افتح طالب أولاً.", "err");
@@ -713,7 +676,6 @@
     renderReport(reportDate.value || nowDateStr());
   });
 
-  // Unmark today
   unmarkTodayBtn.addEventListener("click", () => {
     if (!currentId) {
       showMsg(studentMsg, "افتح طالب أولاً.", "err");
@@ -725,23 +687,20 @@
     renderReport(reportDate.value || nowDateStr());
   });
 
-  // Report
   reportBtn.addEventListener("click", () => {
     const d = reportDate.value || nowDateStr();
     renderReport(d);
   });
 
-  // Excel export/import
   exportExcelBtn.addEventListener("click", exportExcel);
 
   importExcelInput.addEventListener("change", async () => {
     const file = importExcelInput.files && importExcelInput.files[0];
     if (!file) return;
     await importExcel(file);
-    importExcelInput.value = ""; // reset input
+    importExcelInput.value = ""; 
   });
 
-  // Reset (مسح كل البيانات)
   resetBtn.addEventListener("click", () => {
     const p = String(resetPass.value || "");
     if (p !== ADMIN_PASS) {
@@ -749,12 +708,10 @@
       return;
     }
 
-    // امسح كل شيء
     localStorage.removeItem(K_STUDENTS);
     localStorage.removeItem(K_EXTRA_IDS);
     localStorage.removeItem(K_ATT_BY_DATE);
 
-    // اعد التهيئة
     students = {};
     extraIds = [];
     attByDate = {};
@@ -767,7 +724,6 @@
     showMsg(resetMsg, "تمت إعادة الضبط ومسح البيانات من هذا الجهاز ✅", "ok");
   });
 
-  // ====== UI FLOW ======
   const showLogin = () => {
     loginBox.classList.remove("hidden");
     appBox.classList.add("hidden");
@@ -777,25 +733,19 @@
     loginBox.classList.add("hidden");
     appBox.classList.remove("hidden");
 
-    // الافتراضي اليوم
     const today = nowDateStr();
     reportDate.value = today;
     renderReport(today);
-
-    // اسحب id من الرابط إن وجد
     autoFromQuery();
   };
 
-  // ====== INIT ======
   const init = () => {
     loadAll();
     ensureBase500();
 
-    // لو المستخدم فاتح قبل كده
     if (isAuth()) showApp();
     else showLogin();
 
-    // default report date
     reportDate.value = nowDateStr();
     renderReport(nowDateStr());
     updateStudentUI(null);
