@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>نظام حضور المركز V6</title>
+  <title>نظام حضور المركز V7</title>
 
-  <link rel="stylesheet" href="style.css?v=6">
+  <link rel="stylesheet" href="style.css?v=7">
 
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
@@ -35,7 +35,10 @@
       <div class="brand">
         لوحة السنتر
         <div class="topStats">
-          <span class="statItem">👥 مسجلين: <b id="totalStudentsCount">0</b></span>
+          <span class="statItem clickable" id="openAllStudentsBtn" title="اضغط لعرض القائمة الكاملة">
+            👥 مسجلين: <b id="totalStudentsCount">0</b>
+          </span>
+          
           <span class="statItem">✅ حضور اليوم: <b id="todayCountTop">0</b></span>
           <span class="statItem">💰 إيراد اليوم: <b id="todayRevenue">0</b></span>
         </div>
@@ -160,7 +163,7 @@
         <textarea id="stNotes" class="inp" rows="2" placeholder="اكتب ملاحظات عن الطالب..."></textarea>
 
         <div class="row wrap" style="margin-top:15px;">
-          <button id="saveStudentBtn" class="btn primary">حفظ البيانات</button>
+          <button id="saveStudentBtn" class="btn primary">حفظ البيانات 💾</button>
           <button id="markTodayBtn" class="btn success">✅ حضور</button>
           <button id="unmarkTodayBtn" class="btn warning">✖ غياب</button>
         </div>
@@ -202,6 +205,31 @@
 
   </div>
 
-  <script src="app.js?v=6"></script>
+  <div id="allStudentsModal" class="modal hidden">
+    <div class="modalContent">
+      <div class="flexBetween">
+        <h2>قائمة جميع الطلاب</h2>
+        <button id="closeModalBtn" class="btn danger smallBtn">إغلاق ❌</button>
+      </div>
+      
+      <div class="tableWrap">
+        <table id="allStudentsTable">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>الاسم</th>
+              <th>الموبايل</th>
+              <th>المدفوع</th>
+              <th>الحالة</th>
+            </tr>
+          </thead>
+          <tbody>
+            </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js?v=7"></script>
 </body>
 </html>
