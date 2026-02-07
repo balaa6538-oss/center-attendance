@@ -1,6 +1,6 @@
 /* =============================================
-   Center Attendance System V7 - (Ultimate Pro)
-   Features: Student List Modal, Smart Report, Payment Logic
+   Center Attendance System V8 - (Data Integrity Edition)
+   Features: Full History Import/Export, Revenue Tracking
    ============================================= */
 
 (() => {
@@ -11,7 +11,6 @@
   const BASE_MAX_ID = 500;
 
   // ====== STORAGE KEYS ======
-  // Using V6 keys to keep data from previous version
   const K_AUTH = "ca_auth";
   const K_STUDENTS = "ca_students_v6";      
   const K_EXTRA_IDS = "ca_extra_ids_v6";     
@@ -24,7 +23,7 @@
 
   // Top Bar
   const totalStudentsCount = $("totalStudentsCount");
-  const openAllStudentsBtn = $("openAllStudentsBtn"); // The Button to open List
+  const openAllStudentsBtn = $("openAllStudentsBtn");
   const todayCountTop = $("todayCountTop");
   const todayRevenue = $("todayRevenue"); 
   const termFeeInp = $("termFeeInp");
@@ -93,7 +92,7 @@
   const studentMsg = $("studentMsg");
   const attList = $("attList");
 
-  // Modal Elements (The New List)
+  // Modal Elements
   const allStudentsModal = $("allStudentsModal");
   const closeModalBtn = $("closeModalBtn");
   const allStudentsTable = $("allStudentsTable").querySelector("tbody");
@@ -122,7 +121,6 @@
       osc.connect(gain);
       gain.connect(ctx.destination);
       osc.type = "sine";
-      // High pitch for success, lower for generic
       osc.frequency.value = type === "success" ? 880 : 600; 
       gain.gain.value = 0.1;
       osc.start();
@@ -178,7 +176,6 @@
     termFeeInp.value = termFee > 0 ? termFee : "";
 
     let sRaw = localStorage.getItem(K_STUDENTS);
-    // Backward compat check
     if(!sRaw) sRaw = localStorage.getItem("ca_students_v5") || localStorage.getItem("ca_students_v4");
     
     try { students = JSON.parse(sRaw || "{}") || {}; } catch { students = {}; }
@@ -339,7 +336,7 @@
       ? last25.map(d => `<div class="item">${escapeHtml(prettyDate(d))}</div>`).join("")
       : `<div class="mutedCenter">— لا يوجد حضور —</div>`;
       
-    // New Student Logic (Remains until first attendance)
+    // New Student Logic
     if (dates.length === 0 && st.name) newBadge.classList.remove("hidden");
     else newBadge.classList.add("hidden");
   };
@@ -364,9 +361,8 @@
     reportList.innerHTML = rows.join("");
   };
 
-  // ====== ALL STUDENTS MODAL (THE NEW LIST) ======
+  // ====== MODAL LIST ======
   openAllStudentsBtn.addEventListener("click", () => {
-    // 1. Get all filled students
     const filled = Object.values(students).filter(st => isFilledStudent(st)).sort((a,b)=>a.id-b.id);
     allStudentsTable.innerHTML = "";
     
@@ -379,7 +375,6 @@
         let status = "—";
         let statusColor = "#555";
         
-        // Status Logic
         if(termFee > 0) {
             if(paid >= termFee) { status = "✅ خالص"; statusColor = "green"; }
             else if(paid > 0) { status = `⚠️ باقي ${termFee - paid}`; statusColor = "#d29922"; }
@@ -395,7 +390,6 @@
           <td>${paid}</td>
           <td style="color:${statusColor}; font-weight:bold;">${status}</td>
         `;
-        // Make row clickable to open student
         tr.style.cursor = "pointer";
         tr.onclick = () => {
             allStudentsModal.classList.add("hidden");
@@ -454,7 +448,7 @@
     });
   });
 
-  // ====== BUTTON ACTIONS ======
+  // ====== ACTIONS ======
   waBtn.addEventListener("click", () => {
     const phone = stPhone.value.trim().replace(/[^0-9]/g, ""); 
     if (phone.length < 10) return alert("رقم الهاتف غير صحيح");
@@ -462,17 +456,12 @@
     window.open(`https://wa.me/${finalPhone}`, "_blank");
   });
 
-  // DEPOSIT (FINANCIAL ONLY - No Auto Save of Name)
   addPaymentBtn.addEventListener("click", () => {
     if(!currentId) return alert("افتح طالب أولاً");
-    
-    // Check if user entered an amount
     const amountVal = parseInt(newPaymentInput.value);
     if(isNaN(amountVal) || amountVal === 0) return alert("أدخل مبلغ صحيح");
-
-    const st = getStudent(currentId);
     
-    // Update Money Only
+    const st = getStudent(currentId);
     const oldTotal = parseInt(st.paid) || 0;
     st.paid = oldTotal + amountVal;
     
@@ -481,14 +470,11 @@
 
     setStudent(st);
     saveAll(); 
-
-    // Feedback
-    alert(`تم إيداع ${amountVal} ج بنجاح ✅\n(تذكر حفظ بيانات الطالب إذا قمت بتعديلها)`);
+    alert(`تم إيداع ${amountVal} ج بنجاح ✅`);
     updateStudentUI(currentId);
     renderReport(reportDate.value || today);
   });
 
-  // Secure Fee Save
   saveFeeBtn.addEventListener("click", () => {
       const pass = prompt("🔐 أدخل كلمة مرور المسؤول لتعديل المصاريف:");
       if(pass !== ADMIN_PASS) return alert("كلمة المرور خطأ!");
@@ -498,7 +484,6 @@
       if(currentId) updateStudentUI(currentId); 
   });
 
-  // Add New Student
   addNewBtn.addEventListener("click", () => {
     const id = toInt(newId.value);
     if (!id || existsId(id)) { showMsg(addMsg, "ID غير صحيح أو موجود", "err"); return; }
@@ -510,15 +495,11 @@
     setTimeout(() => openStudent(id), 100);
   });
 
-  // Copy Report (FIXED: NUMBER ONLY)
   copyReportBtn.addEventListener("click", () => {
      const d = reportDate.value || nowDateStr();
      const count = reportCount.textContent; 
      const money = reportMoney.textContent; 
-     
-     // Count number of new students
      const newStCount = Object.values(students).filter(s => s.joinedDate === d).length;
-
      const text = 
 `📊 *تقرير السنتر اليومي*
 📅 التاريخ: ${prettyDate(d)}
@@ -534,17 +515,14 @@
 تم الاستخراج من اللوحة 🎓`;
      
      if(navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text)
-        .then(() => {
+        navigator.clipboard.writeText(text).then(() => {
             const originalText = copyReportBtn.textContent;
             copyReportBtn.textContent = "تم النسخ ✅";
             setTimeout(() => copyReportBtn.textContent = originalText, 2000);
-        })
-        .catch(() => alert("النسخ غير مدعوم"));
+        }).catch(() => alert("النسخ غير مدعوم"));
      } else alert("النسخ غير مدعوم");
   });
 
-  // Save Button (WITH SOUND)
   saveStudentBtn.addEventListener("click", () => {
     if (!currentId) return;
     const st = getStudent(currentId);
@@ -553,15 +531,12 @@
     st.phone = stPhone.value.trim();
     st.notes = stNotes.value.trim();
     setStudent(st);
-    
-    playBeep("success"); // 🎉 Sound Effect
+    playBeep("success"); 
     showMsg(studentMsg, "تم الحفظ ✅", "ok");
-    
     updateStudentUI(currentId);
     updateTopStats();
   });
 
-  // Attendance Buttons
   markTodayBtn.addEventListener("click", () => {
     if(!currentId) return;
     const res = addAttendance(currentId, nowDateStr());
@@ -614,31 +589,55 @@
   logoutBtn.addEventListener("click", () => { setAuth(false); showLogin(); });
   togglePassBtn?.addEventListener("click", () => passInp.type = passInp.type==="password"?"text":"password");
 
-  // Excel
+  // ====== EXCEL EXPORT/IMPORT (V8 - FIXED DATA INTEGRITY) ======
   exportExcelBtn.addEventListener("click", () => {
     if (typeof XLSX === "undefined") return alert("Excel Lib Missing");
+    
+    // Sheet 1: Students
     const filled = Object.values(students).filter(st => isFilledStudent(st)).sort((a,b)=>a.id-b.id);
-    const wsData = [["ID","الاسم","الصف","موبايل","مدفوع","ملاحظات","أيام الحضور"]];
-    filled.forEach(st => wsData.push([st.id, st.name, st.className, st.phone, st.paid, st.notes, st.attendanceDates.length]));
-    const wsAtt = [["التاريخ","ID","الاسم"]];
-    Object.keys(attByDate).sort().forEach(d => attByDate[d].forEach(id => wsAtt.push([d, id, getStudent(id)?.name||""])));
+    const wsData = [["ID","الاسم","الصف","موبايل","مدفوع","ملاحظات"]];
+    filled.forEach(st => wsData.push([st.id, st.name, st.className, st.phone, st.paid, st.notes]));
+    
+    // Sheet 2: Attendance History (FIXED)
+    const wsAtt = [["التاريخ","ID"]];
+    Object.keys(attByDate).sort().forEach(d => {
+       attByDate[d].forEach(id => wsAtt.push([d, id]));
+    });
+
+    // Sheet 3: Revenue History (FIXED)
+    const wsRev = [["التاريخ", "الإيراد"]];
+    Object.keys(revenueByDate).sort().forEach(d => {
+        wsRev.push([d, revenueByDate[d]]);
+    });
+
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsData), "الطلاب");
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsAtt), "سجل الحضور");
-    XLSX.writeFile(wb, `Center_Data_${nowDateStr()}.xlsx`);
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsData), "Students");
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsAtt), "Attendance_Log");
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsRev), "Revenue_Log");
+    XLSX.writeFile(wb, `Center_Full_Backup_${nowDateStr()}.xlsx`);
   });
 
   importExcelInput.addEventListener("change", async () => {
     const f = importExcelInput.files[0]; if(!f) return;
     const wb = XLSX.read(await f.arrayBuffer(), {type:"array"});
-    const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1, defval:""});
+    
+    // 1. Import Students
+    const sName = wb.SheetNames.find(n => n.includes("Student")) || wb.SheetNames[0];
+    const rows = XLSX.utils.sheet_to_json(wb.Sheets[sName], {header:1, defval:""});
     const head = rows[0].map(x => String(x).toLowerCase().trim());
     const iID = head.findIndex(x=>x.includes("id"));
     if (iID === -1) { alert("خطأ: لا يوجد عمود ID"); return; }
-    const iName = head.findIndex(x=>x.includes("اسم"));
-    const iPhone = head.findIndex(x=>x.includes("موبايل"));
-    const iPaid = head.findIndex(x=>x.includes("مدفوع"));
-    const iNote = head.findIndex(x=>x.includes("ملاحظات"));
+    
+    const iName = head.findIndex(x=>x.includes("اسم")||x.includes("name"));
+    const iPhone = head.findIndex(x=>x.includes("موبايل")||x.includes("phone"));
+    const iPaid = head.findIndex(x=>x.includes("مدفوع")||x.includes("paid"));
+    const iNote = head.findIndex(x=>x.includes("ملاحظات")||x.includes("note"));
+
+    // Reset Data before import to ensure clean state
+    students = {}; extraIds = []; attByDate = {}; revenueByDate = {};
+    ensureBase500();
+
+    // Fill Students
     for(let r=1; r<rows.length; r++) {
       const row = rows[r]; const id = toInt(row[iID]);
       if(id) {
@@ -649,7 +648,42 @@
         if(iNote!==-1) students[id].notes = row[iNote];
       }
     }
-    saveAll(); alert("تم الاستيراد"); location.reload(); 
+
+    // 2. Import Attendance Log (The Fix)
+    const attSheetName = wb.SheetNames.find(n => n.includes("Attendance"));
+    if(attSheetName) {
+        const attRows = XLSX.utils.sheet_to_json(wb.Sheets[attSheetName], {header:1});
+        // Skip header row
+        for(let r=1; r<attRows.length; r++) {
+            const dateStr = attRows[r][0];
+            const sId = attRows[r][1];
+            if(dateStr && sId) {
+                if(!attByDate[dateStr]) attByDate[dateStr] = [];
+                attByDate[dateStr].push(sId);
+                // Also update student object
+                if(students[sId]) {
+                    if(!students[sId].attendanceDates.includes(dateStr)) {
+                        students[sId].attendanceDates.push(dateStr);
+                    }
+                }
+            }
+        }
+    }
+
+    // 3. Import Revenue Log (The Fix)
+    const revSheetName = wb.SheetNames.find(n => n.includes("Revenue"));
+    if(revSheetName) {
+        const revRows = XLSX.utils.sheet_to_json(wb.Sheets[revSheetName], {header:1});
+        for(let r=1; r<revRows.length; r++) {
+            const dateStr = revRows[r][0];
+            const amount = revRows[r][1];
+            if(dateStr) revenueByDate[dateStr] = toInt(amount) || 0;
+        }
+    }
+
+    saveAll(); 
+    alert("تم استعادة النسخة الاحتياطية بالكامل (طلاب + تاريخ + خزنة) ✅"); 
+    location.reload(); 
   });
 
   const showLogin = () => { loginBox.classList.remove("hidden"); appBox.classList.add("hidden"); };
