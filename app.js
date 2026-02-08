@@ -1,13 +1,10 @@
 /* =============================================
-   Center System V18 (Filter Fix + Attend Column)
-   Features: 
-   1. Added "Today's Attendance" Column to list
-   2. Added "Present/Absent" Filter
-   3. Fixed Import to restore History for reports
+   Center System V19 (Revenue Restore Fix)
+   Fix: Immediate UI update when restoring revenue
    ============================================= */
 
 document.addEventListener('DOMContentLoaded', () => {
-  console.log("System V18 Loaded...");
+  console.log("System V19 Loaded...");
 
   // ====== 1. Definitions ======
   const STRINGS = {
@@ -322,18 +319,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ====== 12. LISTENERS ======
   
+  // *** FIXED RESTORE FUNCTION (V19) ***
   window.restoreSt = (id) => {
       if(students[id] && (students[id].name || students[id].paid>0)) { if(!confirm("Occupied. Overwrite?")) return; }
       const st = deletedStudents[id];
+      
+      // Revenue logic check
       if(st.paid > 0) {
           if(confirm(`💰 هذا الطالب كان دافع (${st.paid} ج).\n\nهل تريد استرجاع المبلغ لإيراد اليوم؟`)) {
               const t = nowDateStr();
-              revenueByDate[t] = (revenueByDate[t] || 0) + st.paid;
+              // ParseInt ensures we are doing math, not text concatenation
+              const currentRev = parseInt(revenueByDate[t] || 0);
+              const stPaid = parseInt(st.paid);
+              revenueByDate[t] = currentRev + stPaid;
           }
       }
+      
       students[id] = st; delete deletedStudents[id];
-      saveAll(); alert("تم الاسترجاع بنجاح ✅"); $("recycleBinModal").classList.add("hidden"); window.extOpen(id);
+      saveAll(); 
+      
+      // *** IMMEDIATE UI UPDATES ***
+      renderReport(nowDateStr()); // Updates center report
+      updateTopStats(); // Updates top bar
+      
+      alert("تم الاسترجاع وتحديث الخزنة بنجاح ✅"); 
+      $("recycleBinModal").classList.add("hidden"); 
+      window.extOpen(id);
   };
+
   window.permaDelete = (id) => { if(confirm("Permanent Delete?")) { delete deletedStudents[id]; saveAll(); renderBinList(); }};
   window.extOpen = (id) => { 
       updateStudentUI(id); 
@@ -429,7 +442,7 @@ document.addEventListener('DOMContentLoaded', () => {
       
       const filterGroup = $("filterClass").value; 
       const filterStatus = $("filterStatus").value; 
-      const filterAttend = $("filterAttend").value; // New Filter
+      const filterAttend = $("filterAttend").value; 
       
       const allClasses = new Set();
       Object.values(students).forEach(s => { if(s.className) allClasses.add(s.className); });
@@ -444,7 +457,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const filled = Object.values(students).filter(s => s.name || s.paid > 0);
-      const today = nowDateStr(); // Get Today for check
+      const today = nowDateStr(); 
 
       const filtered = filled.filter(s => {
           // 1. Group
@@ -464,7 +477,7 @@ document.addEventListener('DOMContentLoaded', () => {
               }
           }
 
-          // 3. Attendance (The Fix)
+          // 3. Attendance
           const isPresent = (s.attendanceDates || []).includes(today);
           if(filterAttend === "present" && !isPresent) return false;
           if(filterAttend === "absent" && isPresent) return false;
@@ -481,7 +494,7 @@ document.addEventListener('DOMContentLoaded', () => {
               else if(s.paid > 0) stTxt = "⚠️";
               else stTxt = "🔴";
           }
-          // Attend Text (Check if present today)
+          // Attend Text
           const attendTxt = (s.attendanceDates||[]).includes(today) ? "✅" : "➖";
 
           tr.innerHTML = `<td>${s.id}</td><td>${s.name}</td><td>${s.className}</td><td>${s.paid}</td><td>${stTxt}</td><td>${attendTxt}</td>`;
@@ -495,7 +508,6 @@ document.addEventListener('DOMContentLoaded', () => {
   
   if($("filterClass")) $("filterClass").addEventListener("change", renderList);
   if($("filterStatus")) $("filterStatus").addEventListener("change", renderList);
-  // Listen to new filter
   if($("filterAttend")) $("filterAttend").addEventListener("change", renderList);
 
   on("openBinBtn", "click", () => { renderBinList(); $("recycleBinModal").classList.remove("hidden"); });
