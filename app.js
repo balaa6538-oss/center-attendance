@@ -1,10 +1,13 @@
 /* =============================================
-   Center System V19 (Revenue Restore Fix)
-   Fix: Immediate UI update when restoring revenue
+   Center System V20 (Final Fixes)
+   Features: 
+   1. Fix: Import now correctly rebuilds historical reports (Attendance Log)
+   2. Fix: Search now works with Name, ID, AND Phone Number
+   3. Includes: Live Revenue Update (V19) + Filters (V18)
    ============================================= */
 
 document.addEventListener('DOMContentLoaded', () => {
-  console.log("System V19 Loaded...");
+  console.log("System V20 Loaded...");
 
   // ====== 1. Definitions ======
   const STRINGS = {
@@ -319,29 +322,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ====== 12. LISTENERS ======
   
-  // *** FIXED RESTORE FUNCTION (V19) ***
+  // Restore Fix (V19)
   window.restoreSt = (id) => {
       if(students[id] && (students[id].name || students[id].paid>0)) { if(!confirm("Occupied. Overwrite?")) return; }
       const st = deletedStudents[id];
-      
-      // Revenue logic check
       if(st.paid > 0) {
           if(confirm(`💰 هذا الطالب كان دافع (${st.paid} ج).\n\nهل تريد استرجاع المبلغ لإيراد اليوم؟`)) {
               const t = nowDateStr();
-              // ParseInt ensures we are doing math, not text concatenation
               const currentRev = parseInt(revenueByDate[t] || 0);
               const stPaid = parseInt(st.paid);
               revenueByDate[t] = currentRev + stPaid;
           }
       }
-      
       students[id] = st; delete deletedStudents[id];
       saveAll(); 
-      
-      // *** IMMEDIATE UI UPDATES ***
-      renderReport(nowDateStr()); // Updates center report
-      updateTopStats(); // Updates top bar
-      
+      renderReport(nowDateStr());
+      updateTopStats(); 
       alert("تم الاسترجاع وتحديث الخزنة بنجاح ✅"); 
       $("recycleBinModal").classList.add("hidden"); 
       window.extOpen(id);
@@ -366,11 +362,18 @@ document.addEventListener('DOMContentLoaded', () => {
   on("darkModeBtn", "click", () => toggleDarkMode());
 
   on("openBtn", "click", () => window.extOpen(toInt($("openId").value)));
+  
+  // *** FIXED SEARCH (V20) - Name, ID, Phone ***
   on("searchAny", "input", (e) => {
       const q = e.target.value.toLowerCase();
       const res = $("searchMsg");
       if(!q) { if(res) res.style.display="none"; return; }
-      const found = Object.values(students).filter(s => (s.name && s.name.toLowerCase().includes(q)) || String(s.id).includes(q)).slice(0,5);
+      const found = Object.values(students).filter(s => 
+        (s.name && s.name.toLowerCase().includes(q)) || 
+        String(s.id).includes(q) || 
+        (s.phone && String(s.phone).includes(q))
+      ).slice(0,5);
+      
       if(res) {
           res.style.display = "block";
           res.innerHTML = found.map(s=>`<div class="item" onclick="window.extOpen(${s.id})">${s.name} (${s.id})</div>`).join("");
@@ -436,7 +439,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   on("deleteStudentBtn", "click", () => { if(currentId && confirm("Delete?")) moveToBin(currentId); });
 
-  // ====== UPDATED FILTER & RENDER LOGIC ======
+  // ====== FILTER LOGIC (V18) ======
   const renderList = () => {
       const tb = $("allStudentsTable").querySelector("tbody"); tb.innerHTML="";
       
@@ -460,10 +463,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const today = nowDateStr(); 
 
       const filtered = filled.filter(s => {
-          // 1. Group
           if(filterGroup !== "all" && s.className !== filterGroup) return false;
-          
-          // 2. Finance
           if(filterStatus !== "all") {
               const p = s.paid || 0;
               const req = termFee;
@@ -476,25 +476,20 @@ document.addEventListener('DOMContentLoaded', () => {
                   if(filterStatus === "unpaid" && p > 0) return false;
               }
           }
-
-          // 3. Attendance
           const isPresent = (s.attendanceDates || []).includes(today);
           if(filterAttend === "present" && !isPresent) return false;
           if(filterAttend === "absent" && isPresent) return false;
-
           return true;
       });
 
       filtered.forEach(s => {
           const tr = document.createElement("tr");
-          // Status Text
           let stTxt = "-";
           if(termFee > 0) {
               if(s.paid >= termFee) stTxt = "✅";
               else if(s.paid > 0) stTxt = "⚠️";
               else stTxt = "🔴";
           }
-          // Attend Text
           const attendTxt = (s.attendanceDates||[]).includes(today) ? "✅" : "➖";
 
           tr.innerHTML = `<td>${s.id}</td><td>${s.name}</td><td>${s.className}</td><td>${s.paid}</td><td>${stTxt}</td><td>${attendTxt}</td>`;
@@ -533,8 +528,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof XLSX === "undefined") return alert("Excel Lib Missing");
     
     const filled = Object.values(students).filter(st => isFilledStudent(st)).sort((a,b)=>a.id-b.id);
-    
-    // Arabic Headers
     const wsData = [["كود", "الاسم", "المجموعة", "رقم الموبايل", "المدفوع", "ملاحظات", "سجل الحضور"]];
     
     filled.forEach(st => {
@@ -547,6 +540,7 @@ document.addEventListener('DOMContentLoaded', () => {
     XLSX.writeFile(wb, `Center_Data_${nowDateStr()}.xlsx`);
   });
 
+  // *** FIXED IMPORT (V20) - Restore History to Reports ***
   on("importExcelInput", "change", async () => {
     const f = $("importExcelInput").files[0]; if(!f) return;
     const wb = XLSX.read(await f.arrayBuffer(), {type:"array"});
@@ -567,26 +561,26 @@ document.addEventListener('DOMContentLoaded', () => {
     rows.forEach(row => {
         const id = row["كود"] || row["ID"];
         if(id) {
-            let st = makeEmptyStudent(id);
+            const numericId = parseInt(id); // V20: Force numeric ID
+            let st = makeEmptyStudent(numericId);
             st.name = row["الاسم"] || row["Name"] || "";
             st.className = row["المجموعة"] || row["Class"] || "";
             st.phone = row["رقم الموبايل"] || row["Phone"] || "";
             st.paid = parseInt(row["المدفوع"] || row["Paid"] || 0);
             st.notes = row["ملاحظات"] || row["Notes"] || "";
             
-            // Restore History
             const histStr = row["سجل الحضور"] || "";
             if(histStr) {
                 const dates = histStr.split(",").map(s => s.trim()).filter(s => s);
                 st.attendanceDates = dates;
+                // V20: Rebuild daily report (attByDate) from history
                 dates.forEach(d => {
                     if(!attByDate[d]) attByDate[d] = [];
-                    if(!attByDate[d].includes(id)) attByDate[d].push(id);
+                    if(!attByDate[d].includes(numericId)) attByDate[d].push(numericId);
                 });
             }
-            
-            students[String(id)] = st;
-            if(id > BASE_MAX_ID) extraIds.push(id);
+            students[String(numericId)] = st;
+            if(numericId > BASE_MAX_ID) extraIds.push(numericId);
         }
     });
 
