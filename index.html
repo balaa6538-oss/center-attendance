@@ -44,13 +44,11 @@
       <div class="topActions">
         <button id="langBtn" class="btn smallBtn" style="font-weight:bold;">EN</button>
         <button id="darkModeBtn" class="btn smallBtn">🌙</button>
-        
         <div class="termFeeWrapper">
           <span class="feeLabel" data-i18n="term_fee_label">المطلوب:</span>
           <input id="termFeeInp" type="number" class="feeInp" placeholder="0">
           <button id="saveFeeBtn" class="feeBtn">🔒</button>
         </div>
-
         <button id="exportExcelBtn" class="btn" data-i18n="btn_export">تصدير Excel</button>
         <label class="btn fileBtn" for="importExcelInput" data-i18n="btn_import">استيراد Excel</label>
         <input id="importExcelInput" type="file" accept=".xlsx,.xls" style="display:none;">
@@ -110,26 +108,21 @@
     <div class="grid2">
       <div class="card studentCard">
         <h2><span data-i18n="st_details">بيانات الطالب</span> <span id="newBadge" class="newBadge hidden">جديد</span></h2>
-
         <div class="studentHead">
           <div class="pill" id="studentIdPill">ID: —</div>
           <div class="pill" id="todayStatus">—</div>
           <div class="pill" id="lastAttend">—</div>
           <div class="pill" id="daysCount">—</div>
         </div>
-
         <label class="lbl" data-i18n="lbl_name">الاسم</label>
         <input id="stName" class="inp">
-
         <label class="lbl" data-i18n="lbl_class">الصف / المجموعة</label>
         <input id="stClass" class="inp">
-
         <label class="lbl" data-i18n="lbl_phone">رقم الموبايل</label>
         <div class="row">
           <input id="stPhone" class="inp" inputmode="tel">
           <button id="waBtn" class="btn success">💬</button>
         </div>
-
         <label class="lbl" style="margin-top:20px; border-top:1px dashed #ccc; padding-top:10px;" data-i18n="lbl_finance">نظام المصاريف</label>
         <div class="paymentBox">
             <div class="payRow">
@@ -146,14 +139,12 @@
             </div>
         </div>
         <div id="paymentBadge" class="paymentBadge hidden"></div>
-
         <label class="lbl" data-i18n="lbl_notes">ملاحظات (مؤرخة)</label>
         <div class="row">
             <input id="newNoteInp" class="inp" placeholder="اكتب ملحوظة جديدة هنا...">
             <button id="addNoteBtn" class="btn" data-i18n="btn_add">إضافة</button>
         </div>
         <textarea id="stNotes" class="inp" rows="3" readonly style="background:#f9f9f9; margin-top:5px; font-size:0.9em;"></textarea>
-
         <div class="row wrap" style="margin-top:15px;">
           <button id="saveStudentBtn" class="btn primary" data-i18n="btn_save">حفظ البيانات 💾</button>
           <button id="markTodayBtn" class="btn success" data-i18n="btn_attend">✅ حضور</button>
@@ -162,7 +153,6 @@
         </div>
         <div id="studentMsg" class="msg"></div>
       </div>
-
       <div class="card">
         <h2 data-i18n="history_title">سجل التواريخ</h2>
         <div id="attList" class="list mutedCenter">...</div>
@@ -206,15 +196,15 @@
             <option value="all">-- كل المجموعات --</option>
         </select>
         <select id="filterStatus" class="inp" style="width:auto;">
-            <option value="all">-- الحالة المالية (الكل) --</option>
-            <option value="paid">✅ خالص (Paid)</option>
-            <option value="partial">⚠️ عليه جزء (Partial)</option>
-            <option value="unpaid">🔴 مدفعش (Unpaid)</option>
+            <option value="all">-- الحالة المالية --</option>
+            <option value="paid">✅ خالص</option>
+            <option value="partial">⚠️ عليه جزء</option>
+            <option value="unpaid">🔴 مدفعش</option>
         </select>
         <select id="filterAttend" class="inp" style="width:auto;">
-            <option value="all">-- الحضور (الكل) --</option>
-            <option value="present">✅ حضور اليوم</option>
-            <option value="absent">➖ غياب اليوم</option>
+            <option value="all">-- حضور اليوم --</option>
+            <option value="present">✅ الحضور فقط</option>
+            <option value="absent">✖ الغياب فقط</option>
         </select>
       </div>
 
@@ -226,9 +216,8 @@
               <th data-i18n="th_name">الاسم</th>
               <th data-i18n="th_class">المجموعة</th>
               <th data-i18n="th_paid">المدفوع</th>
-              <th data-i18n="th_status">الحالة</th>
-              <th>حضور اليوم</th>
-            </tr>
+              <th data-i18n="th_status">المالية</th>
+              <th>حضور اليوم</th> </tr>
           </thead>
           <tbody></tbody>
         </table>
