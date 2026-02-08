@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Center System V13</title>
-  <link rel="stylesheet" href="style.css?v=13">
+  <title>Center System V17</title>
+  <link rel="stylesheet" href="style.css?v=17">
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
@@ -149,7 +149,7 @@
 
         <label class="lbl" data-i18n="lbl_notes">ملاحظات (مؤرخة)</label>
         <div class="row">
-            <input id="newNoteInp" class="inp">
+            <input id="newNoteInp" class="inp" placeholder="اكتب ملحوظة جديدة هنا...">
             <button id="addNoteBtn" class="btn" data-i18n="btn_add">إضافة</button>
         </div>
         <textarea id="stNotes" class="inp" rows="3" readonly style="background:#f9f9f9; margin-top:5px; font-size:0.9em;"></textarea>
@@ -202,12 +202,14 @@
       </div>
       
       <div class="row" style="background:#f0f2f5; padding:10px; border-radius:8px; margin-bottom:10px;">
-        <select id="filterClass" class="inp" style="width:auto;"></select>
+        <select id="filterClass" class="inp" style="width:auto;">
+            <option value="all">-- كل المجموعات --</option>
+        </select>
         <select id="filterStatus" class="inp" style="width:auto;">
-            <option value="all">-- Status / الحالة --</option>
-            <option value="paid">✅ Paid</option>
-            <option value="partial">⚠️ Partial</option>
-            <option value="unpaid">🔴 Unpaid</option>
+            <option value="all">-- الحالة (الكل) --</option>
+            <option value="paid">✅ خالص (Paid)</option>
+            <option value="partial">⚠️ عليه جزء (Partial)</option>
+            <option value="unpaid">🔴 مدفعش (Unpaid)</option>
         </select>
       </div>
 
@@ -241,6 +243,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=13"></script>
+  <script src="app.js?v=17"></script>
 </body>
 </html>
