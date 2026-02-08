@@ -1,13 +1,15 @@
 /* =============================================
-   Center System V20 (Final Fixes)
+   Center System V21 (Force Update & Robust Import)
    Features: 
-   1. Fix: Import now correctly rebuilds historical reports (Attendance Log)
-   2. Fix: Search now works with Name, ID, AND Phone Number
-   3. Includes: Live Revenue Update (V19) + Filters (V18)
+   1. Smart Import (Reads Arabic/English/Index headers)
+   2. Phone Search Active
+   3. Startup Alert to confirm update
    ============================================= */
 
 document.addEventListener('DOMContentLoaded', () => {
-  console.log("System V20 Loaded...");
+  // رسالة تأكيد التحديث (هتظهر مرة واحدة عشان تتأكد)
+  alert("تم تحديث السيستم لنسخة V21 بنجاح! 🚀\nجرب دلوقتي الاستيراد والبحث.");
+  console.log("System V21 Loaded...");
 
   // ====== 1. Definitions ======
   const STRINGS = {
@@ -322,7 +324,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ====== 12. LISTENERS ======
   
-  // Restore Fix (V19)
+  // Restore Fix
   window.restoreSt = (id) => {
       if(students[id] && (students[id].name || students[id].paid>0)) { if(!confirm("Occupied. Overwrite?")) return; }
       const st = deletedStudents[id];
@@ -363,7 +365,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   on("openBtn", "click", () => window.extOpen(toInt($("openId").value)));
   
-  // *** FIXED SEARCH (V20) - Name, ID, Phone ***
+  // *** SEARCH FIX (V21) - Name, ID, Phone ***
   on("searchAny", "input", (e) => {
       const q = e.target.value.toLowerCase();
       const res = $("searchMsg");
@@ -540,7 +542,7 @@ document.addEventListener('DOMContentLoaded', () => {
     XLSX.writeFile(wb, `Center_Data_${nowDateStr()}.xlsx`);
   });
 
-  // *** FIXED IMPORT (V20) - Restore History to Reports ***
+  // *** ROBUST IMPORT (V21) ***
   on("importExcelInput", "change", async () => {
     const f = $("importExcelInput").files[0]; if(!f) return;
     const wb = XLSX.read(await f.arrayBuffer(), {type:"array"});
@@ -561,7 +563,7 @@ document.addEventListener('DOMContentLoaded', () => {
     rows.forEach(row => {
         const id = row["كود"] || row["ID"];
         if(id) {
-            const numericId = parseInt(id); // V20: Force numeric ID
+            const numericId = parseInt(id); 
             let st = makeEmptyStudent(numericId);
             st.name = row["الاسم"] || row["Name"] || "";
             st.className = row["المجموعة"] || row["Class"] || "";
@@ -569,11 +571,13 @@ document.addEventListener('DOMContentLoaded', () => {
             st.paid = parseInt(row["المدفوع"] || row["Paid"] || 0);
             st.notes = row["ملاحظات"] || row["Notes"] || "";
             
-            const histStr = row["سجل الحضور"] || "";
-            if(histStr) {
+            // Smart History Reader: Try Arabic, then English, then Index 6
+            let histStr = row["سجل الحضور"] || row["History"] || Object.values(row)[6] || "";
+            
+            if(histStr && typeof histStr === 'string') {
                 const dates = histStr.split(",").map(s => s.trim()).filter(s => s);
                 st.attendanceDates = dates;
-                // V20: Rebuild daily report (attByDate) from history
+                // Rebuild Daily Report
                 dates.forEach(d => {
                     if(!attByDate[d]) attByDate[d] = [];
                     if(!attByDate[d].includes(numericId)) attByDate[d].push(numericId);
