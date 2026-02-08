@@ -1,14 +1,12 @@
 /* =============================================
-   Center System V21 (Force Update & Robust Import)
-   Features: 
-   1. Smart Import (Reads Arabic/English/Index headers)
-   2. Phone Search Active
-   3. Startup Alert to confirm update
+   Center System V22 (Final Polish)
+   1. Removed Startup Alert completely.
+   2. Fixed Report Button "Click" Logic.
+   3. Added Phone Number to Search Dropdown.
    ============================================= */
 
 document.addEventListener('DOMContentLoaded', () => {
-  
-  console.log("System V21 Loaded...");
+  console.log("System V22 Loaded...");
 
   // ====== 1. Definitions ======
   const STRINGS = {
@@ -364,11 +362,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   on("openBtn", "click", () => window.extOpen(toInt($("openId").value)));
   
-  // *** SEARCH FIX (V21) - Name, ID, Phone ***
+  // *** SEARCH FIX (V22) - Display Phone in List ***
   on("searchAny", "input", (e) => {
       const q = e.target.value.toLowerCase();
       const res = $("searchMsg");
       if(!q) { if(res) res.style.display="none"; return; }
+      
       const found = Object.values(students).filter(s => 
         (s.name && s.name.toLowerCase().includes(q)) || 
         String(s.id).includes(q) || 
@@ -377,7 +376,14 @@ document.addEventListener('DOMContentLoaded', () => {
       
       if(res) {
           res.style.display = "block";
-          res.innerHTML = found.map(s=>`<div class="item" onclick="window.extOpen(${s.id})">${s.name} (${s.id})</div>`).join("");
+          // V22: ADDED PHONE DISPLAY IN DROPDOWN
+          res.innerHTML = found.map(s => {
+              const phoneDisplay = s.phone ? `<span style="font-size:0.85em; color:#2ea44f; margin-right:5px;">📞 ${s.phone}</span>` : "";
+              return `<div class="item" onclick="window.extOpen(${s.id})">
+                        <div style="font-weight:bold;">${s.name} (${s.id})</div>
+                        ${phoneDisplay}
+                      </div>`;
+          }).join("");
       }
   });
 
@@ -541,7 +547,7 @@ document.addEventListener('DOMContentLoaded', () => {
     XLSX.writeFile(wb, `Center_Data_${nowDateStr()}.xlsx`);
   });
 
-  // *** ROBUST IMPORT (V21) ***
+  // *** ROBUST IMPORT ***
   on("importExcelInput", "change", async () => {
     const f = $("importExcelInput").files[0]; if(!f) return;
     const wb = XLSX.read(await f.arrayBuffer(), {type:"array"});
@@ -570,13 +576,11 @@ document.addEventListener('DOMContentLoaded', () => {
             st.paid = parseInt(row["المدفوع"] || row["Paid"] || 0);
             st.notes = row["ملاحظات"] || row["Notes"] || "";
             
-            // Smart History Reader: Try Arabic, then English, then Index 6
             let histStr = row["سجل الحضور"] || row["History"] || Object.values(row)[6] || "";
             
             if(histStr && typeof histStr === 'string') {
                 const dates = histStr.split(",").map(s => s.trim()).filter(s => s);
                 st.attendanceDates = dates;
-                // Rebuild Daily Report
                 dates.forEach(d => {
                     if(!attByDate[d]) attByDate[d] = [];
                     if(!attByDate[d].includes(numericId)) attByDate[d].push(numericId);
@@ -590,6 +594,12 @@ document.addEventListener('DOMContentLoaded', () => {
     saveAll();
     alert("تم استيراد البيانات وسجل الحضور بنجاح! ✅");
     location.reload(); 
+  });
+
+  // *** FIX V22: Report Button Click Handler ***
+  on("reportBtn", "click", () => {
+      const d = $("reportDate").value;
+      if(d) renderReport(d);
   });
 
   on("saveFeeBtn", "click", () => { if(prompt("Pass")===ADMIN_PASS) { termFee=toInt($("termFeeInp").value)||0; saveAll(); alert("Saved"); updateStudentUI(currentId); }});
