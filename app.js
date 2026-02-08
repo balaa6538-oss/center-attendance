@@ -1,15 +1,15 @@
 /* =============================================
-   Center System V18 (Final Release)
+   Center System V18 (Filter Fix + Attend Column)
    Features: 
-   1. Attendance Column & Filter in List
-   2. Robust Import (Restores History Counts)
-   3. Dated Notes & All V17 Features
+   1. Added "Today's Attendance" Column to list
+   2. Added "Present/Absent" Filter
+   3. Fixed Import to restore History for reports
    ============================================= */
 
 document.addEventListener('DOMContentLoaded', () => {
   console.log("System V18 Loaded...");
 
-  // ====== 1. التعريفات والترجمة ======
+  // ====== 1. Definitions ======
   const STRINGS = {
     ar: {
       login_title: "دخول لوحة السنتر", login_desc: "الدخول للمسؤول فقط", login_btn: "دخول",
@@ -423,13 +423,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   on("deleteStudentBtn", "click", () => { if(currentId && confirm("Delete?")) moveToBin(currentId); });
 
-  // --- 4. Filtering Logic (V18 Fix: +Attendance Column) ---
+  // ====== UPDATED FILTER & RENDER LOGIC ======
   const renderList = () => {
       const tb = $("allStudentsTable").querySelector("tbody"); tb.innerHTML="";
       
       const filterGroup = $("filterClass").value; 
-      const filterStatus = $("filterStatus").value;
-      const filterAttend = $("filterAttend") ? $("filterAttend").value : "all"; // V18 Filter
+      const filterStatus = $("filterStatus").value; 
+      const filterAttend = $("filterAttend").value; // New Filter
       
       const allClasses = new Set();
       Object.values(students).forEach(s => { if(s.className) allClasses.add(s.className); });
@@ -444,12 +444,13 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const filled = Object.values(students).filter(s => s.name || s.paid > 0);
-      
+      const today = nowDateStr(); // Get Today for check
+
       const filtered = filled.filter(s => {
-          // 1. Group Filter
+          // 1. Group
           if(filterGroup !== "all" && s.className !== filterGroup) return false;
           
-          // 2. Status Filter
+          // 2. Finance
           if(filterStatus !== "all") {
               const p = s.paid || 0;
               const req = termFee;
@@ -463,8 +464,7 @@ document.addEventListener('DOMContentLoaded', () => {
               }
           }
 
-          // 3. Attendance Filter (V18 New)
-          const today = nowDateStr();
+          // 3. Attendance (The Fix)
           const isPresent = (s.attendanceDates || []).includes(today);
           if(filterAttend === "present" && !isPresent) return false;
           if(filterAttend === "absent" && isPresent) return false;
@@ -474,34 +474,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
       filtered.forEach(s => {
           const tr = document.createElement("tr");
-          // Status Logic
+          // Status Text
           let stTxt = "-";
           if(termFee > 0) {
               if(s.paid >= termFee) stTxt = "✅";
               else if(s.paid > 0) stTxt = "⚠️";
               else stTxt = "🔴";
           }
-          
-          // Attendance Column (V18 New)
-          const today = nowDateStr();
-          const isPresent = (s.attendanceDates || []).includes(today);
-          const attIcon = isPresent ? "✅" : "➖";
+          // Attend Text (Check if present today)
+          const attendTxt = (s.attendanceDates||[]).includes(today) ? "✅" : "➖";
 
-          tr.innerHTML = `<td>${s.id}</td><td>${s.name}</td><td>${s.className}</td><td>${s.paid}</td><td>${stTxt}</td><td>${attIcon}</td>`;
+          tr.innerHTML = `<td>${s.id}</td><td>${s.name}</td><td>${s.className}</td><td>${s.paid}</td><td>${stTxt}</td><td>${attendTxt}</td>`;
           tr.onclick = () => { $("allStudentsModal").classList.add("hidden"); window.extOpen(s.id); };
           tb.appendChild(tr);
       });
   };
   
-  on("openAllStudentsBtn", "click", () => { 
-      renderList(); 
-      $("allStudentsModal").classList.remove("hidden"); 
-  });
+  on("openAllStudentsBtn", "click", () => { renderList(); $("allStudentsModal").classList.remove("hidden"); });
   on("closeModalBtn", "click", () => $("allStudentsModal").classList.add("hidden"));
   
   if($("filterClass")) $("filterClass").addEventListener("change", renderList);
   if($("filterStatus")) $("filterStatus").addEventListener("change", renderList);
-  // Add Listener for V18 Filter
+  // Listen to new filter
   if($("filterAttend")) $("filterAttend").addEventListener("change", renderList);
 
   on("openBinBtn", "click", () => { renderBinList(); $("recycleBinModal").classList.remove("hidden"); });
@@ -528,6 +522,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const filled = Object.values(students).filter(st => isFilledStudent(st)).sort((a,b)=>a.id-b.id);
     
+    // Arabic Headers
     const wsData = [["كود", "الاسم", "المجموعة", "رقم الموبايل", "المدفوع", "ملاحظات", "سجل الحضور"]];
     
     filled.forEach(st => {
@@ -540,7 +535,6 @@ document.addEventListener('DOMContentLoaded', () => {
     XLSX.writeFile(wb, `Center_Data_${nowDateStr()}.xlsx`);
   });
 
-  // --- 7. Excel Import (V18 Robust Fix) ---
   on("importExcelInput", "change", async () => {
     const f = $("importExcelInput").files[0]; if(!f) return;
     const wb = XLSX.read(await f.arrayBuffer(), {type:"array"});
@@ -552,7 +546,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const firstSheet = wb.SheetNames[0];
     const rows = XLSX.utils.sheet_to_json(wb.Sheets[firstSheet]);
     
-    // Reset Data
     students = {}; attByDate = {}; revenueByDate = {}; extraIds = [];
     
     for (let i = BASE_MIN_ID; i <= BASE_MAX_ID; i++) {
@@ -560,8 +553,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     rows.forEach(row => {
-        const idVal = row["كود"] || row["ID"];
-        const id = toInt(idVal); // Force integer
+        const id = row["كود"] || row["ID"];
         if(id) {
             let st = makeEmptyStudent(id);
             st.name = row["الاسم"] || row["Name"] || "";
@@ -570,16 +562,13 @@ document.addEventListener('DOMContentLoaded', () => {
             st.paid = parseInt(row["المدفوع"] || row["Paid"] || 0);
             st.notes = row["ملاحظات"] || row["Notes"] || "";
             
-            // Import History & Rebuild Daily Reports
+            // Restore History
             const histStr = row["سجل الحضور"] || "";
             if(histStr) {
                 const dates = histStr.split(",").map(s => s.trim()).filter(s => s);
                 st.attendanceDates = dates;
-                
-                // V18 Fix: Force rebuild of attByDate for every date found
                 dates.forEach(d => {
                     if(!attByDate[d]) attByDate[d] = [];
-                    // Ensure we store ID as number to match rest of app
                     if(!attByDate[d].includes(id)) attByDate[d].push(id);
                 });
             }
