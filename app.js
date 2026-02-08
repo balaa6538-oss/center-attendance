@@ -1,10 +1,14 @@
 /* =============================================
-   Center System V16 (Safe Mode + QR Fix)
-   Fix: QR logic only runs AFTER login to prevent crash
+   Center System V17 (Final Release)
+   Features: 
+   1. Dated Notes & Active Filters
+   2. Arabic Excel Export/Import with History
+   3. Smart Restore (Revenue check)
+   4. Enhanced WhatsApp Report
    ============================================= */
 
 document.addEventListener('DOMContentLoaded', () => {
-  console.log("System V16 Loaded...");
+  console.log("System V17 Loaded...");
 
   // ====== 1. التعريفات والترجمة ======
   const STRINGS = {
@@ -101,7 +105,6 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch(e){}
   };
 
-  // Helper: Create Student
   const makeEmptyStudent = (id) => ({
     id: id, name: "", className: "", phone: "", paid: 0, 
     notes: "", joinedDate: nowDateStr(), attendanceDates: [] 
@@ -196,7 +199,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if(inps.name) inps.name.value = st.name || "";
     if(inps.cls) inps.cls.value = st.className || "";
     if(inps.ph) inps.ph.value = st.phone || "";
-    if(inps.note) inps.note.value = st.notes || "";
+    // Note: stNotes is textarea, newNoteInp is input
+    if(inps.note) inps.note.value = st.notes || ""; 
+    if($("newNoteInp")) $("newNoteInp").value = "";
+
     if(inps.paid) inps.paid.value = (st.paid||0) + " ";
     if(inps.newP) inps.newP.value = "";
 
@@ -303,9 +309,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if(localStorage.getItem(K_AUTH) === "1") showApp(); else showLogin();
   };
 
-  // ====== 11. CHECK QR FUNCTION (The Safe Fix) ======
+  // Safe QR Check
   const checkQR = () => {
-    // This function only runs when App is Visible
     const urlParams = new URLSearchParams(window.location.search);
     const qrId = toInt(urlParams.get("id"));
     if (qrId && existsId(qrId)) {
@@ -313,18 +318,26 @@ document.addEventListener('DOMContentLoaded', () => {
         updateStudentUI(qrId);
         renderReport(nowDateStr());
         const stName = students[qrId].name || "طالب بدون اسم";
-        // Show success alert
         alert(`📷 QR Scan:\n👤 ${stName} (${qrId})\n✅ ${res.msg}`);
-        // Clean URL
         window.history.replaceState(null, null, window.location.pathname);
     }
   };
 
   // ====== 12. LISTENERS ======
+  
+  // --- 1. Restore & Bin Logic ---
   window.restoreSt = (id) => {
       if(students[id] && (students[id].name || students[id].paid>0)) { if(!confirm("Occupied. Overwrite?")) return; }
-      students[id] = deletedStudents[id]; delete deletedStudents[id];
-      saveAll(); alert("Restored"); $("recycleBinModal").classList.add("hidden"); window.extOpen(id);
+      const st = deletedStudents[id];
+      // ** V17 Fix: Ask about Revenue Restoration **
+      if(st.paid > 0) {
+          if(confirm(`💰 هذا الطالب كان دافع (${st.paid} ج).\n\nهل تريد استرجاع المبلغ لإيراد اليوم؟`)) {
+              const t = nowDateStr();
+              revenueByDate[t] = (revenueByDate[t] || 0) + st.paid;
+          }
+      }
+      students[id] = st; delete deletedStudents[id];
+      saveAll(); alert("تم الاسترجاع بنجاح ✅"); $("recycleBinModal").classList.add("hidden"); window.extOpen(id);
   };
   window.permaDelete = (id) => { if(confirm("Permanent Delete?")) { delete deletedStudents[id]; saveAll(); renderBinList(); }};
   window.extOpen = (id) => { 
@@ -333,6 +346,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if(c) c.scrollIntoView({behavior:"smooth"}); 
   };
 
+  // --- 2. Main Buttons ---
   on("loginBtn", "click", () => {
       const u = $("user").value.trim(); const p = $("pass").value.trim();
       if(u === ADMIN_USER && p === ADMIN_PASS) { localStorage.setItem(K_AUTH, "1"); showApp(); } 
@@ -375,8 +389,28 @@ document.addEventListener('DOMContentLoaded', () => {
   on("saveStudentBtn", "click", () => {
       if(!currentId) return;
       const s = students[currentId];
-      s.name = $("stName").value; s.className = $("stClass").value; s.phone = $("stPhone").value; s.notes = $("stNotes").value;
+      s.name = $("stName").value; s.className = $("stClass").value; s.phone = $("stPhone").value; 
+      // Note: stNotes is read-only for manual edits, we use the add button
       saveAll(); showMsg("studentMsg", "Saved", "ok"); updateTopStats();
+  });
+
+  // --- 3. Dated Notes Logic (V17 New) ---
+  on("addNoteBtn", "click", () => {
+      if(!currentId) return;
+      const inp = $("newNoteInp");
+      const txt = inp.value.trim();
+      if(!txt) return;
+      
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+      const dateStr = now.toISOString().split('T')[0];
+      const stamp = `[${dateStr} ${timeStr}]`;
+      
+      const oldNotes = students[currentId].notes || "";
+      students[currentId].notes = `${stamp} : ${txt}\n${oldNotes}`;
+      
+      saveAll();
+      updateStudentUI(currentId);
   });
 
   on("markTodayBtn", "click", () => { if(currentId) { addAttendance(currentId, nowDateStr()); updateStudentUI(currentId); renderReport(nowDateStr()); }});
@@ -397,18 +431,75 @@ document.addEventListener('DOMContentLoaded', () => {
 
   on("deleteStudentBtn", "click", () => { if(currentId && confirm("Delete?")) moveToBin(currentId); });
 
+  // --- 4. Filtering Logic (V17 Fix) ---
   const renderList = () => {
       const tb = $("allStudentsTable").querySelector("tbody"); tb.innerHTML="";
-      const fC = $("filterClass") ? $("filterClass").value.toLowerCase() : "all";
-      Object.values(students).filter(s=>s.name||s.paid>0).forEach(s => {
+      
+      const filterGroup = $("filterClass").value; // 'all' or specific group
+      const filterStatus = $("filterStatus").value; // 'all', 'paid', 'partial', 'unpaid'
+      
+      // 1. Collect all Unique Classes for the dropdown
+      const allClasses = new Set();
+      Object.values(students).forEach(s => { if(s.className) allClasses.add(s.className); });
+      
+      // 2. Populate Dropdown (only if it has default options)
+      const sel = $("filterClass");
+      if(sel.options.length <= 1) { // Only do this once or if cleared
+          allClasses.forEach(c => {
+              const opt = document.createElement("option");
+              opt.value = c; opt.innerText = c;
+              sel.appendChild(opt);
+          });
+      }
+
+      // 3. Filter Students
+      const filled = Object.values(students).filter(s => s.name || s.paid > 0);
+      
+      const filtered = filled.filter(s => {
+          // Class Filter
+          if(filterGroup !== "all" && s.className !== filterGroup) return false;
+          
+          // Status Filter
+          if(filterStatus !== "all") {
+              const p = s.paid || 0;
+              const req = termFee;
+              if(req > 0) {
+                  if(filterStatus === "paid" && p < req) return false;
+                  if(filterStatus === "partial" && (p === 0 || p >= req)) return false;
+                  if(filterStatus === "unpaid" && p > 0) return false;
+              } else {
+                  // Fallback if no term fee
+                  if(filterStatus === "paid" && p === 0) return false;
+                  if(filterStatus === "unpaid" && p > 0) return false;
+              }
+          }
+          return true;
+      });
+
+      // 4. Render Rows
+      filtered.forEach(s => {
           const tr = document.createElement("tr");
-          tr.innerHTML = `<td>${s.id}</td><td>${s.name}</td><td>${s.className}</td><td>${s.paid}</td><td>-</td>`;
+          // Status Logic for Table
+          let stTxt = "-";
+          if(termFee > 0) {
+              if(s.paid >= termFee) stTxt = "✅";
+              else if(s.paid > 0) stTxt = "⚠️";
+              else stTxt = "🔴";
+          }
+          tr.innerHTML = `<td>${s.id}</td><td>${s.name}</td><td>${s.className}</td><td>${s.paid}</td><td>${stTxt}</td>`;
           tr.onclick = () => { $("allStudentsModal").classList.add("hidden"); window.extOpen(s.id); };
           tb.appendChild(tr);
       });
   };
-  on("openAllStudentsBtn", "click", () => { renderList(); $("allStudentsModal").classList.remove("hidden"); });
+  
+  on("openAllStudentsBtn", "click", () => { 
+      // Reset filters on open? Optional. Let's keep them.
+      renderList(); 
+      $("allStudentsModal").classList.remove("hidden"); 
+  });
   on("closeModalBtn", "click", () => $("allStudentsModal").classList.add("hidden"));
+  
+  // Attach Event Listeners to Selects
   if($("filterClass")) $("filterClass").addEventListener("change", renderList);
   if($("filterStatus")) $("filterStatus").addEventListener("change", renderList);
 
@@ -416,25 +507,99 @@ document.addEventListener('DOMContentLoaded', () => {
   on("closeBinBtn", "click", () => $("recycleBinModal").classList.add("hidden"));
   on("emptyBinBtn", "click", () => { if(confirm("Permanent Delete?")) { deletedStudents={}; saveAll(); renderBinList(); }});
 
+  // --- 5. Enhanced WhatsApp Report (V17) ---
   on("copyReportBtn", "click", () => {
-      const txt = `Report: ${$("reportDateLabel").textContent} \n Count: ${$("reportCount").textContent} \n Rev: ${$("reportMoney").textContent}`;
-      navigator.clipboard.writeText(txt).then(() => alert("Copied"));
+      const today = nowDateStr();
+      const attendCount = (attByDate[today] || []).length;
+      const rev = revenueByDate[today] || 0;
+      // Calculate New Students (joinedDate == today)
+      const newStCount = Object.values(students).filter(s => s.joinedDate === today && (s.name || s.paid>0)).length;
+
+      const txt = `📊 *تقرير يومي: ${today}*\n\n` +
+                  `✅ الحضور اليوم: ${attendCount} طالب\n` +
+                  `🆕 تسجيلات جديدة: ${newStCount} طلاب\n` +
+                  `💰 إجمالي الإيراد: ${rev} ج\n\n` +
+                  `-- سيستم السنتر --`;
+      
+      navigator.clipboard.writeText(txt).then(() => alert("تم نسخ التقرير للواتساب ✅"));
   });
 
+  // --- 6. Excel Export (Arabic + History) (V17) ---
   on("exportExcelBtn", "click", () => {
     if (typeof XLSX === "undefined") return alert("Excel Lib Missing");
+    
     const filled = Object.values(students).filter(st => isFilledStudent(st)).sort((a,b)=>a.id-b.id);
-    const wsData = [["ID","Name","Class","Phone","Paid","Notes"]];
-    filled.forEach(st => wsData.push([st.id, st.name, st.className, st.phone, st.paid, st.notes]));
+    
+    // Headers in Arabic
+    const wsData = [["كود", "الاسم", "المجموعة", "رقم الموبايل", "المدفوع", "ملاحظات", "سجل الحضور"]];
+    
+    filled.forEach(st => {
+        // Join attendance dates with comma
+        const historyStr = (st.attendanceDates || []).join(", ");
+        wsData.push([st.id, st.name, st.className, st.phone, st.paid, st.notes, historyStr]);
+    });
+    
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsData), "Students");
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsData), "الطلاب");
     XLSX.writeFile(wb, `Center_Data_${nowDateStr()}.xlsx`);
   });
 
+  // --- 7. Excel Import (Arabic + History) (V17) ---
   on("importExcelInput", "change", async () => {
     const f = $("importExcelInput").files[0]; if(!f) return;
     const wb = XLSX.read(await f.arrayBuffer(), {type:"array"});
-    alert("Import Triggered"); location.reload(); 
+    
+    if(!confirm("⚠️ تحذير: سيتم استبدال البيانات الحالية ببيانات الملف.\nهل أنت متأكد؟")) {
+        location.reload(); return;
+    }
+
+    const firstSheet = wb.SheetNames[0];
+    const rows = XLSX.utils.sheet_to_json(wb.Sheets[firstSheet]);
+    
+    // Reset Data but keep structure
+    students = {}; attByDate = {}; 
+    // Note: We cannot recover 'revenueByDate' from just student totals accurately, 
+    // so revenue history starts fresh or we rely on backups for that.
+    revenueByDate = {}; 
+    extraIds = [];
+    
+    // Re-init Base 500
+    for (let i = BASE_MIN_ID; i <= BASE_MAX_ID; i++) {
+        students[String(i)] = makeEmptyStudent(i);
+    }
+
+    rows.forEach(row => {
+        // Map Arabic Keys (or English fallback)
+        const id = row["كود"] || row["ID"];
+        if(id) {
+            let st = makeEmptyStudent(id);
+            st.name = row["الاسم"] || row["Name"] || "";
+            st.className = row["المجموعة"] || row["Class"] || "";
+            st.phone = row["رقم الموبايل"] || row["Phone"] || "";
+            st.paid = parseInt(row["المدفوع"] || row["Paid"] || 0);
+            st.notes = row["ملاحظات"] || row["Notes"] || "";
+            
+            // Import History
+            const histStr = row["سجل الحضور"] || "";
+            if(histStr) {
+                // Split string back to array
+                const dates = histStr.split(",").map(s => s.trim()).filter(s => s);
+                st.attendanceDates = dates;
+                // Rebuild Index
+                dates.forEach(d => {
+                    if(!attByDate[d]) attByDate[d] = [];
+                    if(!attByDate[d].includes(id)) attByDate[d].push(id);
+                });
+            }
+            
+            students[String(id)] = st;
+            if(id > BASE_MAX_ID) extraIds.push(id);
+        }
+    });
+
+    saveAll();
+    alert("تم استيراد البيانات وسجل الحضور بنجاح! ✅");
+    location.reload(); 
   });
 
   on("saveFeeBtn", "click", () => { if(prompt("Pass")===ADMIN_PASS) { termFee=toInt($("termFeeInp").value)||0; saveAll(); alert("Saved"); updateStudentUI(currentId); }});
@@ -449,8 +614,7 @@ document.addEventListener('DOMContentLoaded', () => {
       renderReport(nowDateStr()); 
       updateTopStats();
       
-      // *** SAFE QR CHECK ***
-      // This is now INSIDE showApp, so it only runs when safe!
+      // Safe QR
       setTimeout(checkQR, 500); 
   };
 
