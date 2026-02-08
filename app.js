@@ -1,14 +1,13 @@
 /* =============================================
-   Center System V17 (Final Release)
+   Center System V18 (Final Release)
    Features: 
-   1. Dated Notes & Active Filters
-   2. Arabic Excel Export/Import with History
-   3. Smart Restore (Revenue check)
-   4. Enhanced WhatsApp Report
+   1. Attendance Column & Filter in List
+   2. Robust Import (Restores History Counts)
+   3. Dated Notes & All V17 Features
    ============================================= */
 
 document.addEventListener('DOMContentLoaded', () => {
-  console.log("System V17 Loaded...");
+  console.log("System V18 Loaded...");
 
   // ====== 1. التعريفات والترجمة ======
   const STRINGS = {
@@ -199,7 +198,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if(inps.name) inps.name.value = st.name || "";
     if(inps.cls) inps.cls.value = st.className || "";
     if(inps.ph) inps.ph.value = st.phone || "";
-    // Note: stNotes is textarea, newNoteInp is input
     if(inps.note) inps.note.value = st.notes || ""; 
     if($("newNoteInp")) $("newNoteInp").value = "";
 
@@ -309,7 +307,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if(localStorage.getItem(K_AUTH) === "1") showApp(); else showLogin();
   };
 
-  // Safe QR Check
   const checkQR = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const qrId = toInt(urlParams.get("id"));
@@ -325,11 +322,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ====== 12. LISTENERS ======
   
-  // --- 1. Restore & Bin Logic ---
   window.restoreSt = (id) => {
       if(students[id] && (students[id].name || students[id].paid>0)) { if(!confirm("Occupied. Overwrite?")) return; }
       const st = deletedStudents[id];
-      // ** V17 Fix: Ask about Revenue Restoration **
       if(st.paid > 0) {
           if(confirm(`💰 هذا الطالب كان دافع (${st.paid} ج).\n\nهل تريد استرجاع المبلغ لإيراد اليوم؟`)) {
               const t = nowDateStr();
@@ -346,7 +341,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if(c) c.scrollIntoView({behavior:"smooth"}); 
   };
 
-  // --- 2. Main Buttons ---
   on("loginBtn", "click", () => {
       const u = $("user").value.trim(); const p = $("pass").value.trim();
       if(u === ADMIN_USER && p === ADMIN_PASS) { localStorage.setItem(K_AUTH, "1"); showApp(); } 
@@ -390,11 +384,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if(!currentId) return;
       const s = students[currentId];
       s.name = $("stName").value; s.className = $("stClass").value; s.phone = $("stPhone").value; 
-      // Note: stNotes is read-only for manual edits, we use the add button
       saveAll(); showMsg("studentMsg", "Saved", "ok"); updateTopStats();
   });
 
-  // --- 3. Dated Notes Logic (V17 New) ---
   on("addNoteBtn", "click", () => {
       if(!currentId) return;
       const inp = $("newNoteInp");
@@ -431,20 +423,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   on("deleteStudentBtn", "click", () => { if(currentId && confirm("Delete?")) moveToBin(currentId); });
 
-  // --- 4. Filtering Logic (V17 Fix) ---
+  // --- 4. Filtering Logic (V18 Fix: +Attendance Column) ---
   const renderList = () => {
       const tb = $("allStudentsTable").querySelector("tbody"); tb.innerHTML="";
       
-      const filterGroup = $("filterClass").value; // 'all' or specific group
-      const filterStatus = $("filterStatus").value; // 'all', 'paid', 'partial', 'unpaid'
+      const filterGroup = $("filterClass").value; 
+      const filterStatus = $("filterStatus").value;
+      const filterAttend = $("filterAttend") ? $("filterAttend").value : "all"; // V18 Filter
       
-      // 1. Collect all Unique Classes for the dropdown
       const allClasses = new Set();
       Object.values(students).forEach(s => { if(s.className) allClasses.add(s.className); });
       
-      // 2. Populate Dropdown (only if it has default options)
       const sel = $("filterClass");
-      if(sel.options.length <= 1) { // Only do this once or if cleared
+      if(sel.options.length <= 1) { 
           allClasses.forEach(c => {
               const opt = document.createElement("option");
               opt.value = c; opt.innerText = c;
@@ -452,14 +443,13 @@ document.addEventListener('DOMContentLoaded', () => {
           });
       }
 
-      // 3. Filter Students
       const filled = Object.values(students).filter(s => s.name || s.paid > 0);
       
       const filtered = filled.filter(s => {
-          // Class Filter
+          // 1. Group Filter
           if(filterGroup !== "all" && s.className !== filterGroup) return false;
           
-          // Status Filter
+          // 2. Status Filter
           if(filterStatus !== "all") {
               const p = s.paid || 0;
               const req = termFee;
@@ -468,51 +458,60 @@ document.addEventListener('DOMContentLoaded', () => {
                   if(filterStatus === "partial" && (p === 0 || p >= req)) return false;
                   if(filterStatus === "unpaid" && p > 0) return false;
               } else {
-                  // Fallback if no term fee
                   if(filterStatus === "paid" && p === 0) return false;
                   if(filterStatus === "unpaid" && p > 0) return false;
               }
           }
+
+          // 3. Attendance Filter (V18 New)
+          const today = nowDateStr();
+          const isPresent = (s.attendanceDates || []).includes(today);
+          if(filterAttend === "present" && !isPresent) return false;
+          if(filterAttend === "absent" && isPresent) return false;
+
           return true;
       });
 
-      // 4. Render Rows
       filtered.forEach(s => {
           const tr = document.createElement("tr");
-          // Status Logic for Table
+          // Status Logic
           let stTxt = "-";
           if(termFee > 0) {
               if(s.paid >= termFee) stTxt = "✅";
               else if(s.paid > 0) stTxt = "⚠️";
               else stTxt = "🔴";
           }
-          tr.innerHTML = `<td>${s.id}</td><td>${s.name}</td><td>${s.className}</td><td>${s.paid}</td><td>${stTxt}</td>`;
+          
+          // Attendance Column (V18 New)
+          const today = nowDateStr();
+          const isPresent = (s.attendanceDates || []).includes(today);
+          const attIcon = isPresent ? "✅" : "➖";
+
+          tr.innerHTML = `<td>${s.id}</td><td>${s.name}</td><td>${s.className}</td><td>${s.paid}</td><td>${stTxt}</td><td>${attIcon}</td>`;
           tr.onclick = () => { $("allStudentsModal").classList.add("hidden"); window.extOpen(s.id); };
           tb.appendChild(tr);
       });
   };
   
   on("openAllStudentsBtn", "click", () => { 
-      // Reset filters on open? Optional. Let's keep them.
       renderList(); 
       $("allStudentsModal").classList.remove("hidden"); 
   });
   on("closeModalBtn", "click", () => $("allStudentsModal").classList.add("hidden"));
   
-  // Attach Event Listeners to Selects
   if($("filterClass")) $("filterClass").addEventListener("change", renderList);
   if($("filterStatus")) $("filterStatus").addEventListener("change", renderList);
+  // Add Listener for V18 Filter
+  if($("filterAttend")) $("filterAttend").addEventListener("change", renderList);
 
   on("openBinBtn", "click", () => { renderBinList(); $("recycleBinModal").classList.remove("hidden"); });
   on("closeBinBtn", "click", () => $("recycleBinModal").classList.add("hidden"));
   on("emptyBinBtn", "click", () => { if(confirm("Permanent Delete?")) { deletedStudents={}; saveAll(); renderBinList(); }});
 
-  // --- 5. Enhanced WhatsApp Report (V17) ---
   on("copyReportBtn", "click", () => {
       const today = nowDateStr();
       const attendCount = (attByDate[today] || []).length;
       const rev = revenueByDate[today] || 0;
-      // Calculate New Students (joinedDate == today)
       const newStCount = Object.values(students).filter(s => s.joinedDate === today && (s.name || s.paid>0)).length;
 
       const txt = `📊 *تقرير يومي: ${today}*\n\n` +
@@ -524,17 +523,14 @@ document.addEventListener('DOMContentLoaded', () => {
       navigator.clipboard.writeText(txt).then(() => alert("تم نسخ التقرير للواتساب ✅"));
   });
 
-  // --- 6. Excel Export (Arabic + History) (V17) ---
   on("exportExcelBtn", "click", () => {
     if (typeof XLSX === "undefined") return alert("Excel Lib Missing");
     
     const filled = Object.values(students).filter(st => isFilledStudent(st)).sort((a,b)=>a.id-b.id);
     
-    // Headers in Arabic
     const wsData = [["كود", "الاسم", "المجموعة", "رقم الموبايل", "المدفوع", "ملاحظات", "سجل الحضور"]];
     
     filled.forEach(st => {
-        // Join attendance dates with comma
         const historyStr = (st.attendanceDates || []).join(", ");
         wsData.push([st.id, st.name, st.className, st.phone, st.paid, st.notes, historyStr]);
     });
@@ -544,7 +540,7 @@ document.addEventListener('DOMContentLoaded', () => {
     XLSX.writeFile(wb, `Center_Data_${nowDateStr()}.xlsx`);
   });
 
-  // --- 7. Excel Import (Arabic + History) (V17) ---
+  // --- 7. Excel Import (V18 Robust Fix) ---
   on("importExcelInput", "change", async () => {
     const f = $("importExcelInput").files[0]; if(!f) return;
     const wb = XLSX.read(await f.arrayBuffer(), {type:"array"});
@@ -556,21 +552,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const firstSheet = wb.SheetNames[0];
     const rows = XLSX.utils.sheet_to_json(wb.Sheets[firstSheet]);
     
-    // Reset Data but keep structure
-    students = {}; attByDate = {}; 
-    // Note: We cannot recover 'revenueByDate' from just student totals accurately, 
-    // so revenue history starts fresh or we rely on backups for that.
-    revenueByDate = {}; 
-    extraIds = [];
+    // Reset Data
+    students = {}; attByDate = {}; revenueByDate = {}; extraIds = [];
     
-    // Re-init Base 500
     for (let i = BASE_MIN_ID; i <= BASE_MAX_ID; i++) {
         students[String(i)] = makeEmptyStudent(i);
     }
 
     rows.forEach(row => {
-        // Map Arabic Keys (or English fallback)
-        const id = row["كود"] || row["ID"];
+        const idVal = row["كود"] || row["ID"];
+        const id = toInt(idVal); // Force integer
         if(id) {
             let st = makeEmptyStudent(id);
             st.name = row["الاسم"] || row["Name"] || "";
@@ -579,15 +570,16 @@ document.addEventListener('DOMContentLoaded', () => {
             st.paid = parseInt(row["المدفوع"] || row["Paid"] || 0);
             st.notes = row["ملاحظات"] || row["Notes"] || "";
             
-            // Import History
+            // Import History & Rebuild Daily Reports
             const histStr = row["سجل الحضور"] || "";
             if(histStr) {
-                // Split string back to array
                 const dates = histStr.split(",").map(s => s.trim()).filter(s => s);
                 st.attendanceDates = dates;
-                // Rebuild Index
+                
+                // V18 Fix: Force rebuild of attByDate for every date found
                 dates.forEach(d => {
                     if(!attByDate[d]) attByDate[d] = [];
+                    // Ensure we store ID as number to match rest of app
                     if(!attByDate[d].includes(id)) attByDate[d].push(id);
                 });
             }
@@ -613,8 +605,6 @@ document.addEventListener('DOMContentLoaded', () => {
       reportDate.value=nowDateStr(); 
       renderReport(nowDateStr()); 
       updateTopStats();
-      
-      // Safe QR
       setTimeout(checkQR, 500); 
   };
 
