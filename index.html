@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Center System V17</title>
-  <link rel="stylesheet" href="style.css?v=17">
+  <title>Center System V18</title>
+  <link rel="stylesheet" href="style.css?v=18">
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
@@ -206,10 +206,15 @@
             <option value="all">-- كل المجموعات --</option>
         </select>
         <select id="filterStatus" class="inp" style="width:auto;">
-            <option value="all">-- الحالة (الكل) --</option>
+            <option value="all">-- الحالة المالية (الكل) --</option>
             <option value="paid">✅ خالص (Paid)</option>
             <option value="partial">⚠️ عليه جزء (Partial)</option>
             <option value="unpaid">🔴 مدفعش (Unpaid)</option>
+        </select>
+        <select id="filterAttend" class="inp" style="width:auto;">
+            <option value="all">-- الحضور (الكل) --</option>
+            <option value="present">✅ حضور اليوم</option>
+            <option value="absent">➖ غياب اليوم</option>
         </select>
       </div>
 
@@ -222,6 +227,7 @@
               <th data-i18n="th_class">المجموعة</th>
               <th data-i18n="th_paid">المدفوع</th>
               <th data-i18n="th_status">الحالة</th>
+              <th>حضور اليوم</th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -243,6 +249,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=17"></script>
+  <script src="app.js?v=18"></script>
 </body>
 </html>
