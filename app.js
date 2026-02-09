@@ -1,581 +1,449 @@
 /* =============================================
-   Center System V27 (Stable Base + New Features)
-   - Base: V22 (Proven Stability)
-   - Added: Money Sound, Wallpaper Fix, Danger Zone
-   - Fixed: Search, WhatsApp, Term Fee Security
-   ============================================= */
+   Center System V24 (The Fix & Feature Update)
+   - Fixed: Search, Add, WhatsApp, Report Copy
+   - New: Money Sound Effect, Danger Zone in Settings
+   - Improved: Wallpaper Save, Term Fee Security
+   ============================================= */
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("System V27 Loaded...");
+  console.log("System V24 Loaded...");
 
-    // =================================================
-    // 1. التعريفات والإعدادات (Constants)
-    // =================================================
-    const ADMIN_USER = "Admin";
-    const ADMIN_PASS = "####1111"; // باسوورد المدير
-    const ASST_USER  = "User";
-    const ASST_PASS  = "11112222"; // باسوورد المساعد
-    
-    const BASE_MIN_ID = 1;
-    const BASE_MAX_ID = 500;
-    const MAX_IMG_SIZE = 3000000; // 3MB (للخلفية)
+  // ====== 1. Configuration & Auth ======
+  const ADMIN_USER = "Admin";
+  const ADMIN_PASS = "####1111"; // Full Access
+  const ASST_USER  = "User";
+  const ASST_PASS  = "11112222"; // Restricted Access
 
-    // مفاتيح الذاكرة (Local Storage Keys)
-    const K_AUTH = "ca_auth_v2";
-    const K_ROLE = "ca_role_v1";
-    const K_STUDENTS = "ca_students_v6";
-    const K_DATA = "ca_data_v6"; // يشمل الإيراد والحضور
-    const K_THEME = "ca_theme_v1";
-    const K_LANG = "ca_lang";
-    const K_BG_IMAGE = "ca_bg_image";
-    const K_LAST_BACKUP = "ca_last_backup";
+  let currentUserRole = "admin"; // 'admin' or 'assistant'
 
-    // المتغيرات العامة
-    let students = {};
-    let systemData = { revenue: {}, attendance: {}, termFee: 0, deleted: {} };
-    let currentId = null;
-    let currentUserRole = "admin";
-    let currentLang = "ar";
+  const BASE_MIN_ID = 1;
+  const BASE_MAX_ID = 500;
+  const ITEMS_PER_PAGE = 50;
 
-    // =================================================
-    // 2. أدوات المساعدة (Helpers)
-    // =================================================
-    const $ = (id) => document.getElementById(id);
-    const nowDateStr = () => new Date().toISOString().split('T')[0];
-    const prettyDate = (d) => d ? d.split("-").reverse().join("-") : "—";
-    const toInt = (v) => { const n = parseInt(v); return isNaN(n) ? null : n; };
+  // LocalStorage Keys
+  const K_AUTH = "ca_auth_v2"; 
+  const K_ROLE = "ca_role_v1";
+  const K_STUDENTS = "ca_students_v6";      
+  const K_EXTRA_IDS = "ca_extra_ids_v6";     
+  const K_ATT_BY_DATE = "ca_att_by_date_v6"; 
+  const K_TERM_FEE = "ca_term_fee_v6"; 
+  const K_REVENUE = "ca_revenue_v6"; 
+  const K_DELETED = "ca_deleted_v9"; 
+  const K_THEME = "ca_theme_v1";
+  const K_LANG = "ca_lang";
+  const K_LAST_BACKUP = "ca_last_backup";
+  const K_BG_IMAGE = "ca_bg_image";
 
-    // دالة الصوت (Sound Effect) - تم تعديلها لتكون مسموعة
-    const playSound = (type) => {
-        try {
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.connect(gain);
-            gain.connect(ctx.destination);
+  // Global State
+  let students = {}; let deletedStudents = {}; let extraIds = [];              
+  let attByDate = {}; let revenueByDate = {}; 
+  let currentId = null; let termFee = 0; let currentLang = "ar";
+  let currentPage = 1; let currentFilteredList = []; 
 
-            const now = ctx.currentTime;
+  // Helpers
+  const $ = (id) => document.getElementById(id);
+  const on = (id, event, handler) => { const el=$(id); if(el) el.addEventListener(event, handler); };
+  const nowDateStr = () => new Date().toISOString().split('T')[0];
+  const prettyDate = (d) => d ? d.split("-").reverse().join("-") : "—";
+  const toInt = (v) => { const n = parseInt(v); return isNaN(n) ? null : n; };
 
-            if (type === "money") {
-                // صوت رنة الفلوس (High Pitch)
-                osc.type = "sine";
-                osc.frequency.setValueAtTime(1500, now);
-                osc.frequency.exponentialRampToValueAtTime(2500, now + 0.1);
-                gain.gain.setValueAtTime(0.3, now);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
-                osc.start(now);
-                osc.stop(now + 0.5);
-            } else if (type === "success") {
-                // صوت نجاح (Ding)
-                osc.frequency.setValueAtTime(600, now);
-                gain.gain.setValueAtTime(0.1, now);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-                osc.start(now);
-                osc.stop(now + 0.3);
-            } else {
-                // صوت خطأ (Buzz)
-                osc.type = "sawtooth";
-                osc.frequency.setValueAtTime(150, now);
-                gain.gain.setValueAtTime(0.2, now);
-                osc.start(now);
-                osc.stop(now + 0.3);
-            }
-        } catch (e) {
-            console.log("Audio blocked by browser");
-        }
-    };
+  // Translations
+  const STRINGS = {
+    ar: {
+      login_title: "دخول لوحة السنتر", login_desc: "يرجى تسجيل الدخول", login_btn: "دخول",
+      brand_name: "لوحة السنتر", stat_students: "👥 مسجلين:", stat_attend: "✅ حضور:", stat_revenue: "💰 إيراد:",
+      btn_export: "تصدير Excel", btn_logout: "خروج",
+      quick_title: "سريع (QR)", btn_record: "سجل حضور", search_title: "بحث شامل", btn_open: "فتح",
+      add_title: "+ إضافة طالب جديد", btn_add_open: "إضافة وفتح",
+      report_title: "حضور وتوريد بتاريخ", btn_copy_report: "نسخ الملخص 📋", btn_show: "عرض",
+      rep_date: "التاريخ:", rep_count: "العدد:", rep_money: "الإيراد:",
+      st_details: "بيانات الطالب", lbl_name: "الاسم", lbl_class: "الصف / المجموعة", lbl_phone: "رقم الموبايل",
+      lbl_finance: "نظام المصاريف", pay_total: "💰 إجمالي المدفوع:", btn_deduct: "⚠️ خصم",
+      pay_new: "➕ دفعة جديدة:", btn_deposit: "إيداع", lbl_notes: "ملاحظات", btn_add: "إضافة",
+      btn_save: "حفظ البيانات 💾", btn_attend: "✅ حضور", btn_absent: "✖ غياب", btn_delete: "🗑️ حذف",
+      history_title: "سجل التواريخ", btn_recycle: "♻️ سلة المحذوفات",
+      danger_title: "⚠️ إدارة البيانات", danger_term: "1. تصفير الترم", btn_reset: "تصفير",
+      danger_factory: "2. ضبط المصنع", btn_wipe: "مسح الكل", list_title: "قائمة الطلاب",
+      th_name: "الاسم", th_class: "المجموعة", th_paid: "المدفوع", th_status: "المالية", btn_empty_bin: "إفراغ السلة نهائياً"
+    },
+    en: {
+      login_title: "System Login", login_desc: "Please Login", login_btn: "Login",
+      brand_name: "Center Panel", stat_students: "👥 Students:", stat_attend: "✅ Present:", stat_revenue: "💰 Revenue:",
+      btn_export: "Export Excel", btn_logout: "Logout",
+      quick_title: "Quick Scan (QR)", btn_record: "Check In", search_title: "Global Search", btn_open: "Open",
+      add_title: "+ Add Student", btn_add_open: "Add & Open",
+      report_title: "Daily Report", btn_copy_report: "Copy Report 📋", btn_show: "Show",
+      rep_date: "Date:", rep_count: "Count:", rep_money: "Revenue:",
+      st_details: "Student Profile", lbl_name: "Name", lbl_class: "Group", lbl_phone: "Phone",
+      lbl_finance: "Finance", pay_total: "💰 Total Paid:", btn_deduct: "⚠️ Deduct",
+      pay_new: "➕ Deposit:", btn_deposit: "Deposit", lbl_notes: "Notes", btn_add: "Add Note",
+      btn_save: "Save Info 💾", btn_attend: "✅ Present", btn_absent: "✖ Absent", btn_delete: "🗑️ Delete",
+      history_title: "History Log", btn_recycle: "♻️ Recycle Bin",
+      danger_title: "⚠️ Data Admin", danger_term: "1. Reset Term", btn_reset: "Reset Term",
+      danger_factory: "2. Factory Reset", btn_wipe: "Wipe All", list_title: "Student List",
+      th_name: "Name", th_class: "Group", th_paid: "Paid", th_status: "Status", btn_empty_bin: "Empty Bin"
+    }
+  };
 
-    // إنشاء طالب فارغ
-    const makeEmptyStudent = (id) => ({ 
-        id: id, name: "", className: "", phone: "", 
-        paid: 0, notes: "", joinedDate: nowDateStr(), attendanceDates: [] 
-    });
+  // Sound Effects (Money & Success)
+  const playSound = (type) => {
+      const ctx = new (window.AudioContext||window.webkitAudioContext)();
+      const osc = ctx.createOscillator(); const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      
+      if(type==="money") { // Cha-Ching! 💰
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(1200, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(2000, ctx.currentTime + 0.1);
+          gain.gain.setValueAtTime(0.1, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+          osc.start(); osc.stop(ctx.currentTime + 0.4);
+          
+          // Echo effect
+          setTimeout(() => {
+              const osc2 = ctx.createOscillator(); const gain2 = ctx.createGain();
+              osc2.connect(gain2); gain2.connect(ctx.destination);
+              osc2.frequency.setValueAtTime(2000, ctx.currentTime);
+              gain2.gain.setValueAtTime(0.05, ctx.currentTime);
+              gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+              osc2.start(); osc2.stop(ctx.currentTime + 0.2);
+          }, 100);
 
-    // =================================================
-    // 3. وظائف النظام الأساسية (Core Functions)
-    // =================================================
+      } else if(type==="success") {
+          osc.frequency.setValueAtTime(587, ctx.currentTime); // D5
+          osc.frequency.exponentialRampToValueAtTime(1174, ctx.currentTime + 0.1); // D6
+          gain.gain.setValueAtTime(0.1, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+          osc.start(); osc.stop(ctx.currentTime + 0.3);
+      } else { // Error
+          osc.type = "sawtooth";
+          osc.frequency.setValueAtTime(150, ctx.currentTime);
+          gain.gain.setValueAtTime(0.1, ctx.currentTime);
+          gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+          osc.start(); osc.stop(ctx.currentTime + 0.2);
+      }
+  };
 
-    // حفظ البيانات
-    const saveAll = () => {
-        localStorage.setItem(K_STUDENTS, JSON.stringify(students));
-        localStorage.setItem(K_DATA, JSON.stringify(systemData));
-        updateTopStats();
-    };
+  const makeEmptyStudent = (id) => ({ id: id, name: "", className: "", phone: "", paid: 0, notes: "", joinedDate: nowDateStr(), attendanceDates: [] });
 
-    // تحميل البيانات
-    const loadAll = () => {
-        try {
-            students = JSON.parse(localStorage.getItem(K_STUDENTS) || "{}");
-            systemData = JSON.parse(localStorage.getItem(K_DATA) || '{"revenue":{}, "attendance":{}, "termFee":0, "deleted":{}}');
-            
-            // إصلاح البيانات القديمة
-            if (!systemData.revenue) systemData.revenue = {};
-            if (!systemData.attendance) systemData.attendance = {};
-            if (!systemData.deleted) systemData.deleted = {};
+  // ====== 2. Core Logic ======
+  const saveAll = () => {
+    localStorage.setItem(K_STUDENTS, JSON.stringify(students));
+    localStorage.setItem(K_DELETED, JSON.stringify(deletedStudents));
+    localStorage.setItem(K_EXTRA_IDS, JSON.stringify(extraIds));
+    localStorage.setItem(K_ATT_BY_DATE, JSON.stringify(attByDate));
+    localStorage.setItem(K_TERM_FEE, String(termFee));
+    localStorage.setItem(K_REVENUE, JSON.stringify(revenueByDate));
+    updateTopStats();
+  };
 
-            // تحميل الثيم
-            const savedTheme = localStorage.getItem(K_THEME) || "classic";
-            if(savedTheme !== "classic") document.body.classList.add(`theme-${savedTheme}`);
-            if($("themeSelector")) $("themeSelector").value = savedTheme;
+  const loadAll = () => {
+    try { students = JSON.parse(localStorage.getItem(K_STUDENTS) || "{}"); } catch { students = {}; }
+    try { deletedStudents = JSON.parse(localStorage.getItem(K_DELETED) || "{}"); } catch { deletedStudents = {}; }
+    try { revenueByDate = JSON.parse(localStorage.getItem(K_REVENUE) || "{}"); } catch { revenueByDate = {}; }
+    try { extraIds = JSON.parse(localStorage.getItem(K_EXTRA_IDS) || "[]"); } catch { extraIds = []; }
+    try { attByDate = JSON.parse(localStorage.getItem(K_ATT_BY_DATE) || "{}"); } catch { attByDate = {}; }
+    termFee = toInt(localStorage.getItem(K_TERM_FEE)) || 0;
+    
+    if(!attByDate) attByDate={}; if(!revenueByDate) revenueByDate={};
 
-            // تحميل الخلفية
-            const savedBg = localStorage.getItem(K_BG_IMAGE);
-            if(savedBg) document.body.style.backgroundImage = `url('${savedBg}')`;
+    const savedTheme = localStorage.getItem(K_THEME) || "classic";
+    applyTheme(savedTheme);
+    const savedBg = localStorage.getItem(K_BG_IMAGE);
+    if(savedBg) document.body.style.backgroundImage = `url('${savedBg}')`;
+    const savedLang = localStorage.getItem(K_LANG) || "ar";
+    applyLanguage(savedLang);
 
-            // تحميل مطلوب الترم
-            if($("termFeeInp")) $("termFeeInp").value = systemData.termFee || "";
+    if($("termFeeInp")) $("termFeeInp").value = termFee > 0 ? termFee : "";
+    updateTopStats();
+    checkBackupStatus();
+  };
 
-            updateTopStats();
-            checkBackupStatus();
+  const ensureBase500 = () => {
+    for (let i = BASE_MIN_ID; i <= BASE_MAX_ID; i++) {
+      if(!students[String(i)]) students[String(i)] = makeEmptyStudent(i);
+    }
+    saveAll();
+  };
 
-        } catch (e) { console.error("Load Error", e); }
-    };
+  const applyTheme = (theme) => {
+      document.body.className = ""; 
+      if(theme === "dark") document.body.classList.add("theme-dark");
+      else if(theme === "glass") document.body.classList.add("theme-glass");
+      localStorage.setItem(K_THEME, theme);
+      if($("themeSelector")) $("themeSelector").value = theme;
+  };
 
-    // التأكد من 500 طالب
-    const ensureBase500 = () => {
-        for (let i = BASE_MIN_ID; i <= BASE_MAX_ID; i++) {
-            if (!students[i]) students[i] = makeEmptyStudent(i);
-        }
-        saveAll();
-    };
+  const applyLanguage = (lang) => {
+      currentLang = lang; localStorage.setItem(K_LANG, lang);
+      document.body.dir = lang === "ar" ? "rtl" : "ltr";
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+          const key = el.getAttribute("data-i18n");
+          if(STRINGS[lang][key]) el.textContent = STRINGS[lang][key];
+      });
+  };
 
-    // تحديث العدادات العلوية
-    const updateTopStats = () => {
-        const filledCount = Object.values(students).filter(s => s.name || s.paid > 0).length;
-        const today = nowDateStr();
-        const todayAttend = (systemData.attendance[today] || []).length;
-        const money = systemData.revenue[today] || 0;
+  // ====== 3. Auth & Permissions ======
+  const checkAuth = () => {
+      const isAuth = localStorage.getItem(K_AUTH);
+      if(isAuth === "1") {
+          currentUserRole = localStorage.getItem(K_ROLE) || "admin";
+          showApp();
+      } else {
+          showLogin();
+      }
+  };
 
-        if($("totalStudentsCount")) $("totalStudentsCount").textContent = filledCount;
-        if($("todayCountTop")) $("todayCountTop").textContent = todayAttend;
-        if($("todayRevenue")) $("todayRevenue").textContent = money + " ج";
-    };
+  const applyPermissions = () => {
+      const isAdmin = (currentUserRole === "admin");
+      document.querySelectorAll(".adminOnly").forEach(el => {
+          if(isAdmin) el.classList.remove("hidden");
+          else el.classList.add("hidden");
+      });
+      
+      if(!isAdmin) {
+          if($("deleteStudentBtn")) $("deleteStudentBtn").classList.add("hidden");
+          if($("correctPayBtn")) $("correctPayBtn").classList.add("hidden");
+      }
+  };
 
-    // =================================================
-    // 4. واجهة الطالب (Student UI)
-    // =================================================
-    const updateStudentUI = (id) => {
-        currentId = id;
-        const st = students[id];
-        if (!st) return;
+  const doLogin = () => {
+      const u = $("user").value.trim();
+      const p = $("pass").value.trim();
+      
+      if(u === ADMIN_USER && p === ADMIN_PASS) {
+          localStorage.setItem(K_AUTH, "1"); localStorage.setItem(K_ROLE, "admin"); currentUserRole = "admin"; showApp();
+      } else if (u.toLowerCase() === ASST_USER.toLowerCase() && p === ASST_PASS) {
+          localStorage.setItem(K_AUTH, "1"); localStorage.setItem(K_ROLE, "assistant"); currentUserRole = "assistant"; showApp();
+      } else {
+          showMsg("loginMsg", "Error: Wrong Credentials", "err"); playSound("error");
+      }
+  };
 
-        // تعبئة البيانات
-        $("studentIdPill").textContent = `ID: ${id}`;
-        $("stName").value = st.name || "";
-        $("stClass").value = st.className || "";
-        $("stPhone").value = st.phone || "";
-        $("stNotes").value = st.notes || "";
-        $("stTotalPaid").value = (st.paid || 0);
-        
-        $("newNoteInp").value = "";
-        $("newPaymentInput").value = "";
+  const doLogout = () => { localStorage.removeItem(K_AUTH); localStorage.removeItem(K_ROLE); location.reload(); };
 
-        // حالة المصاريف (الشريط الجانبي)
-        const card = document.querySelector(".studentCard");
-        card.classList.remove("status-border-green", "status-border-yellow", "status-border-red");
-        const fee = systemData.termFee || 0;
-        const paid = st.paid || 0;
-        if (fee > 0) {
-            if (paid >= fee) card.classList.add("status-border-green");
-            else if (paid > 0) card.classList.add("status-border-yellow");
-            else card.classList.add("status-border-red");
-        }
+  // ====== 4. Main UI Logic ======
+  const showApp = () => {
+      $("loginBox").classList.add("hidden");
+      $("appBox").classList.remove("hidden");
+      applyPermissions();
+      $("reportDate").value = nowDateStr();
+      renderReport(nowDateStr());
+      updateTopStats();
+      setTimeout(checkQR, 500); 
+  };
 
-        // حالة الحضور (الأفاتار)
-        const today = nowDateStr();
-        const isPresent = (st.attendanceDates || []).includes(today);
-        const avatar = $("stAvatar");
-        if (avatar) {
-            if (isPresent) {
-                avatar.classList.add("present");
-                $("todayStatus").textContent = "✅ حاضر";
-                $("todayStatus").style.color = "green";
-            } else {
-                avatar.classList.remove("present");
-                $("todayStatus").textContent = "✖ غياب";
-                $("todayStatus").style.color = "red";
-            }
-        }
+  const showLogin = () => { $("loginBox").classList.remove("hidden"); $("appBox").classList.add("hidden"); };
 
-        $("daysCount").textContent = (st.attendanceDates || []).length;
-        $("attList").innerHTML = (st.attendanceDates || []).slice().reverse().slice(0, 15).map(d => `<div>${prettyDate(d)}</div>`).join("");
-        
-        // شارة "جديد"
-        const badge = $("newBadge");
-        if (badge) {
-            if (st.attendanceDates.length === 0 && st.name) badge.classList.remove("hidden");
-            else badge.classList.add("hidden");
-        }
-    };
+  const updateTopStats = () => {
+      const animateValue = (id, end) => {
+          const obj = $(id); if(!obj) return;
+          if(end === 0) { obj.textContent = "0"; return; }
+          let start = 0; const duration = 500;
+          let startTimestamp = null;
+          const step = (timestamp) => {
+              if (!startTimestamp) startTimestamp = timestamp;
+              const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+              obj.textContent = Math.floor(progress * (end - start) + start);
+              if (progress < 1) window.requestAnimationFrame(step);
+              else obj.textContent = end + (id==="todayRevenue"?" ج":"");
+          };
+          window.requestAnimationFrame(step);
+      };
+      const filledCount = Object.values(students).filter(s => s.name || s.paid>0).length;
+      const todayCount = (attByDate[nowDateStr()] || []).length;
+      const revenue = revenueByDate[nowDateStr()] || 0;
+      animateValue("totalStudentsCount", filledCount);
+      animateValue("todayCountTop", todayCount);
+      animateValue("todayRevenue", revenue);
+  };
 
-    // تسجيل الحضور
-    const addAttendance = (id, dateStr) => {
-        const st = students[id];
-        if (!st) return { ok: false };
-        if (!st.attendanceDates.includes(dateStr)) {
-            st.attendanceDates.push(dateStr);
-            // تحديث سجل اليوم
-            if (!systemData.attendance[dateStr]) systemData.attendance[dateStr] = [];
-            if (!systemData.attendance[dateStr].includes(id)) systemData.attendance[dateStr].push(id);
-            
-            saveAll();
-            playSound("success");
-            return { ok: true, msg: "تم التسجيل ✅" };
-        }
-        playSound("error");
-        return { ok: false, msg: "مسجل مسبقاً ⚠️" };
-    };
+  // ====== 5. Student Operations ======
+  const updateStudentUI = (id) => {
+    currentId = id;
+    const st = students[id];
+    const pills = {id:$("studentIdPill"), status:$("todayStatus"), last:$("lastAttend"), count:$("daysCount")};
+    const inps = {name:$("stName"), cls:$("stClass"), ph:$("stPhone"), note:$("stNotes"), paid:$("stTotalPaid")};
+    const avatar = $("stAvatar");
+    const badge = $("newBadge");
 
-    // حذف الحضور
-    const removeAttendance = (id, dateStr) => {
-        const st = students[id];
-        if (!st) return;
-        st.attendanceDates = st.attendanceDates.filter(d => d !== dateStr);
-        if (systemData.attendance[dateStr]) {
-            systemData.attendance[dateStr] = systemData.attendance[dateStr].filter(x => x !== id);
-        }
-        saveAll();
-    };
+    if (!st) return; 
 
-    // =================================================
-    // 5. الوظائف العالمية (Global Functions)
-    // =================================================
-    
-    // فتح الطالب (متاح في HTML)
-    window.extOpen = (id) => {
-        updateStudentUI(id);
-        const card = document.querySelector(".studentCard");
-        if (card) card.scrollIntoView({ behavior: "smooth" });
-    };
+    pills.id.textContent = `ID: ${id}`;
+    inps.name.value = st.name || "";
+    inps.cls.value = st.className || "";
+    inps.ph.value = st.phone || "";
+    inps.note.value = st.notes || ""; 
+    inps.paid.value = (st.paid||0) + " ";
+    if($("newNoteInp")) $("newNoteInp").value = "";
+    if($("newPaymentInput")) $("newPaymentInput").value = "";
 
-    // استرجاع من السلة
-    window.restoreSt = (id) => {
-        if (students[id] && (students[id].name || students[id].paid > 0)) {
-            if (!confirm("يوجد بيانات حالية لهذا الكود. هل تريد الاستبدال؟")) return;
-        }
-        const st = systemData.deleted[id];
-        students[id] = st;
-        delete systemData.deleted[id];
-        
-        // استرجاع الفلوس للخزنة (اختياري)
-        if (st.paid > 0 && confirm("هل تريد استرجاع المبلغ ("+st.paid+") لإيراد اليوم؟")) {
-            const today = nowDateStr();
-            systemData.revenue[today] = (systemData.revenue[today] || 0) + st.paid;
-        }
-        
-        saveAll();
-        renderBinList();
-        updateTopStats();
-        alert("تم الاسترجاع بنجاح ✅");
-        window.extOpen(id);
-    };
+    const paid = st.paid || 0; const req = termFee;
+    let statusClass = "";
+    if(req > 0) {
+        if(paid >= req) statusClass = "status-border-green";
+        else if(paid > 0) statusClass = "status-border-yellow";
+        else statusClass = "status-border-red";
+    }
+    const card = document.querySelector(".studentCard");
+    card.classList.remove("status-border-green", "status-border-yellow", "status-border-red");
+    if(statusClass) card.classList.add(statusClass);
 
-    // =================================================
-    // 6. تشغيل الأزرار (Event Listeners - Safe Mode)
-    // =================================================
-    
-    // دالة أمان عشان لو زرار مش موجود الموقع ميقعش
-    const safeOn = (id, event, handler) => {
-        const el = $(id);
-        if (el) el.addEventListener(event, handler);
-    };
+    const today = nowDateStr();
+    const dates = st.attendanceDates || [];
+    const isPresent = dates.includes(today);
+    
+    if(isPresent) {
+        pills.status.textContent = currentLang==="ar"?"✅ حاضر":"✅ Present";
+        pills.status.style.color = "green";
+        avatar.classList.add("present"); 
+    } else {
+        pills.status.textContent = currentLang==="ar"?"✖ غياب":"✖ Absent";
+        pills.status.style.color = "red";
+        avatar.classList.remove("present"); 
+    }
 
-    // --- تسجيل الدخول ---
-    safeOn("loginBtn", "click", () => {
-        const u = $("user").value.trim();
-        const p = $("pass").value.trim();
-        if (u === ADMIN_USER && p === ADMIN_PASS) {
-            localStorage.setItem(K_AUTH, "1"); localStorage.setItem(K_ROLE, "admin"); location.reload();
-        } else if (u.toLowerCase() === ASST_USER.toLowerCase() && p === ASST_PASS) {
-            localStorage.setItem(K_AUTH, "1"); localStorage.setItem(K_ROLE, "user"); location.reload();
-        } else {
-            alert("بيانات خاطئة ❌"); playSound("error");
-        }
-    });
-    safeOn("logoutBtn", "click", () => { localStorage.clear(); location.reload(); });
-    safeOn("togglePass", "click", () => { const p=$("pass"); p.type = p.type==="password"?"text":"password"; });
+    pills.count.textContent = dates.length;
+    $("attList").innerHTML = dates.slice().reverse().slice(0,20).map(d=>`<div>${prettyDate(d)}</div>`).join("");
+    if(dates.length === 0 && st.name) badge.classList.remove("hidden"); else badge.classList.add("hidden");
+  };
 
-    // --- الإعدادات (Settings) ---
-    safeOn("settingsBtn", "click", () => $("settingsModal").classList.remove("hidden"));
-    safeOn("closeSettingsBtn", "click", () => $("settingsModal").classList.add("hidden"));
-    safeOn("themeSelector", "change", (e) => {
-        document.body.className = "";
-        if(e.target.value !== "classic") document.body.classList.add(`theme-${e.target.value}`);
-        localStorage.setItem(K_THEME, e.target.value);
-    });
+  const addAttendance = (id, dateStr) => {
+      const st = students[id];
+      if(!st) return {ok:false, msg:"ID Not Found"};
+      if(!st.attendanceDates.includes(dateStr)) {
+          st.attendanceDates.push(dateStr);
+          if(!attByDate[dateStr]) attByDate[dateStr] = [];
+          if(!attByDate[dateStr].includes(id)) attByDate[dateStr].push(id);
+          saveAll(); playSound("success");
+          return {ok:true, msg: currentLang==="ar" ? "تم تسجيل الحضور ✅" : "Checked In ✅"};
+      }
+      playSound("error");
+      return {ok:false, msg: currentLang==="ar" ? "حاضر مسبقاً ⚠️" : "Already Present ⚠️"};
+  };
 
-    // --- الخلفية (Fix: Check Size) ---
-    safeOn("bgInput", "change", (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        if (file.size > MAX_IMG_SIZE) return alert("⚠️ الصورة كبيرة جداً (أكبر من 3 ميجا).");
-        const reader = new FileReader();
-        reader.onload = (evt) => {
-            const data = evt.target.result;
-            document.body.style.backgroundImage = `url('${data}')`;
-            localStorage.setItem(K_BG_IMAGE, data);
-        };
-        reader.readAsDataURL(file);
-    });
-    safeOn("clearBgBtn", "click", () => {
-        document.body.style.backgroundImage = "none";
-        localStorage.removeItem(K_BG_IMAGE);
-    });
+  const removeAttendance = (id, dateStr) => {
+    const st = students[id]; if(!st) return;
+    st.attendanceDates = st.attendanceDates.filter(d => d !== dateStr);
+    if (attByDate[dateStr]) attByDate[dateStr] = attByDate[dateStr].filter(x => x !== id);
+    saveAll();
+  };
 
-    // --- البحث الشامل (Fix) ---
-    safeOn("openBtn", "click", () => {
-        const id = toInt($("openId").value);
-        if (students[id]) window.extOpen(id); else alert("غير موجود");
-    });
-    safeOn("searchAny", "input", (e) => {
-        const q = e.target.value.toLowerCase();
-        const res = $("searchMsg");
-        if (!q) { res.style.display = "none"; return; }
-        
-        const found = Object.values(students).filter(s => 
-            (s.name && s.name.toLowerCase().includes(q)) || 
-            (s.id && String(s.id).includes(q)) || 
-            (s.phone && String(s.phone).includes(q))
-        ).slice(0, 5);
+  // ====== 6. List & Pagination ======
+  const renderList = () => {
+      const filterGroup = $("filterClass").value; 
+      const filterStatus = $("filterStatus").value; 
+      const filterAttend = $("filterAttend").value; 
+      
+      const sel = $("filterClass");
+      if(sel.options.length <= 1) { 
+          const allClasses = new Set();
+          Object.values(students).forEach(s => { if(s.className) allClasses.add(s.className); });
+          allClasses.forEach(c => {
+              const opt = document.createElement("option"); opt.value = c; opt.innerText = c; sel.appendChild(opt);
+          });
+      }
 
-        if (found.length > 0) {
-            res.style.display = "block";
-            res.innerHTML = found.map(s => 
-                `<div class="item" onclick="window.extOpen(${s.id}); document.getElementById('searchMsg').style.display='none';">
-                    <b>${s.name}</b> (${s.id}) <span style="color:green">${s.phone || ""}</span>
-                 </div>`
-            ).join("");
-        } else {
-            res.style.display = "none";
-        }
-    });
+      const filled = Object.values(students).filter(s => s.name || s.paid > 0);
+      const today = nowDateStr(); 
 
-    // --- إضافة طالب جديد (Fix) ---
-    safeOn("addNewBtn", "click", () => {
-        const id = toInt($("newId").value);
-        if (!id) return alert("أدخل الكود");
-        if (students[id]) return alert("الكود مستخدم بالفعل!");
-        students[id] = makeEmptyStudent(id);
-        saveAll();
-        window.extOpen(id);
-        alert("تمت الإضافة بنجاح ✅");
-    });
+      currentFilteredList = filled.filter(s => {
+          if(filterGroup !== "all" && s.className !== filterGroup) return false;
+          if(filterStatus !== "all") {
+              const p = s.paid || 0; const req = termFee;
+              if(req > 0) {
+                  if(filterStatus === "paid" && p < req) return false;
+                  if(filterStatus === "partial" && (p === 0 || p >= req)) return false;
+                  if(filterStatus === "unpaid" && p > 0) return false;
+              }
+          }
+          const isPresent = (s.attendanceDates || []).includes(today);
+          if(filterAttend === "present" && !isPresent) return false;
+          if(filterAttend === "absent" && isPresent) return false;
+          return true;
+      });
 
-    // --- العمليات على الطالب ---
-    safeOn("saveStudentBtn", "click", () => {
-        if (!currentId) return;
-        const s = students[currentId];
-        s.name = $("stName").value;
-        s.className = $("stClass").value;
-        s.phone = $("stPhone").value;
-        s.notes = $("stNotes").value;
-        saveAll(); alert("تم الحفظ 💾");
-    });
+      currentPage = 1;
+      renderPage();
+  };
 
-    safeOn("addNoteBtn", "click", () => {
-        if (!currentId) return;
-        const txt = $("newNoteInp").value.trim();
-        if (!txt) return;
-        const stamp = `[${nowDateStr()}]`;
-        students[currentId].notes = `${stamp} : ${txt}\n${students[currentId].notes || ""}`;
-        saveAll(); updateStudentUI(currentId);
-    });
+  const renderPage = () => {
+      const tb = $("allStudentsTable").querySelector("tbody"); tb.innerHTML="";
+      const start = (currentPage - 1) * ITEMS_PER_PAGE;
+      const end = start + ITEMS_PER_PAGE;
+      const pageItems = currentFilteredList.slice(start, end);
+      const today = nowDateStr();
 
-    safeOn("markTodayBtn", "click", () => { if (currentId) { addAttendance(currentId, nowDateStr()); updateStudentUI(currentId); renderReport(nowDateStr()); }});
-    safeOn("unmarkTodayBtn", "click", () => { if (currentId) { removeAttendance(currentId, nowDateStr()); updateStudentUI(currentId); renderReport(nowDateStr()); }});
+      pageItems.forEach(s => {
+          const tr = document.createElement("tr");
+          let stIcon = "🔴";
+          if(termFee > 0) {
+              if(s.paid >= termFee) stIcon = "🟢"; 
+              else if(s.paid > 0) stIcon = "🟡"; 
+          }
+          const attendTxt = (s.attendanceDates||[]).includes(today) ? "✅" : "➖";
 
-    // --- التعاملات المالية (Sound Fix) ---
-    safeOn("addPaymentBtn", "click", () => {
-        if (!currentId) return;
-        const v = parseInt($("newPaymentInput").value);
-        if (!v) return;
-        
-        students[currentId].paid = (students[currentId].paid || 0) + v;
-        const today = nowDateStr();
-        systemData.revenue[today] = (systemData.revenue[today] || 0) + v;
-        
-        saveAll();
-        playSound("money"); // 💰
-        alert("تم الإيداع: " + v + " ج");
-        updateStudentUI(currentId);
-        renderReport(today);
-    });
+          tr.innerHTML = `<td><input type="checkbox" class="stCheckbox" data-id="${s.id}"></td><td>${s.id}</td><td>${s.name}</td><td>${s.className}</td><td>${s.paid}</td><td>${stIcon}</td><td>${attendTxt}</td>`;
+          tr.addEventListener("click", (e) => {
+              if(e.target.type !== "checkbox") { $("allStudentsModal").classList.add("hidden"); window.extOpen(s.id); }
+          });
+          tb.appendChild(tr);
+      });
 
-    safeOn("correctPayBtn", "click", () => {
-        if (!currentId) return;
-        const v = parseInt(prompt("أدخل مبلغ الخصم (للتصحيح):"));
-        if (!v) return;
-        
-        students[currentId].paid = Math.max(0, (students[currentId].paid || 0) - v);
-        const today = nowDateStr();
-        systemData.revenue[today] = Math.max(0, (systemData.revenue[today] || 0) - v);
-        
-        saveAll();
-        alert("تم الخصم وتصحيح الرصيد ✅");
-        updateStudentUI(currentId);
-    });
+      $("pageIndicator").textContent = `صفحة ${currentPage} / ${Math.ceil(currentFilteredList.length / ITEMS_PER_PAGE) || 1}`;
+      $("prevPageBtn").disabled = currentPage === 1;
+      $("nextPageBtn").disabled = end >= currentFilteredList.length;
+  };
 
-    // --- الواتساب (Fix) ---
-    safeOn("waBtn", "click", () => {
-        const ph = $("stPhone").value;
-        if (ph && ph.length > 9) window.open(`https://wa.me/20${ph}`, '_blank');
-        else alert("رقم الموبايل غير صحيح");
-    });
+  const handleBulk = () => {
+      const boxes = document.querySelectorAll(".stCheckbox:checked");
+      const count = boxes.length;
+      $("selectedCount").textContent = count;
+      if(count > 0) $("bulkActionBar").classList.remove("hidden");
+      else $("bulkActionBar").classList.add("hidden");
+  };
 
-    // --- الحذف والسلة ---
-    safeOn("deleteStudentBtn", "click", () => {
-        if (currentId && confirm("هل أنت متأكد من الحذف؟")) {
-            // نقل للسلة
-            systemData.deleted[currentId] = JSON.parse(JSON.stringify(students[currentId]));
-            
-            // خصم من الإيراد (اختياري)
-            if (students[currentId].paid > 0 && confirm("هل تريد خصم المبلغ المدفوع من الخزنة؟")) {
-                const today = nowDateStr();
-                systemData.revenue[today] = (systemData.revenue[today] || 0) - students[currentId].paid;
-            }
-            
-            delete students[currentId]; // حذف فعلي من القائمة النشطة
-            saveAll();
-            alert("تم النقل لسلة المحذوفات 🗑️");
-            location.reload();
-        }
-    });
+  // ====== 7. Settings & Backup ======
+  const checkBackupStatus = () => {
+      const last = localStorage.getItem(K_LAST_BACKUP);
+      const now = Date.now();
+      const dot = $("backupDot");
+      if(!last || (now - parseInt(last) > 24 * 60 * 60 * 1000)) dot.classList.remove("hidden"); 
+      else dot.classList.add("hidden");
+  };
 
-    // فتح السلة
-    const renderBinList = () => {
-        const bl = $("binList"); if (!bl) return;
-        const ids = Object.keys(systemData.deleted || {});
-        if (ids.length === 0) { bl.innerHTML = "<div class='mutedCenter'>فارغة</div>"; return; }
-        bl.innerHTML = ids.map(id => {
-            const s = systemData.deleted[id];
-            return `<div class="binItem"><b>${s.name} (${id})</b> <button class="btn success smallBtn" onclick="window.restoreSt(${id})">استرجاع</button></div>`;
-        }).join("");
-    };
-    safeOn("openBinBtn", "click", () => { renderBinList(); $("recycleBinModal").classList.remove("hidden"); });
-    safeOn("closeBinBtn", "click", () => $("recycleBinModal").classList.add("hidden"));
-    safeOn("emptyBinBtn", "click", () => { if(confirm("حذف نهائي؟")) { systemData.deleted = {}; saveAll(); renderBinList(); } });
+  const markBackupDone = () => {
+      localStorage.setItem(K_LAST_BACKUP, Date.now());
+      checkBackupStatus();
+  };
 
-    // --- إدارة البيانات (Danger Zone & Fees) ---
-    safeOn("saveFeeBtn", "click", () => {
-        if (prompt("أدخل باسوورد المدير:") === ADMIN_PASS) {
-            systemData.termFee = toInt($("termFeeInp").value) || 0;
-            saveAll();
-            alert("تم حفظ المصاريف ✅");
-            if(currentId) updateStudentUI(currentId);
-        } else {
-            alert("باسوورد خاطئ!");
-        }
-    });
+  // ====== 8. Listeners ======
+  on("loginBtn", "click", doLogin);
+  on("logoutBtn", "click", doLogout);
+  on("togglePass", "click", () => { const p=$("pass"); p.type = p.type==="password"?"text":"password"; });
 
-    safeOn("resetTermBtn", "click", () => {
-        if (prompt("أدخل باسوورد المدير للتأكيد:") === ADMIN_PASS) {
-            if (confirm("هل أنت متأكد من تصفير الترم؟ (سيتم مسح المصاريف والحضور)")) {
-                for (let k in students) { students[k].paid = 0; students[k].attendanceDates = []; }
-                systemData.revenue = {}; systemData.attendance = {};
-                saveAll(); alert("تم التصفير بنجاح ✅"); location.reload();
-            }
-        }
-    });
+  on("settingsBtn", "click", () => $("settingsModal").classList.remove("hidden"));
+  on("closeSettingsBtn", "click", () => $("settingsModal").classList.add("hidden"));
+  on("langToggleBtn", "click", () => applyLanguage(currentLang==="ar"?"en":"ar"));
+  on("themeSelector", "change", (e) => applyTheme(e.target.value));
+  
+  // FIXED: Save Fee with Password
+  on("saveFeeBtn", "click", () => {
+      const pass = prompt("Enter Admin Password:");
+      if(pass === ADMIN_PASS) {
+          termFee = toInt($("termFeeInp").value) || 0;
+          saveAll(); alert("Fee Saved ✅");
+          updateStudentUI(currentId); // Refresh UI to show new border colors
+      } else {
+          alert("Wrong Password ❌");
+      }
+  });
 
-    safeOn("resetBtn", "click", () => {
-        if (prompt("أدخل باسوورد المدير:") === ADMIN_PASS && confirm("تحذير: سيتم مسح كل البيانات!")) {
-            localStorage.clear(); location.reload();
-        }
-    });
-
-    // --- التقارير ---
-    safeOn("reportBtn", "click", () => renderReport($("reportDate").value));
-    safeOn("copyReportBtn", "click", () => {
-        const d = $("reportDate").value || nowDateStr();
-        const txt = `📊 تقرير ${d}\n✅ العدد: ${$("reportCount").textContent}\n💰 الإيراد: ${$("reportMoney").textContent}`;
-        navigator.clipboard.writeText(txt).then(() => alert("تم النسخ 📋"));
-    });
-
-    const renderReport = (d) => {
-        const list = $("reportList"); if (!list) return;
-        const ids = systemData.attendance[d] || [];
-        $("reportDateLabel").textContent = prettyDate(d);
-        $("reportCount").textContent = ids.length;
-        $("reportMoney").textContent = (systemData.revenue[d] || 0) + " ج";
-        
-        if (ids.length === 0) list.innerHTML = "<div class='mutedCenter'>—</div>";
-        else list.innerHTML = ids.map(id => `<div class="item" onclick="window.extOpen(${id})">(${id}) ${students[id]?students[id].name:"?"}</div>`).join("");
-    };
-
-    // --- التصدير والاستيراد ---
-    const checkBackupStatus = () => {
-        const last = localStorage.getItem(K_LAST_BACKUP);
-        const now = Date.now();
-        if (!last || (now - parseInt(last) > 24 * 60 * 60 * 1000)) $("backupDot").classList.remove("hidden");
-        else $("backupDot").classList.add("hidden");
-    };
-
-    safeOn("exportExcelBtn", "click", () => {
-        if (typeof XLSX === "undefined") return alert("مكتبة Excel غير موجودة");
-        const filled = Object.values(students).filter(s => s.name || s.paid > 0);
-        const wsData = [["كود", "الاسم", "المجموعة", "رقم الموبايل", "المدفوع", "ملاحظات", "سجل الحضور"]];
-        filled.forEach(s => wsData.push([s.id, s.name, s.className, s.phone, s.paid, s.notes, (s.attendanceDates||[]).join(", ")]));
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsData), "Students");
-        XLSX.writeFile(wb, `Center_Data_${nowDateStr()}.xlsx`);
-        localStorage.setItem(K_LAST_BACKUP, Date.now()); checkBackupStatus();
-    });
-
-    safeOn("importExcelInput", "change", async () => {
-        const f = $("importExcelInput").files[0]; if (!f) return;
-        const wb = XLSX.read(await f.arrayBuffer(), { type: "array" });
-        if (!confirm("هل أنت متأكد؟ سيتم استبدال البيانات الحالية.")) return;
-        
-        const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
-        students = {}; systemData.attendance = {}; systemData.revenue = {}; 
-        for (let i = BASE_MIN_ID; i <= BASE_MAX_ID; i++) students[i] = makeEmptyStudent(i);
-
-        rows.forEach(row => {
-            const id = parseInt(row["كود"] || row["ID"]);
-            if (id) {
-                let st = makeEmptyStudent(id);
-                st.name = row["الاسم"] || row["Name"] || "";
-                st.className = row["المجموعة"] || row["Class"] || "";
-                st.phone = row["رقم الموبايل"] || row["Phone"] || "";
-                st.paid = parseInt(row["المدفوع"] || row["Paid"] || 0);
-                st.notes = row["ملاحظات"] || row["Notes"] || "";
-                let hist = row["سجل الحضور"] || row["History"];
-                if (hist && typeof hist === 'string') {
-                    st.attendanceDates = hist.split(",").map(s => s.trim()).filter(s => s);
-                    st.attendanceDates.forEach(d => {
-                        if (!systemData.attendance[d]) systemData.attendance[d] = [];
-                        if (!systemData.attendance[d].includes(id)) systemData.attendance[d].push(id);
-                    });
-                }
-                students[id] = st;
-            }
-        });
-        saveAll(); alert("تم الاستيراد بنجاح ✅"); location.reload();
-    });
-
-    // =================================================
-    // 7. التشغيل المبدئي (Initialization)
-    // =================================================
-    loadAll();
-    ensureBase500();
-
-    // فحص الدخول
-    if (localStorage.getItem(K_AUTH) !== "1") {
-        $("loginBox").classList.remove("hidden");
-    } else {
-        $("appBox").classList.remove("hidden");
-        // تطبيق الصلاحيات
-        currentUserRole = localStorage.getItem(K_ROLE);
-        if (currentUserRole !== "admin") {
-            document.querySelectorAll(".adminOnly").forEach(el => el.classList.add("hidden"));
-        }
-        // فحص QR كود من الرابط
-        const p = new URLSearchParams(window.location.search);
-        const id = toInt(p.get("id"));
-        if (id && students[id]) { 
-            addAttendance(id, nowDateStr()); 
-            window.extOpen(id); 
-            window.history.replaceState(null, null, window.location.pathname);
-        }
-    }
-});
+  // FIXED: Wallpaper Immediate Save
+  on("bgInput", "change", (e) => {
+      const file = e.target.files[0];
+      if(file) {
+          const reader = new FileReader();
+          reader.onload = function(evt) {
+              const res = evt.target.result;
+              localStorage.setItem
