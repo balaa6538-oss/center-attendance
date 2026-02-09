@@ -1,7 +1,7 @@
 /* =========================================
-   Center System V23 - Master Style
+   Center System V24 - Master Style
    Features: Glassmorphism, Themes, RTL/LTR
-   Fonts: Cairo, Almarai
+   Updates: Settings UI, Danger Zone, Import Btn
 ========================================= */
 
 /* 1. Global Variables & Fonts */
@@ -52,7 +52,7 @@ body.theme-glass {
   --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
 }
 
-/* Glass Dark Variant (If needed inside Glass) */
+/* Glass Dark Variant */
 body.theme-glass.dark-glass {
   --card-bg: rgba(20, 20, 30, 0.65);
   --text-main: #fff;
@@ -76,7 +76,7 @@ body {
   position: relative;
 }
 
-/* Background Overlay (To make text readable on images) */
+/* Background Overlay */
 body::before {
   content: "";
   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -86,7 +86,7 @@ body::before {
   transition: background 0.3s;
 }
 
-/* Custom Cursor (Circle) */
+/* Custom Cursor */
 .custom-cursor {
   width: 20px; height: 20px;
   border: 2px solid var(--primary);
@@ -95,7 +95,7 @@ body::before {
   z-index: 9999;
   transform: translate(-50%, -50%);
   transition: transform 0.1s, background 0.1s;
-  display: none; /* JS will enable it */
+  display: none;
 }
 .custom-cursor.hovered {
   background: rgba(47, 107, 255, 0.2);
@@ -116,7 +116,7 @@ body::before {
   box-shadow: var(--shadow);
   transition: transform 0.2s, box-shadow 0.2s;
   position: relative;
-  overflow: hidden; /* For side borders */
+  overflow: hidden;
 }
 
 /* Glass Effect specifics */
@@ -159,12 +159,7 @@ body.theme-glass .topbar { backdrop-filter: blur(12px); }
 }
 .statItem b { font-family: 'Cairo', sans-serif; }
 
-/* Privacy Blur */
-.blurTarget.blurred {
-  filter: blur(6px);
-  user-select: none;
-  cursor: pointer;
-}
+.blurTarget.blurred { filter: blur(6px); user-select: none; cursor: pointer; }
 .iconBtn { background:none; border:none; cursor:pointer; font-size:1.1em; opacity:0.6; }
 
 /* 5. Inputs & Buttons */
@@ -188,6 +183,9 @@ body.theme-glass .topbar { backdrop-filter: blur(12px); }
 }
 .btn:active { transform: scale(0.97); }
 
+/* Fix for File Label Button */
+label.btn { display: flex; width: 100%; text-align: center; }
+
 .btn.primary { background: var(--primary); color: #fff; box-shadow: 0 4px 10px rgba(47, 107, 255, 0.3); }
 .btn.success { background: var(--success); color: #fff; }
 .btn.warning { background: var(--warning); color: #fff; }
@@ -195,7 +193,7 @@ body.theme-glass .topbar { backdrop-filter: blur(12px); }
 .btn.secondary { background: #e2e8f0; color: #333; }
 .iconOnly { padding: 8px 12px; font-size: 1.2em; }
 
-/* Red Dot for Backup */
+/* Red Dot */
 .redDot {
   position: absolute; top: 5px; right: 5px;
   width: 10px; height: 10px; 
@@ -205,29 +203,25 @@ body.theme-glass .topbar { backdrop-filter: blur(12px); }
 }
 @keyframes pulseRed { 0% {box-shadow: 0 0 0 0 rgba(207,34,46,0.4);} 70% {box-shadow: 0 0 0 6px rgba(207,34,46,0);} 100% {box-shadow: 0 0 0 0 rgba(207,34,46,0);} }
 
-/* 6. Avatar & Side Borders (The V23 Specials) */
+/* 6. Avatar & Side Borders */
 .studentCard { position: relative; }
 
-/* Avatar */
 .avatarIcon {
   width: 50px; height: 50px;
-  background: #e2e8f0; color: #a0aec0; /* Default Grey */
+  background: #e2e8f0; color: #a0aec0;
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-size: 1.8em;
-  transition: 0.3s;
+  font-size: 1.8em; transition: 0.3s;
 }
 .avatarIcon.present {
-  background: rgba(46, 164, 79, 0.15); color: var(--success); /* Active Green */
+  background: rgba(46, 164, 79, 0.15); color: var(--success);
   border: 2px solid var(--success);
 }
 
-/* Side Border Colors (Added dynamically via JS) */
 .status-border-green { border-right: 5px solid var(--success) !important; }
 .status-border-yellow { border-right: 5px solid var(--warning) !important; }
 .status-border-red { border-right: 5px solid var(--danger) !important; }
 
-/* LTR Support for Borders */
 html[dir="ltr"] .status-border-green { border-right: none !important; border-left: 5px solid var(--success) !important; }
 html[dir="ltr"] .status-border-yellow { border-right: none !important; border-left: 5px solid var(--warning) !important; }
 html[dir="ltr"] .status-border-red { border-right: none !important; border-left: 5px solid var(--danger) !important; }
@@ -239,14 +233,12 @@ td { padding: 12px; border-bottom: 1px solid var(--border-color); vertical-align
 tr:last-child td { border-bottom: none; }
 tr:hover { background: rgba(0,0,0,0.02); }
 
-/* Pagination Controls */
 .pagination {
     display: flex; justify-content: center; align-items: center; gap: 10px;
     margin-top: 15px; padding-top: 10px; border-top: 1px solid var(--border-color);
 }
 #pageIndicator { font-weight: bold; font-family: 'Cairo'; }
 
-/* Bulk Action Bar */
 .bulkBar {
     background: var(--text-main); color: var(--card-bg);
     padding: 10px 15px; border-radius: 8px;
@@ -256,7 +248,7 @@ tr:hover { background: rgba(0,0,0,0.02); }
 }
 @keyframes slideDown { from {transform: translateY(-10px); opacity:0;} to {transform: translateY(0); opacity:1;} }
 
-/* 8. Modals */
+/* 8. Modals & Settings */
 .modal {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
   background: rgba(0,0,0,0.6); z-index: 999;
@@ -264,8 +256,7 @@ tr:hover { background: rgba(0,0,0,0.02); }
   backdrop-filter: blur(4px);
   opacity: 0; pointer-events: none; transition: 0.3s;
 }
-.modal.visible { opacity: 1; pointer-events: auto; } /* Helper for JS */
-.modal:not(.hidden) { opacity: 1; pointer-events: auto; } /* Helper for V18 compatibility */
+.modal:not(.hidden) { opacity: 1; pointer-events: auto; }
 
 .modalContent {
   background: var(--card-bg); width: 90%; max-width: 600px;
@@ -277,7 +268,6 @@ tr:hover { background: rgba(0,0,0,0.02); }
 .modal:not(.hidden) .modalContent { transform: scale(1); }
 .modalContent.hugeContent { max-width: 900px; }
 
-/* Settings Rows */
 .settingRow {
     display: flex; justify-content: space-between; align-items: center;
     padding: 12px 0; border-bottom: 1px solid var(--border-color);
@@ -285,9 +275,21 @@ tr:hover { background: rgba(0,0,0,0.02); }
 .settingRow:last-child { border: none; }
 .settingRow label { font-weight: bold; }
 
+/* 9. Danger Zone Styling (V24) */
+.dangerZone {
+    margin-top: 25px;
+    border: 2px dashed var(--danger);
+    padding: 20px;
+    border-radius: var(--radius);
+    background: rgba(207, 34, 46, 0.05);
+    transition: 0.3s;
+}
+.dangerZone:hover { background: rgba(207, 34, 46, 0.1); }
+.dangerZone h3 { margin-top: 0; margin-bottom: 15px; color: var(--danger); font-size: 1.1em; }
+
 /* Utilities */
 .hidden { display: none !important; }
-.adminOnly { /* Handled by JS, but useful to have class */ }
+.adminOnly { /* Handled by JS */ }
 .flexBetween { display: flex; justify-content: space-between; align-items: center; }
 .list .item { padding: 10px; border-bottom: 1px solid var(--border-color); cursor: pointer; transition:0.2s; }
 .list .item:hover { background: rgba(47, 107, 255, 0.05); padding-inline-start: 15px; }
