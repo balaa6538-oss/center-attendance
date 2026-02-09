@@ -446,4 +446,253 @@ document.addEventListener('DOMContentLoaded', () => {
           const reader = new FileReader();
           reader.onload = function(evt) {
               const res = evt.target.result;
-              localStorage.setItem
+              localStorage.setItem(K_BG_IMAGE, res);
+              document.body.style.backgroundImage = `url('${res}')`;
+          };
+          reader.readAsDataURL(file);
+      }
+  });
+  on("clearBgBtn", "click", () => { localStorage.removeItem(K_BG_IMAGE); document.body.style.backgroundImage = "none"; });
+
+  on("privacyBtn", "click", () => { $("todayRevenue").classList.toggle("blurred"); $("stTotalPaid").classList.toggle("blurred"); });
+
+  // List & Pagination
+  on("openAllStudentsBtn", "click", () => { renderList(); $("allStudentsModal").classList.remove("hidden"); });
+  on("closeModalBtn", "click", () => $("allStudentsModal").classList.add("hidden"));
+  
+  if($("filterClass")) $("filterClass").addEventListener("change", renderList);
+  if($("filterStatus")) $("filterStatus").addEventListener("change", renderList);
+  if($("filterAttend")) $("filterAttend").addEventListener("change", renderList);
+
+  on("prevPageBtn", "click", () => { if(currentPage>1) { currentPage--; renderPage(); }});
+  on("nextPageBtn", "click", () => { currentPage++; renderPage(); });
+
+  document.addEventListener("change", (e) => {
+      if(e.target.classList.contains("stCheckbox")) handleBulk();
+      if(e.target.id === "selectAllCheckbox") {
+          const all = document.querySelectorAll(".stCheckbox");
+          all.forEach(c => c.checked = e.target.checked);
+          handleBulk();
+      }
+  });
+
+  on("bulkAttendBtn", "click", () => {
+      const boxes = document.querySelectorAll(".stCheckbox:checked");
+      let count = 0;
+      boxes.forEach(b => { const res = addAttendance(b.dataset.id, nowDateStr()); if(res.ok) count++; });
+      alert(`تم تسجيل حضور ${count} طالب بنجاح ✅`); renderList(); handleBulk();
+  });
+  
+  on("bulkAbsentBtn", "click", () => {
+      const boxes = document.querySelectorAll(".stCheckbox:checked");
+      boxes.forEach(b => removeAttendance(b.dataset.id, nowDateStr()));
+      alert("تم تسجيل الغياب ✅"); renderList();
+  });
+
+  // FIXED: Search (Pointing to New V24 Element)
+  on("openBtn", "click", () => window.extOpen(toInt($("openId").value)));
+  on("searchAny", "input", (e) => {
+      const q = e.target.value.toLowerCase();
+      const res = $("searchMsg");
+      if(!q) { if(res) res.style.display="none"; return; }
+      const found = Object.values(students).filter(s => 
+        (s.name && s.name.toLowerCase().includes(q)) || String(s.id).includes(q) || (s.phone && String(s.phone).includes(q))
+      ).slice(0,5);
+      if(res) {
+          res.style.display = "block";
+          res.innerHTML = found.map(s => {
+              const phoneDisplay = s.phone ? `<span style="font-size:0.85em; color:#2ea44f; margin-right:5px;">📞 ${s.phone}</span>` : "";
+              return `<div class="item" onclick="window.extOpen(${s.id})"><div style="font-weight:bold;">${s.name} (${s.id})</div>${phoneDisplay}</div>`;
+          }).join("");
+      }
+  });
+
+  on("quickAttendBtn", "click", () => {
+      const id = toInt($("quickAttendId").value);
+      const res = addAttendance(id, nowDateStr());
+      showMsg("quickMsg", res.msg, res.ok?"ok":"err");
+      updateStudentUI(id); renderReport(nowDateStr());
+      $("quickAttendId").value = ""; $("quickAttendId").focus();
+  });
+
+  on("addNewBtn", "click", () => {
+      const id = toInt($("newId").value);
+      if(!id || existsId(id)) { showMsg("addMsg", "موجود مسبقاً", "err"); return; }
+      students[String(id)] = makeEmptyStudent(id);
+      if(id<BASE_MIN_ID || id>BASE_MAX_ID) extraIds.push(id);
+      saveAll(); window.extOpen(id); showMsg("addMsg", "تمت الإضافة", "ok");
+  });
+
+  on("saveStudentBtn", "click", () => {
+      if(!currentId) return;
+      const s = students[currentId];
+      s.name = $("stName").value; s.className = $("stClass").value; s.phone = $("stPhone").value; 
+      saveAll(); showMsg("studentMsg", "Saved", "ok"); updateTopStats();
+  });
+
+  on("addNoteBtn", "click", () => {
+      if(!currentId) return;
+      const txt = $("newNoteInp").value.trim(); if(!txt) return;
+      const now = new Date();
+      const stamp = `[${now.toISOString().split('T')[0]}]`;
+      const oldNotes = students[currentId].notes || "";
+      students[currentId].notes = `${stamp} : ${txt}\n${oldNotes}`;
+      saveAll(); updateStudentUI(currentId);
+  });
+
+  on("markTodayBtn", "click", () => { if(currentId) { addAttendance(currentId, nowDateStr()); updateStudentUI(currentId); renderReport(nowDateStr()); }});
+  on("unmarkTodayBtn", "click", () => { if(currentId) { removeAttendance(currentId, nowDateStr()); updateStudentUI(currentId); renderReport(nowDateStr()); }});
+
+  // FIXED: Add Payment (Money Sound & Correction)
+  on("addPaymentBtn", "click", () => {
+      if(!currentId) return; const v = parseInt($("newPaymentInput").value); if(!v) return;
+      students[currentId].paid = (students[currentId].paid||0) + v;
+      revenueByDate[nowDateStr()] = (revenueByDate[nowDateStr()]||0) + v;
+      saveAll(); 
+      playSound("money"); // Cha-Ching!
+      alert("تم الإيداع بنجاح 💰"); 
+      updateStudentUI(currentId); renderReport(nowDateStr());
+  });
+
+  // FIXED: Correct Pay Button
+  on("correctPayBtn", "click", () => {
+      if(!currentId) return; 
+      const v = parseInt(prompt("Correction Amount (Deduct):")); if(!v) return;
+      students[currentId].paid = Math.max(0, (students[currentId].paid||0)-v);
+      revenueByDate[nowDateStr()] = Math.max(0, (revenueByDate[nowDateStr()]||0)-v);
+      saveAll(); alert("Correction Done ✅"); updateStudentUI(currentId); renderReport(nowDateStr());
+  });
+
+  // FIXED: WhatsApp Button
+  on("waBtn", "click", () => {
+      const ph = $("stPhone").value;
+      if(ph) window.open(`https://wa.me/20${ph}`, '_blank');
+      else alert("No Phone Number!");
+  });
+
+  // FIXED: Copy Report Button
+  on("copyReportBtn", "click", () => {
+      const today = nowDateStr();
+      const attendCount = (attByDate[today] || []).length;
+      const rev = revenueByDate[today] || 0;
+      const txt = `📊 *Center Report: ${today}*\n\n✅ Attendance: ${attendCount}\n💰 Revenue: ${rev} EGP\n\n-- Center System --`;
+      navigator.clipboard.writeText(txt).then(() => alert("Report Copied to Clipboard 📋"));
+  });
+
+  on("deleteStudentBtn", "click", () => { if(currentId && confirm("Delete?")) {
+      const st = students[currentId];
+      let deduct = false;
+      if(st.paid > 0 && confirm(`Deduct ${st.paid} from revenue?`)) deduct = true;
+      if(deduct) revenueByDate[nowDateStr()] = (revenueByDate[nowDateStr()]||0) - st.paid;
+      deletedStudents[currentId] = JSON.parse(JSON.stringify(st));
+      students[currentId] = makeEmptyStudent(currentId);
+      if(currentId > BASE_MAX_ID) { delete students[currentId]; extraIds = extraIds.filter(x => x !== currentId); }
+      saveAll(); alert("Moved to Bin"); updateStudentUI(null); renderReport(nowDateStr());
+  }});
+
+  // Excel & Import
+  on("exportExcelBtn", "click", () => {
+      if (typeof XLSX === "undefined") return alert("Excel Lib Missing");
+      const filled = Object.values(students).filter(st => st.name || st.paid>0).sort((a,b)=>a.id-b.id);
+      const wsData = [["كود", "الاسم", "المجموعة", "رقم الموبايل", "المدفوع", "ملاحظات", "سجل الحضور"]];
+      filled.forEach(st => {
+          wsData.push([st.id, st.name, st.className, st.phone, st.paid, st.notes, (st.attendanceDates||[]).join(", ")]);
+      });
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsData), "الطلاب");
+      XLSX.writeFile(wb, `Center_Data_${nowDateStr()}.xlsx`);
+      markBackupDone(); // Clear Red Dot
+  });
+
+  on("importExcelInput", "change", async () => {
+      const f = $("importExcelInput").files[0]; if(!f) return;
+      const wb = XLSX.read(await f.arrayBuffer(), {type:"array"});
+      if(!confirm("Overwrite Data?")) return;
+      const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+      students = {}; attByDate = {}; revenueByDate = {}; extraIds = [];
+      for (let i = BASE_MIN_ID; i <= BASE_MAX_ID; i++) students[String(i)] = makeEmptyStudent(i);
+      
+      rows.forEach(row => {
+          const id = parseInt(row["كود"] || row["ID"]);
+          if(id) {
+              let st = makeEmptyStudent(id);
+              st.name = row["الاسم"] || row["Name"] || "";
+              st.className = row["المجموعة"] || row["Class"] || "";
+              st.phone = row["رقم الموبايل"] || row["Phone"] || "";
+              st.paid = parseInt(row["المدفوع"] || row["Paid"] || 0);
+              st.notes = row["ملاحظات"] || row["Notes"] || "";
+              let histStr = row["سجل الحضور"] || row["History"] || Object.values(row)[6] || "";
+              if(histStr && typeof histStr==='string') {
+                  const dates = histStr.split(",").map(s => s.trim()).filter(s => s);
+                  st.attendanceDates = dates;
+                  dates.forEach(d => {
+                      if(!attByDate[d]) attByDate[d] = [];
+                      if(!attByDate[d].includes(id)) attByDate[d].push(id);
+                  });
+              }
+              students[String(id)] = st;
+              if(id > BASE_MAX_ID) extraIds.push(id);
+          }
+      });
+      saveAll(); alert("Import Done ✅"); location.reload();
+  });
+
+  // Global Helpers
+  window.extOpen = (id) => { updateStudentUI(id); document.querySelector(".studentCard").scrollIntoView({behavior:"smooth"}); };
+  
+  // FIXED: Restore Logic (Was missing in V23)
+  window.restoreSt = (id) => {
+      if(students[id] && (students[id].name || students[id].paid>0)) { if(!confirm("Occupied. Overwrite?")) return; }
+      const st = deletedStudents[id];
+      if(st.paid > 0 && confirm(`Restore ${st.paid} to revenue?`)) {
+          revenueByDate[nowDateStr()] = (revenueByDate[nowDateStr()]||0) + st.paid;
+      }
+      students[id] = st; delete deletedStudents[id];
+      saveAll(); renderBinList(); updateTopStats();
+      alert("Restored ✅"); window.extOpen(id);
+  };
+
+  const renderReport = (d) => {
+      const list = $("reportList"); if(!list) return;
+      const ids = attByDate[d] || [];
+      $("reportDateLabel").textContent = prettyDate(d);
+      $("reportCount").textContent = ids.length;
+      $("reportMoney").textContent = (revenueByDate[d]||0) + " ج";
+      if(!ids.length) list.innerHTML = "<div class='mutedCenter'>—</div>";
+      else list.innerHTML = ids.map(id => `<div class="item" onclick="window.extOpen(${id})">(${id}) ${students[id]?students[id].name:"?"}</div>`).join("");
+  };
+
+  on("reportBtn", "click", () => renderReport($("reportDate").value));
+
+  // FIXED: Bin Modal & Logic
+  on("openBinBtn", "click", () => { renderBinList(); $("recycleBinModal").classList.remove("hidden"); });
+  on("closeBinBtn", "click", () => $("recycleBinModal").classList.add("hidden"));
+  on("emptyBinBtn", "click", () => { if(confirm("Permanent Delete?")) { deletedStudents={}; saveAll(); renderBinList(); }});
+
+  const renderBinList = () => {
+      const bl = $("binList"); if(!bl) return;
+      const ids = Object.keys(deletedStudents);
+      if(ids.length === 0) { bl.innerHTML = `<div class="mutedCenter">Empty</div>`; return; }
+      bl.innerHTML = ids.map(id => {
+          const s = deletedStudents[id];
+          return `<div class="binItem"><b>${s.name} (${s.id})</b> <button class="btn success smallBtn" onclick="window.restoreSt(${s.id})">Restore</button></div>`;
+      }).join("");
+  };
+
+  // FIXED: Danger Zone Buttons (Reset Term & Reset All)
+  on("resetTermBtn", "click", () => { 
+      if(prompt("Enter Admin Password:") === ADMIN_PASS && confirm("Reset Term (Paid & Attendance)?")) { 
+          for(let k in students) { students[k].paid=0; students[k].attendanceDates=[]; } 
+          attByDate={}; revenueByDate={}; saveAll(); alert("Term Reset Done ✅"); location.reload(); 
+      }
+  });
+  
+  on("resetBtn", "click", () => { 
+      if(prompt("Enter Admin Password:") === ADMIN_PASS && confirm("WIPE EVERYTHING?")) { 
+          localStorage.clear(); location.reload(); 
+      }
+  });
+
+  // Init
+  loadAll(); ensureBase500(); checkAuth();
+});
