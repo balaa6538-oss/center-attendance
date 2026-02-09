@@ -1,15 +1,12 @@
 /* =============================================
-   Center System V23 (The Master Update)
-   Features: 
-   1. Assistant Mode (User/11112222)
-   2. Pagination (50 per page)
-   3. Smart Backup Reminder
-   4. Theming Engine (Dark/Glass)
-   5. Bulk Actions & Avatars
+   Center System V24 (The Fix & Feature Update)
+   - Fixed: Search, Add, WhatsApp, Report Copy
+   - New: Money Sound Effect, Danger Zone in Settings
+   - Improved: Wallpaper Save, Term Fee Security
    ============================================= */
 
 document.addEventListener('DOMContentLoaded', () => {
-  console.log("System V23 Loaded...");
+  console.log("System V24 Loaded...");
 
   // ====== 1. Configuration & Auth ======
   const ADMIN_USER = "Admin";
@@ -24,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const ITEMS_PER_PAGE = 50;
 
   // LocalStorage Keys
-  const K_AUTH = "ca_auth_v2"; // Changed key to force re-login for V23
+  const K_AUTH = "ca_auth_v2"; 
   const K_ROLE = "ca_role_v1";
   const K_STUDENTS = "ca_students_v6";      
   const K_EXTRA_IDS = "ca_extra_ids_v6";     
@@ -41,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let students = {}; let deletedStudents = {}; let extraIds = [];              
   let attByDate = {}; let revenueByDate = {}; 
   let currentId = null; let termFee = 0; let currentLang = "ar";
-  let currentPage = 1; let currentFilteredList = []; // For Pagination
+  let currentPage = 1; let currentFilteredList = []; 
 
   // Helpers
   const $ = (id) => document.getElementById(id);
@@ -50,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const prettyDate = (d) => d ? d.split("-").reverse().join("-") : "—";
   const toInt = (v) => { const n = parseInt(v); return isNaN(n) ? null : n; };
 
-  // Translations (Expanded for V23)
+  // Translations
   const STRINGS = {
     ar: {
       login_title: "دخول لوحة السنتر", login_desc: "يرجى تسجيل الدخول", login_btn: "دخول",
@@ -88,21 +85,39 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // Sound Effects
+  // Sound Effects (Money & Success)
   const playSound = (type) => {
       const ctx = new (window.AudioContext||window.webkitAudioContext)();
       const osc = ctx.createOscillator(); const gain = ctx.createGain();
       osc.connect(gain); gain.connect(ctx.destination);
-      if(type==="success") {
+      
+      if(type==="money") { // Cha-Ching! 💰
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(1200, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(2000, ctx.currentTime + 0.1);
+          gain.gain.setValueAtTime(0.1, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+          osc.start(); osc.stop(ctx.currentTime + 0.4);
+          
+          // Echo effect
+          setTimeout(() => {
+              const osc2 = ctx.createOscillator(); const gain2 = ctx.createGain();
+              osc2.connect(gain2); gain2.connect(ctx.destination);
+              osc2.frequency.setValueAtTime(2000, ctx.currentTime);
+              gain2.gain.setValueAtTime(0.05, ctx.currentTime);
+              gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+              osc2.start(); osc2.stop(ctx.currentTime + 0.2);
+          }, 100);
+
+      } else if(type==="success") {
           osc.frequency.setValueAtTime(587, ctx.currentTime); // D5
           osc.frequency.exponentialRampToValueAtTime(1174, ctx.currentTime + 0.1); // D6
           gain.gain.setValueAtTime(0.1, ctx.currentTime);
           gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
           osc.start(); osc.stop(ctx.currentTime + 0.3);
-      } else { // Error/Buzz
+      } else { // Error
           osc.type = "sawtooth";
           osc.frequency.setValueAtTime(150, ctx.currentTime);
-          osc.frequency.linearRampToValueAtTime(100, ctx.currentTime + 0.2);
           gain.gain.setValueAtTime(0.1, ctx.currentTime);
           gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.2);
           osc.start(); osc.stop(ctx.currentTime + 0.2);
@@ -123,7 +138,6 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const loadAll = () => {
-    // Load Data
     try { students = JSON.parse(localStorage.getItem(K_STUDENTS) || "{}"); } catch { students = {}; }
     try { deletedStudents = JSON.parse(localStorage.getItem(K_DELETED) || "{}"); } catch { deletedStudents = {}; }
     try { revenueByDate = JSON.parse(localStorage.getItem(K_REVENUE) || "{}"); } catch { revenueByDate = {}; }
@@ -133,7 +147,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if(!attByDate) attByDate={}; if(!revenueByDate) revenueByDate={};
 
-    // Load Settings
     const savedTheme = localStorage.getItem(K_THEME) || "classic";
     applyTheme(savedTheme);
     const savedBg = localStorage.getItem(K_BG_IMAGE);
@@ -141,7 +154,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const savedLang = localStorage.getItem(K_LANG) || "ar";
     applyLanguage(savedLang);
 
-    // Initial UI
     if($("termFeeInp")) $("termFeeInp").value = termFee > 0 ? termFee : "";
     updateTopStats();
     checkBackupStatus();
@@ -155,7 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const applyTheme = (theme) => {
-      document.body.className = ""; // Reset
+      document.body.className = ""; 
       if(theme === "dark") document.body.classList.add("theme-dark");
       else if(theme === "glass") document.body.classList.add("theme-glass");
       localStorage.setItem(K_THEME, theme);
@@ -184,13 +196,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const applyPermissions = () => {
       const isAdmin = (currentUserRole === "admin");
-      // Hide/Show Admin Only Elements
       document.querySelectorAll(".adminOnly").forEach(el => {
           if(isAdmin) el.classList.remove("hidden");
           else el.classList.add("hidden");
       });
       
-      // Special: Hide delete buttons if assistant
       if(!isAdmin) {
           if($("deleteStudentBtn")) $("deleteStudentBtn").classList.add("hidden");
           if($("correctPayBtn")) $("correctPayBtn").classList.add("hidden");
@@ -202,26 +212,15 @@ document.addEventListener('DOMContentLoaded', () => {
       const p = $("pass").value.trim();
       
       if(u === ADMIN_USER && p === ADMIN_PASS) {
-          localStorage.setItem(K_AUTH, "1");
-          localStorage.setItem(K_ROLE, "admin");
-          currentUserRole = "admin";
-          showApp();
+          localStorage.setItem(K_AUTH, "1"); localStorage.setItem(K_ROLE, "admin"); currentUserRole = "admin"; showApp();
       } else if (u.toLowerCase() === ASST_USER.toLowerCase() && p === ASST_PASS) {
-          localStorage.setItem(K_AUTH, "1");
-          localStorage.setItem(K_ROLE, "assistant");
-          currentUserRole = "assistant";
-          showApp();
+          localStorage.setItem(K_AUTH, "1"); localStorage.setItem(K_ROLE, "assistant"); currentUserRole = "assistant"; showApp();
       } else {
-          showMsg("loginMsg", "Error: Wrong Credentials", "err");
-          playSound("error");
+          showMsg("loginMsg", "Error: Wrong Credentials", "err"); playSound("error");
       }
   };
 
-  const doLogout = () => {
-      localStorage.removeItem(K_AUTH);
-      localStorage.removeItem(K_ROLE);
-      location.reload();
-  };
+  const doLogout = () => { localStorage.removeItem(K_AUTH); localStorage.removeItem(K_ROLE); location.reload(); };
 
   // ====== 4. Main UI Logic ======
   const showApp = () => {
@@ -231,16 +230,12 @@ document.addEventListener('DOMContentLoaded', () => {
       $("reportDate").value = nowDateStr();
       renderReport(nowDateStr());
       updateTopStats();
-      setTimeout(checkQR, 500); // Check for QR URL params
+      setTimeout(checkQR, 500); 
   };
 
-  const showLogin = () => {
-      $("loginBox").classList.remove("hidden");
-      $("appBox").classList.add("hidden");
-  };
+  const showLogin = () => { $("loginBox").classList.remove("hidden"); $("appBox").classList.add("hidden"); };
 
   const updateTopStats = () => {
-      // Animated Counter Effect
       const animateValue = (id, end) => {
           const obj = $(id); if(!obj) return;
           if(end === 0) { obj.textContent = "0"; return; }
@@ -255,11 +250,9 @@ document.addEventListener('DOMContentLoaded', () => {
           };
           window.requestAnimationFrame(step);
       };
-
       const filledCount = Object.values(students).filter(s => s.name || s.paid>0).length;
       const todayCount = (attByDate[nowDateStr()] || []).length;
       const revenue = revenueByDate[nowDateStr()] || 0;
-
       animateValue("totalStudentsCount", filledCount);
       animateValue("todayCountTop", todayCount);
       animateValue("todayRevenue", revenue);
@@ -274,9 +267,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const avatar = $("stAvatar");
     const badge = $("newBadge");
 
-    if (!st) return; // Should not happen
+    if (!st) return; 
 
-    // Update Pills
     pills.id.textContent = `ID: ${id}`;
     inps.name.value = st.name || "";
     inps.cls.value = st.className || "";
@@ -286,21 +278,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if($("newNoteInp")) $("newNoteInp").value = "";
     if($("newPaymentInput")) $("newPaymentInput").value = "";
 
-    // Finance Status (Border Color logic handled in CSS/JS combo)
-    const paid = st.paid || 0;
-    const req = termFee;
+    const paid = st.paid || 0; const req = termFee;
     let statusClass = "";
     if(req > 0) {
         if(paid >= req) statusClass = "status-border-green";
         else if(paid > 0) statusClass = "status-border-yellow";
         else statusClass = "status-border-red";
     }
-    // Remove old classes
     const card = document.querySelector(".studentCard");
     card.classList.remove("status-border-green", "status-border-yellow", "status-border-red");
     if(statusClass) card.classList.add(statusClass);
 
-    // Attendance Status & Avatar
     const today = nowDateStr();
     const dates = st.attendanceDates || [];
     const isPresent = dates.includes(today);
@@ -308,17 +296,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if(isPresent) {
         pills.status.textContent = currentLang==="ar"?"✅ حاضر":"✅ Present";
         pills.status.style.color = "green";
-        avatar.classList.add("present"); // Turns green
+        avatar.classList.add("present"); 
     } else {
         pills.status.textContent = currentLang==="ar"?"✖ غياب":"✖ Absent";
         pills.status.style.color = "red";
-        avatar.classList.remove("present"); // Turns grey
+        avatar.classList.remove("present"); 
     }
 
     pills.count.textContent = dates.length;
     $("attList").innerHTML = dates.slice().reverse().slice(0,20).map(d=>`<div>${prettyDate(d)}</div>`).join("");
-    
-    // New Badge
     if(dates.length === 0 && st.name) badge.classList.remove("hidden"); else badge.classList.add("hidden");
   };
 
@@ -329,8 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
           st.attendanceDates.push(dateStr);
           if(!attByDate[dateStr]) attByDate[dateStr] = [];
           if(!attByDate[dateStr].includes(id)) attByDate[dateStr].push(id);
-          saveAll(); 
-          playSound("success");
+          saveAll(); playSound("success");
           return {ok:true, msg: currentLang==="ar" ? "تم تسجيل الحضور ✅" : "Checked In ✅"};
       }
       playSound("error");
@@ -344,13 +329,12 @@ document.addEventListener('DOMContentLoaded', () => {
     saveAll();
   };
 
-  // ====== 6. List & Pagination (V23) ======
+  // ====== 6. List & Pagination ======
   const renderList = () => {
       const filterGroup = $("filterClass").value; 
       const filterStatus = $("filterStatus").value; 
       const filterAttend = $("filterAttend").value; 
       
-      // Populate Class Filter
       const sel = $("filterClass");
       if(sel.options.length <= 1) { 
           const allClasses = new Set();
@@ -363,7 +347,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const filled = Object.values(students).filter(s => s.name || s.paid > 0);
       const today = nowDateStr(); 
 
-      // Apply Filters
       currentFilteredList = filled.filter(s => {
           if(filterGroup !== "all" && s.className !== filterGroup) return false;
           if(filterStatus !== "all") {
@@ -380,7 +363,6 @@ document.addEventListener('DOMContentLoaded', () => {
           return true;
       });
 
-      // Reset Page
       currentPage = 1;
       renderPage();
   };
@@ -394,42 +376,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
       pageItems.forEach(s => {
           const tr = document.createElement("tr");
-          // Finance Status Icon (Pill)
           let stIcon = "🔴";
           if(termFee > 0) {
-              if(s.paid >= termFee) stIcon = "🟢"; // Full
-              else if(s.paid > 0) stIcon = "🟡"; // Partial
+              if(s.paid >= termFee) stIcon = "🟢"; 
+              else if(s.paid > 0) stIcon = "🟡"; 
           }
           const attendTxt = (s.attendanceDates||[]).includes(today) ? "✅" : "➖";
 
-          // Row HTML
-          tr.innerHTML = `
-            <td><input type="checkbox" class="stCheckbox" data-id="${s.id}"></td>
-            <td>${s.id}</td>
-            <td>${s.name}</td>
-            <td>${s.className}</td>
-            <td>${s.paid}</td>
-            <td>${stIcon}</td>
-            <td>${attendTxt}</td>
-          `;
-          
-          // Click on row (except checkbox) opens student
+          tr.innerHTML = `<td><input type="checkbox" class="stCheckbox" data-id="${s.id}"></td><td>${s.id}</td><td>${s.name}</td><td>${s.className}</td><td>${s.paid}</td><td>${stIcon}</td><td>${attendTxt}</td>`;
           tr.addEventListener("click", (e) => {
-              if(e.target.type !== "checkbox") {
-                  $("allStudentsModal").classList.add("hidden"); 
-                  window.extOpen(s.id);
-              }
+              if(e.target.type !== "checkbox") { $("allStudentsModal").classList.add("hidden"); window.extOpen(s.id); }
           });
           tb.appendChild(tr);
       });
 
-      // Update Pagination Controls
       $("pageIndicator").textContent = `صفحة ${currentPage} / ${Math.ceil(currentFilteredList.length / ITEMS_PER_PAGE) || 1}`;
       $("prevPageBtn").disabled = currentPage === 1;
       $("nextPageBtn").disabled = end >= currentFilteredList.length;
   };
 
-  // Bulk Actions
   const handleBulk = () => {
       const boxes = document.querySelectorAll(".stCheckbox:checked");
       const count = boxes.length;
@@ -443,11 +408,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const last = localStorage.getItem(K_LAST_BACKUP);
       const now = Date.now();
       const dot = $("backupDot");
-      if(!last || (now - parseInt(last) > 24 * 60 * 60 * 1000)) {
-          dot.classList.remove("hidden"); // Show Red Dot
-      } else {
-          dot.classList.add("hidden");
-      }
+      if(!last || (now - parseInt(last) > 24 * 60 * 60 * 1000)) dot.classList.remove("hidden"); 
+      else dot.classList.add("hidden");
   };
 
   const markBackupDone = () => {
@@ -456,19 +418,28 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // ====== 8. Listeners ======
-  
-  // Auth
   on("loginBtn", "click", doLogin);
   on("logoutBtn", "click", doLogout);
   on("togglePass", "click", () => { const p=$("pass"); p.type = p.type==="password"?"text":"password"; });
 
-  // Settings
   on("settingsBtn", "click", () => $("settingsModal").classList.remove("hidden"));
   on("closeSettingsBtn", "click", () => $("settingsModal").classList.add("hidden"));
   on("langToggleBtn", "click", () => applyLanguage(currentLang==="ar"?"en":"ar"));
   on("themeSelector", "change", (e) => applyTheme(e.target.value));
   
-  // Wallpaper Logic
+  // FIXED: Save Fee with Password
+  on("saveFeeBtn", "click", () => {
+      const pass = prompt("Enter Admin Password:");
+      if(pass === ADMIN_PASS) {
+          termFee = toInt($("termFeeInp").value) || 0;
+          saveAll(); alert("Fee Saved ✅");
+          updateStudentUI(currentId); // Refresh UI to show new border colors
+      } else {
+          alert("Wrong Password ❌");
+      }
+  });
+
+  // FIXED: Wallpaper Immediate Save
   on("bgInput", "change", (e) => {
       const file = e.target.files[0];
       if(file) {
@@ -481,16 +452,9 @@ document.addEventListener('DOMContentLoaded', () => {
           reader.readAsDataURL(file);
       }
   });
-  on("clearBgBtn", "click", () => {
-      localStorage.removeItem(K_BG_IMAGE);
-      document.body.style.backgroundImage = "none";
-  });
+  on("clearBgBtn", "click", () => { localStorage.removeItem(K_BG_IMAGE); document.body.style.backgroundImage = "none"; });
 
-  // Privacy Blur
-  on("privacyBtn", "click", () => {
-      $("todayRevenue").classList.toggle("blurred");
-      $("stTotalPaid").classList.toggle("blurred");
-  });
+  on("privacyBtn", "click", () => { $("todayRevenue").classList.toggle("blurred"); $("stTotalPaid").classList.toggle("blurred"); });
 
   // List & Pagination
   on("openAllStudentsBtn", "click", () => { renderList(); $("allStudentsModal").classList.remove("hidden"); });
@@ -503,7 +467,6 @@ document.addEventListener('DOMContentLoaded', () => {
   on("prevPageBtn", "click", () => { if(currentPage>1) { currentPage--; renderPage(); }});
   on("nextPageBtn", "click", () => { currentPage++; renderPage(); });
 
-  // Bulk Checkboxes
   document.addEventListener("change", (e) => {
       if(e.target.classList.contains("stCheckbox")) handleBulk();
       if(e.target.id === "selectAllCheckbox") {
@@ -516,23 +479,18 @@ document.addEventListener('DOMContentLoaded', () => {
   on("bulkAttendBtn", "click", () => {
       const boxes = document.querySelectorAll(".stCheckbox:checked");
       let count = 0;
-      boxes.forEach(b => {
-          const res = addAttendance(b.dataset.id, nowDateStr());
-          if(res.ok) count++;
-      });
-      alert(`تم تسجيل حضور ${count} طالب بنجاح ✅`);
-      renderList();
-      handleBulk(); // hide bar
+      boxes.forEach(b => { const res = addAttendance(b.dataset.id, nowDateStr()); if(res.ok) count++; });
+      alert(`تم تسجيل حضور ${count} طالب بنجاح ✅`); renderList(); handleBulk();
   });
   
   on("bulkAbsentBtn", "click", () => {
       const boxes = document.querySelectorAll(".stCheckbox:checked");
       boxes.forEach(b => removeAttendance(b.dataset.id, nowDateStr()));
-      alert("تم تسجيل الغياب ✅");
-      renderList();
+      alert("تم تسجيل الغياب ✅"); renderList();
   });
 
-  // Search, Quick Attend, Add Student (Standard V22 Logic maintained)
+  // FIXED: Search (Pointing to New V24 Element)
+  on("openBtn", "click", () => window.extOpen(toInt($("openId").value)));
   on("searchAny", "input", (e) => {
       const q = e.target.value.toLowerCase();
       const res = $("searchMsg");
@@ -585,11 +543,40 @@ document.addEventListener('DOMContentLoaded', () => {
   on("markTodayBtn", "click", () => { if(currentId) { addAttendance(currentId, nowDateStr()); updateStudentUI(currentId); renderReport(nowDateStr()); }});
   on("unmarkTodayBtn", "click", () => { if(currentId) { removeAttendance(currentId, nowDateStr()); updateStudentUI(currentId); renderReport(nowDateStr()); }});
 
+  // FIXED: Add Payment (Money Sound & Correction)
   on("addPaymentBtn", "click", () => {
       if(!currentId) return; const v = parseInt($("newPaymentInput").value); if(!v) return;
       students[currentId].paid = (students[currentId].paid||0) + v;
       revenueByDate[nowDateStr()] = (revenueByDate[nowDateStr()]||0) + v;
-      saveAll(); alert("Done"); updateStudentUI(currentId); renderReport(nowDateStr());
+      saveAll(); 
+      playSound("money"); // Cha-Ching!
+      alert("تم الإيداع بنجاح 💰"); 
+      updateStudentUI(currentId); renderReport(nowDateStr());
+  });
+
+  // FIXED: Correct Pay Button
+  on("correctPayBtn", "click", () => {
+      if(!currentId) return; 
+      const v = parseInt(prompt("Correction Amount (Deduct):")); if(!v) return;
+      students[currentId].paid = Math.max(0, (students[currentId].paid||0)-v);
+      revenueByDate[nowDateStr()] = Math.max(0, (revenueByDate[nowDateStr()]||0)-v);
+      saveAll(); alert("Correction Done ✅"); updateStudentUI(currentId); renderReport(nowDateStr());
+  });
+
+  // FIXED: WhatsApp Button
+  on("waBtn", "click", () => {
+      const ph = $("stPhone").value;
+      if(ph) window.open(`https://wa.me/20${ph}`, '_blank');
+      else alert("No Phone Number!");
+  });
+
+  // FIXED: Copy Report Button
+  on("copyReportBtn", "click", () => {
+      const today = nowDateStr();
+      const attendCount = (attByDate[today] || []).length;
+      const rev = revenueByDate[today] || 0;
+      const txt = `📊 *Center Report: ${today}*\n\n✅ Attendance: ${attendCount}\n💰 Revenue: ${rev} EGP\n\n-- Center System --`;
+      navigator.clipboard.writeText(txt).then(() => alert("Report Copied to Clipboard 📋"));
   });
 
   on("deleteStudentBtn", "click", () => { if(currentId && confirm("Delete?")) {
@@ -652,7 +639,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Global Helpers
   window.extOpen = (id) => { updateStudentUI(id); document.querySelector(".studentCard").scrollIntoView({behavior:"smooth"}); };
-  window.restoreSt = (id) => { /* Reuse logic from V22 */ }; 
+  
+  // FIXED: Restore Logic (Was missing in V23)
+  window.restoreSt = (id) => {
+      if(students[id] && (students[id].name || students[id].paid>0)) { if(!confirm("Occupied. Overwrite?")) return; }
+      const st = deletedStudents[id];
+      if(st.paid > 0 && confirm(`Restore ${st.paid} to revenue?`)) {
+          revenueByDate[nowDateStr()] = (revenueByDate[nowDateStr()]||0) + st.paid;
+      }
+      students[id] = st; delete deletedStudents[id];
+      saveAll(); renderBinList(); updateTopStats();
+      alert("Restored ✅"); window.extOpen(id);
+  };
 
   const renderReport = (d) => {
       const list = $("reportList"); if(!list) return;
@@ -665,6 +663,35 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   on("reportBtn", "click", () => renderReport($("reportDate").value));
+
+  // FIXED: Bin Modal & Logic
+  on("openBinBtn", "click", () => { renderBinList(); $("recycleBinModal").classList.remove("hidden"); });
+  on("closeBinBtn", "click", () => $("recycleBinModal").classList.add("hidden"));
+  on("emptyBinBtn", "click", () => { if(confirm("Permanent Delete?")) { deletedStudents={}; saveAll(); renderBinList(); }});
+
+  const renderBinList = () => {
+      const bl = $("binList"); if(!bl) return;
+      const ids = Object.keys(deletedStudents);
+      if(ids.length === 0) { bl.innerHTML = `<div class="mutedCenter">Empty</div>`; return; }
+      bl.innerHTML = ids.map(id => {
+          const s = deletedStudents[id];
+          return `<div class="binItem"><b>${s.name} (${s.id})</b> <button class="btn success smallBtn" onclick="window.restoreSt(${s.id})">Restore</button></div>`;
+      }).join("");
+  };
+
+  // FIXED: Danger Zone Buttons (Reset Term & Reset All)
+  on("resetTermBtn", "click", () => { 
+      if(prompt("Enter Admin Password:") === ADMIN_PASS && confirm("Reset Term (Paid & Attendance)?")) { 
+          for(let k in students) { students[k].paid=0; students[k].attendanceDates=[]; } 
+          attByDate={}; revenueByDate={}; saveAll(); alert("Term Reset Done ✅"); location.reload(); 
+      }
+  });
+  
+  on("resetBtn", "click", () => { 
+      if(prompt("Enter Admin Password:") === ADMIN_PASS && confirm("WIPE EVERYTHING?")) { 
+          localStorage.clear(); location.reload(); 
+      }
+  });
 
   // Init
   loadAll(); ensureBase500(); checkAuth();
