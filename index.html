@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Center System V23</title>
+  <title>Center System V24</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="style.css?v=23">
+  <link rel="stylesheet" href="style.css?v=24">
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
@@ -33,7 +33,6 @@
     <div class="topbar">
       <div class="brand">
         <span data-i18n="brand_name">لوحة السنتر</span>
-        
         <div class="topStats">
           <span class="statItem clickable" id="openAllStudentsBtn">
             <span data-i18n="stat_students">👥 مسجلين:</span> <b id="totalStudentsCount">0</b>
@@ -51,11 +50,9 @@
 
       <div class="topActions">
         <button id="exportExcelBtn" class="btn success" data-i18n="btn_export">تصدير Excel</button>
-        
         <button id="settingsBtn" class="btn secondary iconOnly" style="position:relative;">
             ⚙️ <span id="backupDot" class="redDot hidden"></span>
         </button>
-        
         <button id="logoutBtn" class="btn danger smallBtn" data-i18n="btn_logout">خروج</button>
       </div>
     </div>
@@ -175,26 +172,6 @@
     <div style="text-align: center; margin-top: 30px;">
         <button id="openBinBtn" class="btn adminOnly" style="background:#444; color:#fff;" data-i18n="btn_recycle">♻️ سلة المحذوفات</button>
     </div>
-
-    <div class="card dangerZone adminOnly" style="margin-top:20px;">
-      <h2 data-i18n="danger_title">⚠️ إدارة البيانات</h2>
-      <div class="dangerSection">
-        <h3 data-i18n="danger_term">1. تصفير الترم</h3>
-        <div class="row">
-          <input id="termPass" class="inp" type="password">
-          <button id="resetTermBtn" class="btn warning" data-i18n="btn_reset">تصفير</button>
-        </div>
-      </div>
-      <hr>
-      <div class="dangerSection">
-        <h3 data-i18n="danger_factory">2. ضبط المصنع</h3>
-        <div class="row">
-          <input id="resetPass" class="inp" type="password">
-          <button id="resetBtn" class="btn danger" data-i18n="btn_wipe">مسح الكل</button>
-        </div>
-      </div>
-      <div id="resetMsg" class="msg"></div>
-    </div>
   </div>
 
   <div id="allStudentsModal" class="modal hidden">
@@ -251,7 +228,6 @@
           <span id="pageIndicator">صفحة 1</span>
           <button id="nextPageBtn" class="btn smallBtn">التالي</button>
       </div>
-
     </div>
   </div>
 
@@ -279,7 +255,7 @@
           <div class="settingRow">
               <label>صورة الخلفية / Wallpaper</label>
               <input type="file" id="bgInput" accept="image/*" class="inp">
-              <button id="clearBgBtn" class="btn warning smallBtn">مسح الخلفية</button>
+              <button id="clearBgBtn" class="btn warning smallBtn">مسح</button>
           </div>
           
           <div class="settingRow">
@@ -290,13 +266,28 @@
               </div>
           </div>
           
-          <hr>
-          
           <div class="settingRow">
               <label>استيراد بيانات / Import</label>
-              <label class="btn fileBtn adminOnly" for="importExcelInput">اختيار ملف Excel</label>
+              <label class="btn success adminOnly" for="importExcelInput" style="width:100%; text-align:center;">
+                 📂 اختيار ملف Excel (استيراد)
+              </label>
               <input id="importExcelInput" type="file" accept=".xlsx,.xls" style="display:none;">
           </div>
+
+          <div class="dangerZone adminOnly" style="margin-top:20px; border:2px dashed #cf222e; padding:15px; border-radius:10px; background:rgba(207,34,46,0.05);">
+             <h3 style="color:#cf222e; margin-top:0;">⚠️ منطقة الخطر (Danger Zone)</h3>
+             
+             <div class="settingRow" style="border:none;">
+                 <label>1. تصفير الترم</label>
+                 <button id="resetTermBtn" class="btn warning smallBtn">تصفير</button>
+             </div>
+             
+             <div class="settingRow" style="border:none;">
+                 <label>2. ضبط المصنع</label>
+                 <button id="resetBtn" class="btn danger smallBtn">مسح الكل</button>
+             </div>
+          </div>
+
       </div>
   </div>
 
@@ -313,6 +304,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=23"></script>
+  <script src="app.js?v=24"></script>
 </body>
 </html>
