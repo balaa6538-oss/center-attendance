@@ -3,7 +3,7 @@
    - Fixed: Login Overlay (No Page Reload on Login).
    - Included: Full List Logic, Pagination, Filters.
    - Added: Money Sound, Wallpaper Limit, Danger Zone.
-   - NEW: Save Data Sound + Auto WhatsApp on Deposit 🚀
+   - NEW: Save Data Sound + Export Sound + Auto WhatsApp on Deposit 🚀
    ============================================= */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -531,7 +531,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ==========================================
-  // 🟢 التحديث الأول: تشغيل صوت عند الحفظ
+  // 🟢 حفظ بيانات الطالب (مضاف لها الصوت)
   // ==========================================
   on("saveStudentBtn", "click", () => {
       if(!currentId) return;
@@ -557,12 +557,12 @@ document.addEventListener('DOMContentLoaded', () => {
   on("unmarkTodayBtn", "click", () => { if(currentId) { removeAttendance(currentId, nowDateStr()); updateStudentUI(currentId); renderReport(nowDateStr()); }});
 
   // ==========================================
-  // 🟢 التحديث الثاني: إرسال واتساب عند الإيداع
+  // 🟢 زر الإيداع (مضاف له إرسال رسالة الواتساب التلقائية)
   // ==========================================
   on("addPaymentBtn", "click", () => {
       if(!currentId) return; const v = parseInt($("newPaymentInput").value); if(!v) return;
       
-      const st = students[currentId]; // سحب بيانات الطالب الحالي
+      const st = students[currentId];
       st.paid = (st.paid||0) + v;
       revenueByDate[nowDateStr()] = (revenueByDate[nowDateStr()]||0) + v;
       saveAll(); 
@@ -570,7 +570,7 @@ document.addEventListener('DOMContentLoaded', () => {
       alert("تم الإيداع بنجاح 💰"); 
       updateStudentUI(currentId); renderReport(nowDateStr());
 
-      // كود إرسال رسالة الواتساب التلقائية
+      // رسالة الواتساب
       if(st.phone) {
           const msg = currentLang === "ar" 
               ? `مرحباً ${st.name}،\nتم إيداع مبلغ ${v} جنيه في حسابك بنجاح ✅\nإجمالي المدفوع حتى الآن: ${st.paid} جنيه.\n\n-- إدارة السنتر --`
@@ -614,7 +614,9 @@ document.addEventListener('DOMContentLoaded', () => {
       navigator.clipboard.writeText(txt).then(() => alert("Report Copied to Clipboard 📋"));
   });
 
-  // Excel & Import
+  // ==========================================
+  // 🟢 التصدير للإكسيل (مضاف له الصوت الجديد)
+  // ==========================================
   on("exportExcelBtn", "click", () => {
       if (typeof XLSX === "undefined") return alert("Excel Lib Missing");
       const filled = Object.values(students).filter(st => st.name || st.paid>0).sort((a,b)=>a.id-b.id);
@@ -626,6 +628,7 @@ document.addEventListener('DOMContentLoaded', () => {
       XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsData), "الطلاب");
       XLSX.writeFile(wb, `Center_Data_${nowDateStr()}.xlsx`);
       markBackupDone(); 
+      playSound("success"); // 🟢 تشغيل الصوت عند التصدير
   });
 
   on("importExcelInput", "change", async () => {
