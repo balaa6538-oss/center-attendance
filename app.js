@@ -3,6 +3,7 @@
    - Fixed: Login Overlay (No Page Reload on Login).
    - Included: Full List Logic, Pagination, Filters.
    - Added: Money Sound, Wallpaper Limit, Danger Zone.
+   - NEW: Save Data Sound + Auto WhatsApp on Deposit 🚀
    ============================================= */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -183,7 +184,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if(isAuth === "1") {
           currentUserRole = localStorage.getItem(K_ROLE) || "admin";
-          // FIX: Hide login, show app immediately
           loginBox.style.display = "none";
           loginBox.classList.add("hidden");
           
@@ -192,7 +192,6 @@ document.addEventListener('DOMContentLoaded', () => {
           
           showApp();
       } else {
-          // Show Login
           loginBox.style.display = "block";
           loginBox.classList.remove("hidden");
           
@@ -220,7 +219,7 @@ document.addEventListener('DOMContentLoaded', () => {
       
       if(u === ADMIN_USER && p === ADMIN_PASS) {
           localStorage.setItem(K_AUTH, "1"); localStorage.setItem(K_ROLE, "admin"); 
-          checkAuth(); // Call checkAuth instead of reload
+          checkAuth(); 
       } else if (u.toLowerCase() === ASST_USER.toLowerCase() && p === ASST_PASS) {
           localStorage.setItem(K_AUTH, "1"); localStorage.setItem(K_ROLE, "assistant"); 
           checkAuth();
@@ -338,7 +337,7 @@ document.addEventListener('DOMContentLoaded', () => {
     saveAll();
   };
 
-  // ====== 6. List & Pagination (Restored) ======
+  // ====== 6. List & Pagination ======
   const renderList = () => {
       const filterGroup = $("filterClass").value; 
       const filterStatus = $("filterStatus").value; 
@@ -436,7 +435,6 @@ document.addEventListener('DOMContentLoaded', () => {
   on("langToggleBtn", "click", () => applyLanguage(currentLang==="ar"?"en":"ar"));
   on("themeSelector", "change", (e) => applyTheme(e.target.value));
   
-  // FIXED: Save Fee with Password
   on("saveFeeBtn", "click", () => {
       const pass = prompt("Enter Admin Password:");
       if(pass === ADMIN_PASS) {
@@ -448,7 +446,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
   });
 
-  // FIXED: Wallpaper Size Check
   on("bgInput", "change", (e) => {
       const file = e.target.files[0];
       if(file) {
@@ -533,11 +530,17 @@ document.addEventListener('DOMContentLoaded', () => {
       saveAll(); window.extOpen(id); showMsg("addMsg", "تمت الإضافة", "ok");
   });
 
+  // ==========================================
+  // 🟢 التحديث الأول: تشغيل صوت عند الحفظ
+  // ==========================================
   on("saveStudentBtn", "click", () => {
       if(!currentId) return;
       const s = students[currentId];
       s.name = $("stName").value; s.className = $("stClass").value; s.phone = $("stPhone").value; s.notes = $("stNotes").value;
-      saveAll(); showMsg("studentMsg", "Saved", "ok"); updateTopStats();
+      saveAll(); 
+      playSound("success"); // إضافة تشغيل الصوت هنا
+      showMsg("studentMsg", "Saved", "ok"); 
+      updateTopStats();
   });
 
   on("addNoteBtn", "click", () => {
@@ -553,15 +556,29 @@ document.addEventListener('DOMContentLoaded', () => {
   on("markTodayBtn", "click", () => { if(currentId) { addAttendance(currentId, nowDateStr()); updateStudentUI(currentId); renderReport(nowDateStr()); }});
   on("unmarkTodayBtn", "click", () => { if(currentId) { removeAttendance(currentId, nowDateStr()); updateStudentUI(currentId); renderReport(nowDateStr()); }});
 
-  // FIXED: Add Payment (Money Sound & Correction)
+  // ==========================================
+  // 🟢 التحديث الثاني: إرسال واتساب عند الإيداع
+  // ==========================================
   on("addPaymentBtn", "click", () => {
       if(!currentId) return; const v = parseInt($("newPaymentInput").value); if(!v) return;
-      students[currentId].paid = (students[currentId].paid||0) + v;
+      
+      const st = students[currentId]; // سحب بيانات الطالب الحالي
+      st.paid = (st.paid||0) + v;
       revenueByDate[nowDateStr()] = (revenueByDate[nowDateStr()]||0) + v;
       saveAll(); 
       playSound("money"); 
       alert("تم الإيداع بنجاح 💰"); 
       updateStudentUI(currentId); renderReport(nowDateStr());
+
+      // كود إرسال رسالة الواتساب التلقائية
+      if(st.phone) {
+          const msg = currentLang === "ar" 
+              ? `مرحباً ${st.name}،\nتم إيداع مبلغ ${v} جنيه في حسابك بنجاح ✅\nإجمالي المدفوع حتى الآن: ${st.paid} جنيه.\n\n-- إدارة السنتر --`
+              : `Hello ${st.name},\nA deposit of ${v} EGP has been added to your account ✅\nTotal paid: ${st.paid} EGP.\n\n-- Center Admin --`;
+          
+          const waUrl = `https://wa.me/20${st.phone}?text=${encodeURIComponent(msg)}`;
+          window.open(waUrl, '_blank');
+      }
   });
 
   on("correctPayBtn", "click", () => {
@@ -583,7 +600,6 @@ document.addEventListener('DOMContentLoaded', () => {
       saveAll(); alert("Moved to Bin"); updateStudentUI(null); renderReport(nowDateStr());
   }});
 
-  // FIXED: WhatsApp Button
   on("waBtn", "click", () => {
       const ph = $("stPhone").value;
       if(ph) window.open(`https://wa.me/20${ph}`, '_blank');
