@@ -1,9 +1,7 @@
 /* =============================================
    Center System V-PRO (FINAL EDITION)
-   - Kept: All Core Data Logic, Export, Import.
-   - NEW: Bottom Navigation, Notebook, Cash Drawer Logic.
-   - NEW: Toasts, Confetti, Undo Delete (5s), Live Feed.
-   - NEW: Grouped Daily Report, Simple Modal Restore.
+   - Fixed: ALL Syntax Errors & Missing Brackets.
+   - NEW: Colorful Reports, Bottom Nav, Notebook.
    ============================================= */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -34,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const K_LANG = "ca_lang";
     const K_LAST_BACKUP = "ca_last_backup";
     const K_BG_IMAGE = "ca_bg_image";
-    const K_NOTEBOOK = "ca_notebook_v1"; // مفتاح حفظ النوته
+    const K_NOTEBOOK = "ca_notebook_v1"; 
   
     // Global State
     let students = {}; let deletedStudents = {}; let extraIds = [];              
@@ -105,13 +103,13 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   
     window.switchTab = (tabId) => {
-    document.querySelectorAll('.tab-section').forEach(s => s.classList.add('hidden'));
-    const target = document.getElementById('sec' + tabId);
-    if(target) target.classList.remove('hidden');
-    document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
-    const activeBtn = document.getElementById('btnTab' + tabId);
-    if(activeBtn) activeBtn.classList.add('active');
-  };
+        document.querySelectorAll('.tab-section').forEach(s => s.classList.add('hidden'));
+        const target = document.getElementById('sec' + tabId);
+        if(target) target.classList.remove('hidden');
+        document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+        const activeBtn = document.getElementById('btnTab' + tabId);
+        if(activeBtn) activeBtn.classList.add('active');
+    };
   
     // Sounds
     const playSound = (type) => {
@@ -153,7 +151,13 @@ document.addEventListener('DOMContentLoaded', () => {
       if(!attByDate) attByDate={}; if(!revenueByDate) revenueByDate={};
   
       const savedTheme = localStorage.getItem(K_THEME) || "classic"; applyTheme(savedTheme);
-      const savedBg = localStorage.getItem(K_BG_IMAGE); if(savedBg) document.body.style.backgroundImage = `url('${savedBg}')`;
+      
+      const savedBg = localStorage.getItem(K_BG_IMAGE); 
+      if(savedBg) {
+          document.body.style.backgroundImage = `url('${savedBg}')`;
+          document.body.style.backgroundSize = "cover";
+          document.body.style.backgroundAttachment = "fixed";
+      }
       
       if($("termFeeInp")) $("termFeeInp").value = termFee > 0 ? termFee : "";
       if($("centerNotebook")) $("centerNotebook").value = localStorage.getItem(K_NOTEBOOK) || "";
@@ -192,10 +196,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const isAdmin = (currentUserRole === "admin");
         document.querySelectorAll(".adminOnly").forEach(el => {
             if(isAdmin) el.classList.remove("hidden"); else el.classList.add("hidden");
-       if(!isAdmin) {
+        });
+        if(!isAdmin) {
             if($("deleteStudentBtn")) $("deleteStudentBtn").classList.add("hidden");
             if($("correctPayBtn")) $("correctPayBtn").classList.add("hidden");
         }
+    }; // <--- هنا كان الغلط في الأقواس والحمدلله اتصلح!
   
     const doLogin = () => {
         const u = $("user").value.trim(); const p = $("pass").value.trim();
@@ -351,7 +357,6 @@ document.addEventListener('DOMContentLoaded', () => {
         $("nextPageBtn").disabled = end >= currentFilteredList.length;
     };
   
-    // المودال القديم
     const renderSimpleTable = () => {
         const tb = $("simpleStudentsTable").querySelector("tbody"); if(!tb) return;
         tb.innerHTML = "";
@@ -464,7 +469,6 @@ document.addEventListener('DOMContentLoaded', () => {
         updateStudentUI(currentId); renderReport(nowDateStr());
         if(st.phone) {
             const msg = `مرحباً ${st.name}،\nتم إيداع مبلغ ${v} جنيه في حسابك بنجاح ✅\nإجمالي المدفوع: ${st.paid} جنيه.\n\n-- إدارة السنتر --`;
-            // تأخير فتح الواتساب ثانية عشان العميل يلحق يشوف الرسالة وتأثير الاحتفال
             setTimeout(() => { window.open(`https://wa.me/20${st.phone}?text=${encodeURIComponent(msg)}`, '_blank'); }, 1000);
         }
     });
@@ -476,27 +480,28 @@ document.addEventListener('DOMContentLoaded', () => {
         saveAll(); showToast("تم الخصم بنجاح ⚠️", "warning"); updateStudentUI(currentId); renderReport(nowDateStr());
     });
   
-  on("deleteStudentBtn", "click", () => { 
-      if(!currentId) return;
-      if(!confirm("⚠️ هل أنت متأكد أنك تريد حذف هذا الطالب نهائياً؟")) return;
-      const targetId = currentId; const st = students[targetId];
-      const backupSt = JSON.parse(JSON.stringify(st));
-      let deducted = 0;
-      if(st.paid > 0 && confirm(`هل تريد خصم مدفوعات الطالب (${st.paid} ج) من إيراد اليوم؟`)) deducted = st.paid;
-      revenueByDate[nowDateStr()] = (revenueByDate[nowDateStr()]||0) - deducted;
-      deletedStudents[targetId] = backupSt;
-      students[targetId] = makeEmptyStudent(targetId);
-      if(targetId > BASE_MAX_ID) { delete students[targetId]; extraIds = extraIds.filter(x => x !== targetId); }
-      saveAll(); updateStudentUI(null); renderReport(nowDateStr());
-      window.switchTab('Home');
-      showUndoToast(`تم حذف الطالب #${targetId}`, () => {
-          students[targetId] = backupSt;
-          delete deletedStudents[targetId];
-          revenueByDate[nowDateStr()] = (revenueByDate[nowDateStr()]||0) + deducted;
-          saveAll(); window.extOpen(targetId); renderReport(nowDateStr());
-          showToast("تم التراجع ورجوع الطالب بنجاح ✅");
-      });
-  });
+    on("deleteStudentBtn", "click", () => { 
+        if(!currentId) return;
+        if(!confirm("⚠️ هل أنت متأكد أنك تريد حذف هذا الطالب نهائياً؟")) return;
+        const targetId = currentId; const st = students[targetId];
+        const backupSt = JSON.parse(JSON.stringify(st));
+        let deducted = 0;
+        if(st.paid > 0 && confirm(`هل تريد خصم مدفوعات الطالب (${st.paid} ج) من إيراد اليوم؟`)) deducted = st.paid;
+        revenueByDate[nowDateStr()] = (revenueByDate[nowDateStr()]||0) - deducted;
+        deletedStudents[targetId] = backupSt;
+        students[targetId] = makeEmptyStudent(targetId);
+        if(targetId > BASE_MAX_ID) { delete students[targetId]; extraIds = extraIds.filter(x => x !== targetId); }
+        saveAll(); updateStudentUI(null); renderReport(nowDateStr());
+        window.switchTab('Home');
+        showUndoToast(`تم حذف الطالب #${targetId}`, () => {
+            students[targetId] = backupSt;
+            delete deletedStudents[targetId];
+            revenueByDate[nowDateStr()] = (revenueByDate[nowDateStr()]||0) + deducted;
+            saveAll(); window.extOpen(targetId); renderReport(nowDateStr());
+            showToast("تم التراجع ورجوع الطالب بنجاح ✅");
+        });
+    });
+
     on("waBtn", "click", () => { const ph = $("stPhone").value; if(ph) window.open(`https://wa.me/20${ph}`, '_blank'); else showToast("لا يوجد رقم هاتف!", "err"); });
   
     // ====== 9. Tables, Pagination, Bulk ======
@@ -521,7 +526,8 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll(".stCheckbox:checked").forEach(b => removeAttendance(b.dataset.id, nowDateStr()));
         showToast("تم تسجيل الغياب ✖", "warning"); renderList();
     });
-// ====== 10. Reports & WhatsApp Copy (V-PRO Updated) ======
+
+    // ====== 10. Reports & WhatsApp Copy (V-PRO Updated) ======
     const renderReport = (d) => {
         const list = $("reportList"); if(!list) return;
         const ids = attByDate[d] || [];
@@ -684,3 +690,4 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     loadAll(); ensureBase500(); checkAuth();
+});
