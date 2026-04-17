@@ -437,3 +437,14 @@ body.theme-dark .bottom-nav, body.theme-glass.dark-glass .bottom-nav {
 .bg-group-default { background-color: #34495e; } 
 #noteArea { width: 100%; height: 200px; border: 2px dashed var(--primary); border-radius: 10px; padding: 10px; background: #f9f9f9; resize: none; margin-top: 10px; }
 .note-warning { color: #856404; background-color: #fff3cd; padding: 8px; border-radius: 5px; font-size: 12px; border: 1px solid #ffeeba; }
+/* تأثيرات كروت الإحصائيات (عشان تنور لما تقف عليها) */
+.statItem { transition: all 0.3s ease; cursor: pointer; border: 1px solid transparent; }
+.statItem:hover { 
+    transform: translateY(-5px); 
+    box-shadow: 0 10px 20px rgba(47, 107, 255, 0.15); 
+    border-color: var(--primary);
+}
+
+/* زرار العين بتاع الإيراد */
+#toggleRevBtn { cursor: pointer; transition: 0.2s; font-size: 1.2em; margin-left: 10px; }
+#toggleRevBtn:hover { transform: scale(1.2); }
