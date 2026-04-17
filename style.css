@@ -488,3 +488,22 @@ body.theme-dark .bottom-nav, body.theme-glass.dark-glass .bottom-nav {
 
 .settings-card h3 { margin-top: 0; color: var(--primary); font-size: 1.1em; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
 .settings-card.danger-card h3 { color: var(--danger); }
+/* =========================================
+   تحديثات المجموعات وحذف الخلفية (V-PRO)
+========================================= */
+.group-fee-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8f9fa;
+    padding: 10px 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    transition: 0.3s;
+}
+.group-fee-row:hover { border-color: var(--primary); }
+.theme-dark .group-fee-row { background: #2c2c2c; border-color: #444; }
+.theme-glass .group-fee-row { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+.group-fee-row label { font-weight: bold; color: var(--primary); margin:0; font-size: 1.1em; }
+.group-fee-row input { width: 120px; text-align: center; font-weight: bold; }
