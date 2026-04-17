@@ -516,10 +516,9 @@ document.addEventListener('DOMContentLoaded', () => {
           saveAll(); 
           window.extOpen(targetId); 
           renderReport(nowDateStr());
-          showToast("تم التراجع ورجوع الطالب بنجاح ✅");
+         showToast("تم التراجع ورجوع الطالب بنجاح ✅");
       });
   });
-  
     on("waBtn", "click", () => { const ph = $("stPhone").value; if(ph) window.open(`https://wa.me/20${ph}`, '_blank'); else showToast("لا يوجد رقم هاتف!", "err"); });
   
     // ====== 9. Tables, Pagination, Bulk ======
