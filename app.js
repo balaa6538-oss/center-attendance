@@ -565,7 +565,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div style="display:flex; flex-wrap:wrap; gap:6px;">
                     ${groups[g].map(id => `
                         <span class="badge" 
-                              style="cursor:pointer; background:#fff; border:1px solid ${gColor}; color:${gColor}; font-size:12px; transition:0.2s;" 
+                              style="cursor:pointer; background:#fff; border:1px solid ${gColor}; color:${gColor}; font-size:12px; transition:0.2s; padding:5px 10px; border-radius:6px;" 
                               onmouseover="this.style.background='${gColor}'; this.style.color='#fff'" 
                               onmouseout="this.style.background='#fff'; this.style.color='${gColor}'" 
                               onclick="window.extOpen('${id}')">#${id}</span>
@@ -581,13 +581,39 @@ document.addEventListener('DOMContentLoaded', () => {
     on("copyReportBtn", "click", () => {
         const today = $("reportDate").value || nowDateStr();
         const ids = attByDate[today] || []; const rev = revenueByDate[today] || 0;
-        
         let txt = `📊 *تقرير السنتر: ${prettyDate(today)}*\n\n`;
         let groups = {};
         ids.forEach(id => { 
             let c = (students[id] && students[id].className) ? students[id].className.trim() : "عام"; 
             if(!groups[c]) groups[c] = 0; groups[c]++; 
         });
+        for(let g in groups) { txt += `📘 ${g}: ${groups[g]} طالب\n`; }
+        txt += `\n👥 إجمالي الحضور: ${ids.length}\n💰 إجمالي الإيراد: ${rev} ج\n\n-- Center V-PRO --`;
+        navigator.clipboard.writeText(txt).then(() => showToast("تم النسخ للواتساب بنجاح 📋"));
+    });
+
+    // ====== 11. Modals, Export & Notebook ======
+    on("openAllStudentsBtn", "click", () => { renderSimpleTable(); $("allStudentsModal").classList.remove("hidden"); });
+    on("closeModalBtn", "click", () => $("allStudentsModal").classList.add("hidden"));
+
+    if($("noteArea")) {
+        $("noteArea").value = localStorage.getItem("center_vpro_notes") || "";
+        on("noteArea", "input", (e) => { localStorage.setItem("center_vpro_notes", e.target.value); });
+    }
+
+    on("exportExcelBtn", "click", () => {
+        if (typeof XLSX === "undefined") return showToast("مكتبة الإكسيل غير موجودة!", "err");
+        const filled = Object.values(students).filter(st => st.name || st.paid>0).sort((a,b)=>a.id-b.id);
+        const wsData = [["كود", "الاسم", "المجموعة", "رقم الموبايل", "المدفوع", "ملاحظات", "سجل الحضور"]];
+        filled.forEach(st => { wsData.push([st.id, st.name, st.className, st.phone, st.paid, st.notes, (st.attendanceDates||[]).join(", ")]); });
+        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsData), "الطلاب");
+        XLSX.writeFile(wb, `Center_Data_${nowDateStr()}.xlsx`);
+        playSound("success"); showToast("تم تصدير ملف الإكسيل 📊");
+    });
+
+    // ====== 12. Final Initialization ======
+    loadAll(); ensureBase500(); checkAuth();
+});
         
         for(let g in groups) { txt += `📘 ${g}: ${groups[g]} طالب\n`; }
         txt += `\n👥 إجمالي الحضور: ${ids.length}\n💰 إجمالي الإيراد: ${rev} ج\n\n-- Center V-PRO --`;
