@@ -1,7 +1,8 @@
 /* =============================================
    Center System V-PRO (FINAL EDITION)
-   - Fixed: ALL Syntax Errors & Missing Brackets.
-   - NEW: Colorful Reports, Bottom Nav, Notebook.
+   - Fixed: ALL Syntax Errors.
+   - NEW: Colorful Reports, Bottom Nav, Autosave Notebook.
+   - NEW: Eye Icon Toggle (Privacy), Detailed Attendance Modal.
    ============================================= */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -40,6 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentId = null; let termFee = 0; let currentLang = "ar";
     let currentPage = 1; let currentFilteredList = []; 
     let recentScans = []; 
+    let isRevHidden = false; // متغير لحفظ حالة العين
   
     // Helpers
     const $ = (id) => document.getElementById(id);
@@ -160,7 +162,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       
       if($("termFeeInp")) $("termFeeInp").value = termFee > 0 ? termFee : "";
-      if($("centerNotebook")) $("centerNotebook").value = localStorage.getItem(K_NOTEBOOK) || "";
   
       updateTopStats();
     };
@@ -201,7 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if($("deleteStudentBtn")) $("deleteStudentBtn").classList.add("hidden");
             if($("correctPayBtn")) $("correctPayBtn").classList.add("hidden");
         }
-    }; // <--- هنا كان الغلط في الأقواس والحمدلله اتصلح!
+    }; 
   
     const doLogin = () => {
         const u = $("user").value.trim(); const p = $("pass").value.trim();
@@ -212,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
     const doLogout = () => { localStorage.removeItem(K_AUTH); localStorage.removeItem(K_ROLE); location.reload(); };
   
-    // ====== 5. Main UI ======
+    // ====== 5. Main UI & Top Stats ======
     const showApp = () => {
         applyPermissions();
         $("reportDate").value = nowDateStr();
@@ -229,8 +230,22 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if($("totalStudentsCount")) $("totalStudentsCount").textContent = filledCount;
         if($("todayCountTop")) $("todayCountTop").textContent = todayCount;
-        if($("todayRevenue")) $("todayRevenue").textContent = revenue + " ج";
+        
+        // العين والإيراد
+        if($("todayRevenue")) {
+            $("todayRevenue").textContent = isRevHidden ? "****** ج" : revenue + " ج";
+        }
+        if($("toggleRevBtn")) {
+            $("toggleRevBtn").textContent = isRevHidden ? "👁️‍🗨️" : "👁️";
+        }
     };
+
+    // تشغيل زرار العين للإيراد
+    on("toggleRevBtn", "click", (e) => {
+        e.stopPropagation();
+        isRevHidden = !isRevHidden;
+        updateTopStats();
+    });
   
     // ====== 6. Student Operations ======
     const updateStudentUI = (id) => {
@@ -391,13 +406,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if(prompt("كلمة مرور الإدارة:") === ADMIN_PASS) {
             termFee = toInt($("termFeeInp").value) || 0; saveAll(); showToast("تم حفظ المصاريف ✅"); if(currentId) updateStudentUI(currentId);
         } else showToast("كلمة مرور خاطئة ❌", "err");
-    });
-  
-    on("saveNotebookBtn", "click", () => {
-        const text = $("centerNotebook").value;
-        localStorage.setItem(K_NOTEBOOK, text);
-        showToast("تم حفظ النوته بنجاح 📝");
-        playSound("success");
     });
   
     on("saveFinanceBtn", "click", () => {
@@ -656,10 +664,10 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast("تم استرجاع الطالب ✅"); window.extOpen(id);
     };
 
-    // ====== 12. Notebook & Resets ======
-    if($("noteArea")) {
-        $("noteArea").value = localStorage.getItem("center_vpro_notes") || "";
-        on("noteArea", "input", (e) => { localStorage.setItem("center_vpro_notes", e.target.value); });
+    // ====== 12. Notebook, Resets & Modals ======
+    if($("centerNotebook")) {
+        $("centerNotebook").value = localStorage.getItem(K_NOTEBOOK) || "";
+        on("centerNotebook", "input", (e) => { localStorage.setItem(K_NOTEBOOK, e.target.value); });
     }
 
     on("resetTermBtn", "click", () => { 
@@ -672,6 +680,50 @@ document.addEventListener('DOMContentLoaded', () => {
     on("resetBtn", "click", () => { 
         if(prompt("باسورد الأدمن:") === ADMIN_PASS && confirm("مسح كل البيانات (ضبط مصنع)؟")) { localStorage.clear(); location.reload(); }
     });
+
+    // فتح شاشة الحضور المفصلة لما تدوس على كارت الحضور
+    on("todayCountTopCard", "click", () => {
+        const today = nowDateStr();
+        const ids = attByDate[today] || [];
+        
+        if(ids.length === 0) { 
+            showToast("لا يوجد حضور اليوم حتى الآن ✖", "warning"); 
+            return; 
+        }
+        
+        let groups = {};
+        ids.forEach(id => {
+            const st = students[id];
+            if(st) {
+                let c = st.className ? st.className.trim() : "عام";
+                if(!groups[c]) groups[c] = [];
+                groups[c].push(st);
+            }
+        });
+        
+        let html = "";
+        for(let g in groups) {
+            html += `
+            <div style="background:#f8f9fa; border-radius:10px; padding:15px; margin-bottom:15px; border-right: 5px solid var(--primary);">
+                <h4 style="color:var(--primary); margin-top:0; margin-bottom:10px; border-bottom:1px solid #ddd; padding-bottom:5px;">📘 ${g} (${groups[g].length} طالب)</h4>
+                <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                    ${groups[g].map(s => `
+                        <div class="badge" style="background:#fff; color:#333; border:1px solid #ccc; padding:8px 12px; border-radius:8px; cursor:pointer; font-size:13px; transition:0.2s;" 
+                             onmouseover="this.style.background='var(--primary)'; this.style.color='#fff'" 
+                             onmouseout="this.style.background='#fff'; this.style.color='#333'"
+                             onclick="$('todayModal').classList.add('hidden'); window.switchTab('Home'); window.extOpen('${s.id}')">
+                            #${s.id} - ${s.name || 'بدون اسم'}
+                        </div>
+                    `).join("")}
+                </div>
+            </div>`;
+        }
+        
+        $("todayModalBody").innerHTML = html;
+        $("todayModal").classList.remove("hidden");
+    });
+
+    on("closeTodayModal", "click", () => $("todayModal").classList.add("hidden"));
 
     // ====== 13. Global Access & Init ======
     window.extOpen = (id) => { 
