@@ -1,7 +1,7 @@
 /* =========================================
    Center System V-PRO - Master Style
    Features: Glassmorphism, Themes, RTL/LTR
-   Updates: Bottom Nav, Toasts, Live Feed, Animations
+   Updates: Bottom Nav, Toasts, Grid Layouts
 ========================================= */
 
 /* 1. Global Variables & Fonts */
@@ -10,8 +10,8 @@
   
   /* Default Colors (Classic Blue) */
   --bg-color: #f0f2f5;
-  --bg-image: none; /* For Custom Wallpaper */
-  --overlay-color: rgba(255, 255, 255, 0); /* To dim background */
+  --bg-image: none; 
+  --overlay-color: rgba(255, 255, 255, 0); 
   
   --card-bg: #ffffff;
   --text-main: #2b3648;
@@ -29,7 +29,6 @@
 }
 
 /* --- THEMES --- */
-
 /* Dark Mode */
 body.theme-dark {
   --bg-color: #1a202c;
@@ -40,19 +39,16 @@ body.theme-dark {
   --shadow: 0 4px 6px -1px rgba(0,0,0,0.3);
 }
 
-/* Glass Mode (The Magic) */
+/* Glass Mode */
 body.theme-glass {
-  --bg-color: #2d3748; /* Fallback */
-  --overlay-color: rgba(0, 0, 0, 0.4); /* Dim the wallpaper */
-  
-  /* Translucent Cards */
+  --bg-color: #2d3748; 
+  --overlay-color: rgba(0, 0, 0, 0.4); 
   --card-bg: rgba(255, 255, 255, 0.75); 
   --text-main: #1a202c;
   --border-color: rgba(255, 255, 255, 0.3);
   --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
 }
 
-/* Glass Dark Variant */
 body.theme-glass.dark-glass {
   --card-bg: rgba(20, 20, 30, 0.65);
   --text-main: #fff;
@@ -65,6 +61,8 @@ body {
   font-family: var(--font-main);
   margin: 0;
   padding: 15px;
+  /* مسافة تحت عشان شريط التنقل السفلي ميغطيش على حاجة */
+  padding-bottom: 90px; 
   color: var(--text-main);
   background-color: var(--bg-color);
   background-image: var(--bg-image);
@@ -74,10 +72,8 @@ body {
   min-height: 100vh;
   transition: all 0.3s ease;
   position: relative;
-  padding-bottom: 90px; /* مساحة لشريط التنقل السفلي عشان ميغطيش ع المحتوى */
 }
 
-/* Background Overlay */
 body::before {
   content: "";
   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -105,7 +101,6 @@ body::before {
   margin-bottom: 20px;
 }
 
-/* Glass Effect specifics */
 body.theme-glass .glassCard {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -144,6 +139,8 @@ body.theme-glass .topbar { backdrop-filter: blur(12px); }
   display: inline-flex; align-items: center; gap: 5px;
 }
 .statItem b { font-family: 'Cairo', sans-serif; }
+.statItem.clickable { cursor: pointer; transition: 0.2s; }
+.statItem.clickable:hover { background: rgba(47, 107, 255, 0.15); }
 
 .blurTarget.blurred { filter: blur(6px); user-select: none; cursor: pointer; }
 .iconBtn { background:none; border:none; cursor:pointer; font-size:1.1em; opacity:0.6; }
@@ -160,7 +157,6 @@ body.theme-glass .topbar { backdrop-filter: blur(12px); }
 }
 .inp:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(47, 107, 255, 0.15); }
 
-/* Buttons */
 .btn {
   padding: 10px 18px; border-radius: 8px; border: none; cursor: pointer;
   font-family: var(--font-main); font-weight: 700; font-size: 0.95em;
@@ -168,8 +164,8 @@ body.theme-glass .topbar { backdrop-filter: blur(12px); }
   transition: all 0.2s; transform: scale(1);
 }
 .btn:active { transform: scale(0.97); }
+.full-btn { width: 100%; margin-top: 10px; }
 
-/* Fix for File Label Button */
 label.btn { display: flex; width: 100%; text-align: center; }
 
 .btn.primary { background: var(--primary); color: #fff; box-shadow: 0 4px 10px rgba(47, 107, 255, 0.3); }
@@ -178,16 +174,6 @@ label.btn { display: flex; width: 100%; text-align: center; }
 .btn.danger  { background: var(--danger); color: #fff; }
 .btn.secondary { background: #e2e8f0; color: #333; }
 .iconOnly { padding: 8px 12px; font-size: 1.2em; }
-
-/* Red Dot */
-.redDot {
-  position: absolute; top: 5px; right: 5px;
-  width: 10px; height: 10px; 
-  background: var(--danger); border-radius: 50%;
-  border: 2px solid var(--card-bg);
-  animation: pulseRed 2s infinite;
-}
-@keyframes pulseRed { 0% {box-shadow: 0 0 0 0 rgba(207,34,46,0.4);} 70% {box-shadow: 0 0 0 6px rgba(207,34,46,0);} 100% {box-shadow: 0 0 0 0 rgba(207,34,46,0);} }
 
 /* 6. Avatar & Side Borders */
 .studentCard { position: relative; }
@@ -207,10 +193,6 @@ label.btn { display: flex; width: 100%; text-align: center; }
 .status-border-green { border-right: 5px solid var(--success) !important; }
 .status-border-yellow { border-right: 5px solid var(--warning) !important; }
 .status-border-red { border-right: 5px solid var(--danger) !important; }
-
-html[dir="ltr"] .status-border-green { border-right: none !important; border-left: 5px solid var(--success) !important; }
-html[dir="ltr"] .status-border-yellow { border-right: none !important; border-left: 5px solid var(--warning) !important; }
-html[dir="ltr"] .status-border-red { border-right: none !important; border-left: 5px solid var(--danger) !important; }
 
 /* 7. Tables & Lists */
 table { width: 100%; border-collapse: separate; border-spacing: 0; }
@@ -232,12 +214,11 @@ tr:hover { background: rgba(0,0,0,0.02); }
     margin-bottom: 15px;
     animation: slideDown 0.3s ease;
 }
-@keyframes slideDown { from {transform: translateY(-10px); opacity:0;} to {transform: translateY(0); opacity:1;} }
 
 /* 8. Modals & Settings */
 .modal {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(0,0,0,0.6); z-index: 999;
+  background: rgba(0,0,0,0.6); z-index: 9999;
   display: flex; justify-content: center; align-items: center;
   backdrop-filter: blur(4px);
   opacity: 0; pointer-events: none; transition: 0.3s;
@@ -261,7 +242,6 @@ tr:hover { background: rgba(0,0,0,0.02); }
 .settingRow:last-child { border: none; }
 .settingRow label { font-weight: bold; }
 
-/* 9. Danger Zone Styling (V24) */
 .dangerZone {
     margin-top: 25px;
     border: 2px dashed var(--danger);
@@ -270,45 +250,48 @@ tr:hover { background: rgba(0,0,0,0.02); }
     background: rgba(207, 34, 46, 0.05);
     transition: 0.3s;
 }
-.dangerZone:hover { background: rgba(207, 34, 46, 0.1); }
 .dangerZone h3 { margin-top: 0; margin-bottom: 15px; color: var(--danger); font-size: 1.1em; }
 
 /* Utilities */
 .hidden { display: none !important; }
 .flexBetween { display: flex; justify-content: space-between; align-items: center; }
+.row { display: flex; gap: 10px; align-items: center; width: 100%; }
 .list .item { padding: 10px; border-bottom: 1px solid var(--border-color); cursor: pointer; transition:0.2s; }
 .list .item:hover { background: rgba(47, 107, 255, 0.05); padding-inline-start: 15px; }
 
 
-/* ========================================================= */
-/* ================= NEW V-PRO STYLES ====================== */
-/* ========================================================= */
+/* =========================================
+   V-PRO EXCLUSIVES (الـ CSS الجديد للواجهة الاحترافية)
+========================================= */
 
-/* 10. Bottom Navigation (شريط التنقل السفلي) */
+/* 1. التبويبات (Tabs Animation) */
+.tab-section {
+    animation: fadeIn 0.4s ease forwards;
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* 2. شريط التنقل السفلي (Bottom Navigation) */
 .bottom-nav {
     position: fixed;
     bottom: 0;
     left: 0;
     width: 100%;
     background: var(--card-bg);
+    border-top: 1px solid var(--border-color);
     display: flex;
     justify-content: space-around;
-    padding: 12px 0;
-    box-shadow: 0 -4px 15px rgba(0,0,0,0.08);
+    align-items: center;
+    padding: 10px 0;
+    box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
     z-index: 1000;
-    border-top: 1px solid var(--border-color);
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
 }
 body.theme-glass .bottom-nav {
     background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
 }
-body.theme-glass.dark-glass .bottom-nav {
-    background: rgba(20, 20, 30, 0.85);
-}
-body.theme-dark .bottom-nav {
+body.theme-dark .bottom-nav, body.theme-glass.dark-glass .bottom-nav {
     background: var(--card-bg);
-    border-top: 1px solid #4a5568;
 }
 
 .nav-item {
@@ -321,101 +304,88 @@ body.theme-dark .bottom-nav {
     color: var(--text-muted);
     cursor: pointer;
     transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    padding: 5px 20px;
-    border-radius: 12px;
+    width: 33%;
 }
-.nav-item:hover {
-    background: rgba(47, 107, 255, 0.05);
-}
+.nav-icon { font-size: 1.5em; transition: 0.3s; }
+.nav-text { font-size: 0.8em; font-weight: 700; font-family: var(--font-main); }
+
 .nav-item.active {
     color: var(--primary);
     transform: translateY(-5px);
 }
-.nav-icon { font-size: 1.6em; }
-.nav-item.active .nav-icon { transform: scale(1.1); }
-.nav-text { font-size: 0.85em; font-weight: 800; font-family: 'Cairo'; }
-
-/* Tab Animation (حركة التنقل بين الصفحات) */
-.tab-section {
-    animation: fadeInTab 0.4s ease-out;
-}
-@keyframes fadeInTab {
-    from { opacity: 0; transform: translateY(15px); }
-    to { opacity: 1; transform: translateY(0); }
+.nav-item.active .nav-icon {
+    transform: scale(1.2);
+    filter: drop-shadow(0 4px 6px rgba(47, 107, 255, 0.4));
 }
 
-/* 11. Toasts & Undo (الإشعارات الجانبية) */
+/* 3. الإشعارات المنبثقة الشيك (Toasts) */
 #toastContainer {
     position: fixed;
     top: 20px;
-    right: 20px; /* لليسار لو كان LTR */
-    z-index: 9999;
+    right: 20px;
+    z-index: 99999;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
+    pointer-events: none;
 }
-html[dir="ltr"] #toastContainer { right: auto; left: 20px; }
-
 .toast {
+    background: var(--card-bg);
+    color: var(--text-main);
     padding: 15px 25px;
-    border-radius: 10px;
-    color: white;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-    animation: slideInToast 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     display: flex;
     align-items: center;
+    gap: 12px;
     font-weight: bold;
     font-size: 0.95em;
-    min-width: 250px;
+    pointer-events: auto;
+    animation: slideInRight 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    border-right: 5px solid var(--primary);
 }
-.toast-success { background: linear-gradient(135deg, #2ea44f, #22863a); }
-.toast-err { background: linear-gradient(135deg, #cf222e, #a41e26); }
-.toast-warning { background: linear-gradient(135deg, #d69e2e, #b7791f); color: #fff; }
+.toast-success { border-color: var(--success); }
+.toast-err { border-color: var(--danger); }
+.toast-warning { border-color: var(--warning); }
 
-.undo-toast {
-    display: flex; justify-content: space-between; align-items: center; width: 300px;
-}
-.undo-toast .btn { margin-right: 15px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.5); }
+@keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes slideOut { to { transform: translateX(100%); opacity: 0; margin-top: -50px; } }
 
-@keyframes slideInToast {
-    from { transform: translateX(120%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
+/* 4. شريط آخر حضور (Live Feed) */
+.feed-box {
+    margin-top: 15px;
+    border-top: 1px dashed var(--border-color);
+    padding-top: 10px;
 }
-html[dir="ltr"] .toast { animation-name: slideInToastLTR; }
-@keyframes slideInToastLTR {
-    from { transform: translateX(-120%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-}
-@keyframes slideOut {
-    to { transform: translateX(120%); opacity: 0; }
-}
-html[dir="ltr"] .toast[style*="slideOut"] { animation-name: slideOutLTR !important; }
-@keyframes slideOutLTR { to { transform: translateX(-120%); opacity: 0; } }
-
-/* 12. Live Feed & Badges (آخر حضور وألوان المجموعات) */
 .feed-item {
     padding: 10px;
-    border-bottom: 1px solid var(--border-color);
-    font-size: 0.95em;
+    border-radius: 8px;
+    background: rgba(47, 107, 255, 0.05);
+    margin-bottom: 8px;
     display: flex;
     align-items: center;
-    gap: 10px;
-    animation: fadeInTab 0.3s ease;
+    justify-content: space-between;
+    font-size: 0.9em;
+    animation: fadeIn 0.3s;
 }
-.feed-item:last-child { border-bottom: none; }
-.feed-time { font-size: 0.8em; color: var(--text-muted); background: var(--bg-color); padding: 2px 6px; border-radius: 4px;}
+.feed-time { font-size: 0.8em; color: var(--text-muted); }
 .feed-tag {
-    background: rgba(47, 107, 255, 0.1);
-    color: var(--primary);
-    padding: 3px 8px;
-    border-radius: 6px;
+    background: var(--primary);
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 12px;
     font-size: 0.8em;
-    font-weight: bold;
 }
-.feed-id { color: var(--text-muted); font-size: 0.85em; margin-right: auto; }
-html[dir="ltr"] .feed-id { margin-right: 0; margin-left: auto; }
+.feed-id { font-weight: bold; color: var(--text-muted); }
 
-/* 13. Confetti (أوراق الاحتفال) */
+/* 5. شبكة صفحة الإعدادات والمطبخ */
+.admin-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+/* 6. تأثير الاحتفال (Confetti) */
 .confetti {
     position: fixed;
     top: -10px;
@@ -423,19 +393,16 @@ html[dir="ltr"] .feed-id { margin-right: 0; margin-left: auto; }
     height: 10px;
     z-index: 9999;
     animation: fall linear forwards;
-    pointer-events: none;
 }
 @keyframes fall {
-    to { transform: translateY(100vh) rotate(720deg); }
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
 }
 
-/* 14. Responsive Edits */
+/* Responsive fixes */
 @media (max-width: 768px) {
-  .grid2 { grid-template-columns: 1fr; }
+  .grid2, .admin-grid { grid-template-columns: 1fr; }
   .topbar { flex-direction: column; align-items: stretch; gap: 10px; }
   .topActions { justify-content: center; }
   .modalContent { width: 95%; padding: 15px; }
-  .bottom-nav { padding: 8px 0; }
-  .nav-item { padding: 5px 10px; }
-  .nav-text { font-size: 0.75em; }
 }
