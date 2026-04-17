@@ -1,9 +1,8 @@
 /* =============================================
    Center System V-PRO (FINAL EDITION)
-   - Fixed: ALL Syntax Errors.
-   - NEW: Colorful Reports, Bottom Nav, Autosave Notebook.
-   - NEW: Eye Icon Toggle (Privacy), Detailed Attendance Modal.
-   - NEW: Language Toggle, Custom BG, Daily Backup Red Dot.
+   - NEW: Dynamic Group Fees (Smart Class Detection)
+   - NEW: Background Remove & Import Button Fix
+   - NEW: Daily Backup Alert & Multi-Language
    ============================================= */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -11,9 +10,9 @@ document.addEventListener('DOMContentLoaded', () => {
   
     // ====== 1. Configuration & Auth ======
     const ADMIN_USER = "Admin";
-    const ADMIN_PASS = "####1111"; // Full Access
+    const ADMIN_PASS = "####1111"; 
     const ASST_USER  = "User";
-    const ASST_PASS  = "11112222"; // Restricted Access
+    const ASST_PASS  = "11112222"; 
   
     let currentUserRole = "admin"; 
   
@@ -27,7 +26,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const K_STUDENTS = "ca_students_v6";      
     const K_EXTRA_IDS = "ca_extra_ids_v6";     
     const K_ATT_BY_DATE = "ca_att_by_date_v6"; 
-    const K_TERM_FEE = "ca_term_fee_v6"; 
     const K_REVENUE = "ca_revenue_v6"; 
     const K_DELETED = "ca_deleted_v9"; 
     const K_THEME = "ca_theme_v1";
@@ -35,14 +33,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const K_LAST_BACKUP = "ca_last_backup";
     const K_BG_IMAGE = "ca_bg_image";
     const K_NOTEBOOK = "ca_notebook_v1"; 
+    const K_GROUP_FEES = "ca_group_fees_v1"; // مفتاح المجموعات الجديد
   
     // Global State
     let students = {}; let deletedStudents = {}; let extraIds = [];              
-    let attByDate = {}; let revenueByDate = {}; 
-    let currentId = null; let termFee = 0; let currentLang = "ar";
+    let attByDate = {}; let revenueByDate = {}; let groupFees = {}; 
+    let currentId = null; let currentLang = "ar";
     let currentPage = 1; let currentFilteredList = []; 
     let recentScans = []; 
-    let isRevHidden = false; // متغير لحفظ حالة العين
+    let isRevHidden = false; 
   
     // Helpers
     const $ = (id) => document.getElementById(id);
@@ -59,11 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
         toast.className = `toast toast-${type}`;
         toast.innerHTML = `<span style="margin-left:10px;">${type==='success'?'✅':(type==='err'?'❌':'⚠️')}</span> ${msg}`;
         container.appendChild(toast);
-        
-        setTimeout(() => {
-            toast.style.animation = "slideOut 0.3s forwards";
-            setTimeout(() => toast.remove(), 300);
-        }, 3000);
+        setTimeout(() => { toast.style.animation = "slideOut 0.3s forwards"; setTimeout(() => toast.remove(), 300); }, 3000);
     };
   
     const showUndoToast = (msg, onUndo) => {
@@ -73,14 +68,9 @@ document.addEventListener('DOMContentLoaded', () => {
         toast.className = `toast toast-warning undo-toast`;
         toast.innerHTML = `<span>⚠️ ${msg}</span> <button class="btn smallBtn" id="tempUndoBtn" style="margin-right:15px; padding:5px 10px;">تراجع ↩️</button>`;
         container.appendChild(toast);
-        
         let isUndone = false;
-        toast.querySelector("#tempUndoBtn").onclick = () => {
-            isUndone = true; onUndo(); toast.remove();
-        };
-        setTimeout(() => {
-            if(!isUndone) { toast.style.animation = "slideOut 0.3s forwards"; setTimeout(() => toast.remove(), 300); }
-        }, 5000);
+        toast.querySelector("#tempUndoBtn").onclick = () => { isUndone = true; onUndo(); toast.remove(); };
+        setTimeout(() => { if(!isUndone) { toast.style.animation = "slideOut 0.3s forwards"; setTimeout(() => toast.remove(), 300); } }, 5000);
     };
   
     const fireConfetti = () => {
@@ -114,7 +104,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if(activeBtn) activeBtn.classList.add('active');
     };
   
-    // Sounds
     const playSound = (type) => {
         try {
             const ctx = new (window.AudioContext||window.webkitAudioContext)();
@@ -138,8 +127,8 @@ document.addEventListener('DOMContentLoaded', () => {
       localStorage.setItem(K_DELETED, JSON.stringify(deletedStudents));
       localStorage.setItem(K_EXTRA_IDS, JSON.stringify(extraIds));
       localStorage.setItem(K_ATT_BY_DATE, JSON.stringify(attByDate));
-      localStorage.setItem(K_TERM_FEE, String(termFee));
       localStorage.setItem(K_REVENUE, JSON.stringify(revenueByDate));
+      localStorage.setItem(K_GROUP_FEES, JSON.stringify(groupFees)); // حفظ المجموعات
       updateTopStats();
     };
   
@@ -149,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
       try { revenueByDate = JSON.parse(localStorage.getItem(K_REVENUE) || "{}"); } catch { revenueByDate = {}; }
       try { extraIds = JSON.parse(localStorage.getItem(K_EXTRA_IDS) || "[]"); } catch { extraIds = []; }
       try { attByDate = JSON.parse(localStorage.getItem(K_ATT_BY_DATE) || "{}"); } catch { attByDate = {}; }
-      termFee = toInt(localStorage.getItem(K_TERM_FEE)) || 0;
+      try { groupFees = JSON.parse(localStorage.getItem(K_GROUP_FEES) || "{}"); } catch { groupFees = {}; }
       
       if(!attByDate) attByDate={}; if(!revenueByDate) revenueByDate={};
   
@@ -161,8 +150,6 @@ document.addEventListener('DOMContentLoaded', () => {
           document.body.style.backgroundSize = "cover";
           document.body.style.backgroundAttachment = "fixed";
       }
-      
-      if($("termFeeInp")) $("termFeeInp").value = termFee > 0 ? termFee : "";
   
       updateTopStats();
     };
@@ -232,7 +219,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if($("totalStudentsCount")) $("totalStudentsCount").textContent = filledCount;
         if($("todayCountTop")) $("todayCountTop").textContent = todayCount;
         
-        // العين والإيراد
         if($("todayRevenue")) {
             $("todayRevenue").textContent = isRevHidden ? "****** ج" : revenue + " ج";
         }
@@ -241,14 +227,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // تشغيل زرار العين للإيراد
     on("toggleRevBtn", "click", (e) => {
-        e.stopPropagation();
-        isRevHidden = !isRevHidden;
-        updateTopStats();
+        e.stopPropagation(); isRevHidden = !isRevHidden; updateTopStats();
     });
   
-    // ====== 6. Student Operations ======
+    // ====== 6. Student Operations (Dynamic Fees Logic) ======
     const updateStudentUI = (id) => {
       currentId = id; const st = students[id];
       if (!st) return; 
@@ -257,7 +240,12 @@ document.addEventListener('DOMContentLoaded', () => {
       $("stName").value = st.name || ""; $("stClass").value = st.className || ""; 
       $("stPhone").value = st.phone || ""; $("stNotes").value = st.notes || ""; 
       
-      const paid = st.paid || 0; const req = termFee;
+      const paid = st.paid || 0; 
+      
+      // التحديث الذكي: بنجيب مصاريف المجموعة بتاعة الطالب المفتوح حالاً
+      let stClassName = (st.className || "").trim();
+      let req = stClassName && groupFees[stClassName] !== undefined ? toInt(groupFees[stClassName]) : 0;
+      
       let percent = 0; let statusClass = "";
       
       if(req > 0) {
@@ -281,7 +269,6 @@ document.addEventListener('DOMContentLoaded', () => {
       $("newPaymentInput").value = ""; $("newNoteInp").value = "";
   
       const today = nowDateStr(); const dates = st.attendanceDates || []; const isPresent = dates.includes(today);
-      
       if(isPresent) { $("todayStatus").textContent = "✅ حاضر"; $("todayStatus").style.color = "green"; $("stAvatar").classList.add("present"); } 
       else { $("todayStatus").textContent = "✖ غياب"; $("todayStatus").style.color = "red"; $("stAvatar").classList.remove("present"); }
   
@@ -319,7 +306,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const sel = $("filterClass");
         if(sel.options.length <= 1) { 
             const allClasses = new Set();
-            Object.values(students).forEach(s => { if(s.className) allClasses.add(s.className); });
+            Object.values(students).forEach(s => { if(s.name && s.className) allClasses.add(s.className.trim()); });
             allClasses.forEach(c => { const opt = document.createElement("option"); opt.value = c; opt.innerText = c; sel.appendChild(opt); });
         }
   
@@ -329,7 +316,10 @@ document.addEventListener('DOMContentLoaded', () => {
         currentFilteredList = filled.filter(s => {
             if(filterGroup !== "all" && s.className !== filterGroup) return false;
             if(filterStatus !== "all") {
-                const p = s.paid || 0; const req = termFee;
+                const p = s.paid || 0; 
+                let sClass = (s.className || "").trim();
+                let req = sClass && groupFees[sClass] !== undefined ? toInt(groupFees[sClass]) : 0;
+                
                 if(req > 0) {
                     if(filterStatus === "paid" && p < req) return false;
                     if(filterStatus === "partial" && (p === 0 || p >= req)) return false;
@@ -357,7 +347,11 @@ document.addEventListener('DOMContentLoaded', () => {
   
         pageItems.forEach(s => {
             const tr = document.createElement("tr");
-            let pBar = `<div style="width:100%; background:#eee; height:5px; border-radius:3px; margin-top:4px;"><div style="width:${termFee>0?Math.min((s.paid/termFee)*100,100):0}%; background:var(--success); height:100%; border-radius:3px;"></div></div>`;
+            let sClass = (s.className || "").trim();
+            let req = sClass && groupFees[sClass] !== undefined ? toInt(groupFees[sClass]) : 0;
+            let percent = req > 0 ? Math.min((s.paid/req)*100,100) : 0;
+            
+            let pBar = `<div style="width:100%; background:#eee; height:5px; border-radius:3px; margin-top:4px;"><div style="width:${percent}%; background:var(--success); height:100%; border-radius:3px;"></div></div>`;
             const attendTxt = (s.attendanceDates||[]).includes(today) ? "✅" : "➖";
   
             tr.innerHTML = `<td><input type="checkbox" class="stCheckbox" data-id="${s.id}"></td>
@@ -401,26 +395,6 @@ document.addEventListener('DOMContentLoaded', () => {
     on("btnTabAdmin", "click", () => window.switchTab('Admin'));
   
     on("themeSelector", "change", (e) => applyTheme(e.target.value));
-    
-    // إعدادات المطبخ
-    on("saveFeeBtn", "click", () => {
-        if(prompt("كلمة مرور الإدارة:") === ADMIN_PASS) {
-            termFee = toInt($("termFeeInp").value) || 0; saveAll(); showToast("تم حفظ المصاريف ✅"); if(currentId) updateStudentUI(currentId);
-        } else showToast("كلمة مرور خاطئة ❌", "err");
-    });
-  
-    on("saveFinanceBtn", "click", () => {
-        const exp = toInt($("dailyExpenses").value) || 0;
-        const drawer = toInt($("cashInDrawer").value) || 0;
-        const rev = revenueByDate[nowDateStr()] || 0;
-        
-        const expected = rev - exp;
-        const diff = drawer - expected;
-        
-        if(diff === 0) showToast(`الدرج مظبوط تماماً ✅ (الصافي: ${expected} ج)`, "success");
-        else if(diff > 0) showToast(`في زيادة في الدرج: ${diff} ج ⚠️`, "warning");
-        else showToast(`في عجز في الدرج: ${Math.abs(diff)} ج ❌`, "err");
-    });
   
     // البحث والسكان
     on("quickAttendBtn", "click", () => {
@@ -472,7 +446,11 @@ document.addEventListener('DOMContentLoaded', () => {
         revenueByDate[nowDateStr()] = (revenueByDate[nowDateStr()]||0) + v;
         saveAll(); playSound("money"); 
         
-        if(termFee > 0 && st.paid >= termFee) { fireConfetti(); showToast(`اكتملت المصاريف بنجاح! 💰`); }
+        // ذكاء المجموعات في الدفع
+        let stClass = (st.className || "").trim();
+        let req = stClass && groupFees[stClass] !== undefined ? toInt(groupFees[stClass]) : 0;
+        
+        if(req > 0 && st.paid >= req) { fireConfetti(); showToast(`اكتملت المصاريف بنجاح! 💰`); }
         else showToast(`تم إيداع ${v} ج 💰`);
   
         updateStudentUI(currentId); renderReport(nowDateStr());
@@ -536,7 +514,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast("تم تسجيل الغياب ✖", "warning"); renderList();
     });
 
-    // ====== 10. Reports & WhatsApp Copy (V-PRO Updated) ======
+    // ====== 10. Reports & WhatsApp Copy ======
     const renderReport = (d) => {
         const list = $("reportList"); if(!list) return;
         const ids = attByDate[d] || [];
@@ -611,6 +589,11 @@ document.addEventListener('DOMContentLoaded', () => {
     on("openAllStudentsBtn", "click", () => { renderSimpleTable(); $("allStudentsModal").classList.remove("hidden"); });
     on("closeModalBtn", "click", () => $("allStudentsModal").classList.add("hidden"));
 
+    // تصليح زرار الاستيراد الحقيقي
+    on("importExcelBtnFake", "click", () => {
+        $("importExcelInput").click();
+    });
+
     on("exportExcelBtn", "click", () => {
         if (typeof XLSX === "undefined") return showToast("مكتبة الإكسيل غير موجودة!", "err");
         const filled = Object.values(students).filter(st => st.name || st.paid>0).sort((a,b)=>a.id-b.id);
@@ -619,6 +602,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsData), "الطلاب");
         XLSX.writeFile(wb, `Center_Data_${nowDateStr()}.xlsx`);
         showToast("تم تصدير ملف الإكسيل 📊");
+        
+        // إخفاء النقطة الحمراء بعد التصدير
+        localStorage.setItem(K_LAST_BACKUP, nowDateStr());
+        if($("btnTabAdmin")) $("btnTabAdmin").classList.remove("needs-backup");
     });
 
     on("importExcelInput", "change", async () => {
@@ -665,7 +652,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast("تم استرجاع الطالب ✅"); window.extOpen(id);
     };
 
-    // ====== 12. Notebook, Resets & Modals ======
+    // ====== 12. Notebook, Background, Group Fees ======
     if($("centerNotebook")) {
         $("centerNotebook").value = localStorage.getItem(K_NOTEBOOK) || "";
         on("centerNotebook", "input", (e) => { localStorage.setItem(K_NOTEBOOK, e.target.value); });
@@ -682,7 +669,78 @@ document.addEventListener('DOMContentLoaded', () => {
         if(prompt("باسورد الأدمن:") === ADMIN_PASS && confirm("مسح كل البيانات (ضبط مصنع)؟")) { localStorage.clear(); location.reload(); }
     });
 
-    // فتح شاشة الحضور المفصلة لما تدوس على كارت الحضور
+    // ذكاء المجموعات (المودال والإدارة)
+    on("openGroupFeesBtn", "click", () => {
+        if(prompt("كلمة مرور الإدارة:") !== ADMIN_PASS) {
+            showToast("كلمة مرور خاطئة ❌", "err");
+            return;
+        }
+        
+        let uniqueGroups = new Set();
+        Object.values(students).forEach(s => {
+            if(s.name || s.paid > 0) { 
+                let c = (s.className || "").trim();
+                if(c) uniqueGroups.add(c);
+            }
+        });
+        if(uniqueGroups.size === 0) uniqueGroups.add("عام");
+
+        let html = "";
+        uniqueGroups.forEach(g => {
+            let currentFee = groupFees[g] || 0;
+            html += `
+            <div class="group-fee-row">
+                <label>📘 ${g}</label>
+                <div>
+                    <input type="number" class="inp fee-input-val" data-group="${g}" value="${currentFee}" placeholder="المبلغ"> ج
+                </div>
+            </div>`;
+        });
+
+        $("groupFeesList").innerHTML = html;
+        $("groupFeesModal").classList.remove("hidden");
+    });
+
+    on("closeGroupFeesModal", "click", () => $("groupFeesModal").classList.add("hidden"));
+
+    on("saveGroupFeesBtn", "click", () => {
+        document.querySelectorAll(".fee-input-val").forEach(inp => {
+            let g = inp.getAttribute("data-group");
+            let val = toInt(inp.value) || 0;
+            groupFees[g] = val;
+        });
+        saveAll();
+        $("groupFeesModal").classList.add("hidden");
+        showToast("تم حفظ مصاريف المجموعات بنجاح 💰");
+        if(currentId) updateStudentUI(currentId); 
+    });
+
+    // تغيير وحذف الخلفية
+    if($("bgInput")) {
+        $("bgInput").addEventListener("change", (e) => {
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const imgData = event.target.result;
+                document.body.style.backgroundImage = `url('${imgData}')`;
+                document.body.style.backgroundSize = "cover";
+                document.body.style.backgroundAttachment = "fixed";
+                localStorage.setItem(K_BG_IMAGE, imgData);
+                showToast("تم تغيير خلفية السنتر 🖼️");
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    if($("removeBgBtn")) {
+        $("removeBgBtn").addEventListener("click", () => {
+            document.body.style.backgroundImage = "none";
+            localStorage.removeItem(K_BG_IMAGE);
+            showToast("تم إزالة الخلفية 🗑️");
+        });
+    }
+
     on("todayCountTopCard", "click", () => {
         const today = nowDateStr();
         const ids = attByDate[today] || [];
@@ -726,7 +784,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     on("closeTodayModal", "click", () => $("todayModal").classList.add("hidden"));
 
-    // ====== 13. Global Access & Init ======
+    // ====== 13. Global Access, Init, Lang & Backup ======
     window.extOpen = (id) => { 
         $("searchAny").value = ""; 
         if($("searchMsg")) $("searchMsg").style.display="none"; 
@@ -742,10 +800,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (qrId && existsId(qrId)) { addAttendance(qrId, nowDateStr()); window.extOpen(qrId); window.history.replaceState(null, null, window.location.pathname); }
     };
 
-    // ==========================================
-    // 🚀 V-PRO NEW FEATURES (Backup Alert, BG, Lang)
-    // ==========================================
-
     const checkDailyBackup = () => {
         const lastBackup = localStorage.getItem(K_LAST_BACKUP);
         const today = nowDateStr();
@@ -753,38 +807,13 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if(lastBackup !== today) {
             if(adminTab) adminTab.classList.add("needs-backup");
-            setTimeout(() => {
-                showToast("⚠️ تذكير: لم تقم بتصدير نسخة Excel اليوم لحفظ بياناتك!", "warning");
-            }, 3000);
+            setTimeout(() => { showToast("⚠️ تذكير: لم تقم بتصدير نسخة Excel اليوم لحفظ بياناتك!", "warning"); }, 3000);
         } else {
             if(adminTab) adminTab.classList.remove("needs-backup");
         }
     };
 
-    if($("exportExcelBtn")) {
-        $("exportExcelBtn").addEventListener("click", () => {
-            localStorage.setItem(K_LAST_BACKUP, nowDateStr());
-            if($("btnTabAdmin")) $("btnTabAdmin").classList.remove("needs-backup");
-        });
-    }
-
-    if($("bgInput")) {
-        $("bgInput").addEventListener("change", (e) => {
-            const file = e.target.files[0];
-            if(!file) return;
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const imgData = event.target.result;
-                document.body.style.backgroundImage = `url('${imgData}')`;
-                document.body.style.backgroundSize = "cover";
-                document.body.style.backgroundAttachment = "fixed";
-                localStorage.setItem(K_BG_IMAGE, imgData);
-                showToast("تم تغيير خلفية السنتر بنجاح 🖼️", "success");
-            };
-            reader.readAsDataURL(file);
-        });
-    }
-
+    // القاموس (تغيير اللغة)
     const dict = {
         "login_title": { ar: "دخول لوحة السنتر", en: "Center Login" },
         "login_desc": { ar: "الدخول للمسؤول فقط", en: "Admin access only" },
@@ -827,7 +856,7 @@ document.addEventListener('DOMContentLoaded', () => {
         "btn_recycle": { ar: "🗑️ سلة المحذوفات", en: "🗑️ Recycle Bin" },
         "set_ui_title": { ar: "🎨 المظهر والتخصيص", en: "🎨 UI & Personalization" },
         "lbl_theme": { ar: "ثيم البرنامج:", en: "App Theme:" },
-        "btn_change_bg": { ar: "🖼️ تغيير خلفية السنتر", en: "🖼️ Change Background" },
+        "btn_change_bg": { ar: "🖼️ تغيير الخلفية", en: "🖼️ Change Background" },
         "btn_change_lang": { ar: "🌐 تغيير اللغة (Ar / En)", en: "🌐 Change Language (Ar / En)" },
         "set_fin_title": { ar: "💰 إعدادات مالية", en: "💰 Financial Settings" },
         "btn_save": { ar: "حفظ", en: "Save" },
@@ -847,13 +876,8 @@ document.addEventListener('DOMContentLoaded', () => {
         "btn_view": { ar: "عرض", en: "View" },
         "badge_date": { ar: "التاريخ:", en: "Date:" },
         "badge_count": { ar: "العدد:", en: "Count:" },
-        "badge_rev": { ar: "الإيراد:", en: "Rev:" }
-    };
-
-    const toggleLanguage = () => {
-        currentLang = currentLang === "ar" ? "en" : "ar";
-        localStorage.setItem(K_LANG, currentLang);
-        applyLanguage();
+        "badge_rev": { ar: "الإيراد:", en: "Rev:" },
+        "lbl_last_scan": { ar: "آخر حضور تم تسجيله ⏱️", en: "Last Scan ⏱️" }
     };
 
     const applyLanguage = () => {
@@ -862,9 +886,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         document.querySelectorAll("[data-i18n]").forEach(el => {
             const key = el.getAttribute("data-i18n");
-            if(dict[key] && dict[key][currentLang]) {
-                el.innerHTML = dict[key][currentLang];
-            }
+            if(dict[key] && dict[key][currentLang]) { el.innerHTML = dict[key][currentLang]; }
         });
         
         const langBtn = $("changeLangBtn");
@@ -874,15 +896,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if(nav) nav.style.flexDirection = currentLang === "ar" ? "row" : "row-reverse";
     };
 
-    if($("changeLangBtn")) $("changeLangBtn").addEventListener("click", toggleLanguage);
+    if($("changeLangBtn")) {
+        $("changeLangBtn").addEventListener("click", () => {
+            currentLang = currentLang === "ar" ? "en" : "ar";
+            localStorage.setItem(K_LANG, currentLang);
+            applyLanguage();
+        });
+    }
 
     setTimeout(() => {
         currentLang = localStorage.getItem(K_LANG) || "ar";
         applyLanguage();
         checkDailyBackup();
     }, 500);
-
-    // ==========================================
 
     loadAll(); ensureBase500(); checkAuth();
 });
