@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="style.css?v=PRO_1">
+  <link rel="stylesheet" href="style.css?v=PRO_FINAL">
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
@@ -26,7 +26,7 @@
       <input id="pass" class="inp" type="password" placeholder="Password">
       <button id="togglePass" class="eyeBtn" type="button">👁️</button>
     </div>
-    <button id="loginBtn" class="btn primary" data-i18n="login_btn">دخول</button>
+    <button id="loginBtn" class="btn primary" data-i18n="login_btn" style="width: 100%; height: 50px; font-size: 1.2em;">دخول</button>
     <div id="loginMsg" class="msg"></div>
   </div>
 
@@ -36,7 +36,7 @@
       <div class="brand">
         <span data-i18n="brand_name">لوحة السنتر V-PRO</span>
         <div class="topStats">
-          <span class="statItem clickable" onclick="window.switchTab('Students')">
+          <span class="statItem clickable" id="openAllStudentsBtn">
             <span data-i18n="stat_students">👥 مسجلين:</span> <b id="totalStudentsCount">0</b>
           </span>
           <span class="statItem">
@@ -51,17 +51,12 @@
       </div>
 
       <div class="topActions">
-        <button id="exportExcelBtn" class="btn success" data-i18n="btn_export">تصدير Excel</button>
-        <button id="settingsBtn" class="btn secondary iconOnly" style="position:relative;">
-            ⚙️ <span id="backupDot" class="redDot hidden"></span>
-        </button>
-        <button id="logoutBtn" class="btn danger smallBtn" data-i18n="btn_logout">خروج</button>
+        <button id="logoutBtn" class="btn danger" style="padding: 12px 25px; font-size: 1.1em; font-weight: 800;">خروج 🚪</button>
       </div>
     </div>
 
     <section id="secHome" class="tab-section">
       <div class="grid2">
-        
         <div class="card glassCard">
           <h2 data-i18n="quick_title">سريع (QR)</h2>
           <div class="row">
@@ -69,12 +64,10 @@
             <button id="quickAttendBtn" class="btn primary" data-i18n="btn_record">سجل حضور</button>
           </div>
           <div id="quickMsg" class="msg"></div>
-
-          <div style="margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 10px;">
-              <label class="lbl" style="margin-top:0;">آخر حضور تم تسجيله ⏱️</label>
-              <div id="liveFeedBox" class="list mutedCenter" style="max-height: 120px; overflow-y: auto; background: rgba(0,0,0,0.02); border-radius: 8px;">
-                  بانتظار مسح كود...
-              </div>
+          
+          <div class="live-feed-section">
+              <label class="lbl">آخر حضور تم تسجيله ⏱️</label>
+              <div id="liveFeedBox" class="feed-list">بانتظار مسح كود...</div>
           </div>
         </div>
 
@@ -109,78 +102,71 @@
         <div class="studentHead">
           <div class="pill" id="studentIdPill">ID: —</div>
           <div class="pill" id="todayStatus">—</div>
-          <div class="pill" id="lastAttend">—</div>
           <div class="pill" id="daysCount">—</div>
         </div>
         
         <label class="lbl" data-i18n="lbl_name">الاسم</label>
         <input id="stName" class="inp">
-        
         <label class="lbl" data-i18n="lbl_class">الصف / المجموعة</label>
         <input id="stClass" class="inp">
-        
         <label class="lbl" data-i18n="lbl_phone">رقم الموبايل</label>
         <div class="row">
           <input id="stPhone" class="inp" inputmode="tel">
           <button id="waBtn" class="btn success">💬</button>
         </div>
 
-        <label class="lbl" style="margin-top:20px; border-top:1px dashed #ccc; padding-top:10px;" data-i18n="lbl_finance">نظام المصاريف</label>
+        <label class="lbl" style="margin-top:20px; border-top:1px dashed #ccc; padding-top:10px;">نظام المصاريف</label>
         <div class="paymentBox">
             <div class="payRow">
-                <span class="payLabel" data-i18n="pay_total">💰 إجمالي المدفوع:</span>
-                <input id="stTotalPaid" class="inp blurTarget" readonly style="background:#e9ecef; font-weight:bold; color:#2f6bff; width:100px; text-align:center; transition: background 0.5s;">
-                <button id="correctPayBtn" class="btn warning smallBtn adminOnly" data-i18n="btn_deduct">⚠️ خصم</button>
+                <span class="payLabel">💰 إجمالي المدفوع:</span>
+                <input id="stTotalPaid" class="inp blurTarget" readonly style="font-weight:bold; color:#2f6bff; width:120px; text-align:center;">
+                <button id="correctPayBtn" class="btn warning smallBtn adminOnly">خصم</button>
             </div>
             <div class="payRow">
-                <span class="payLabel" data-i18n="pay_new">➕ دفعة جديدة:</span>
+                <span class="payLabel">➕ دفعة جديدة:</span>
                 <div class="row" style="flex:1;">
                     <input id="newPaymentInput" type="number" class="inp">
-                    <button id="addPaymentBtn" class="btn success" data-i18n="btn_deposit">إيداع</button>
+                    <button id="addPaymentBtn" class="btn success">إيداع</button>
                 </div>
             </div>
         </div>
-        <div id="paymentBadge" class="paymentBadge hidden"></div>
 
-        <label class="lbl" data-i18n="lbl_notes">ملاحظات (مؤرخة)</label>
+        <label class="lbl">ملاحظات (مؤرخة)</label>
         <div class="row">
-            <input id="newNoteInp" class="inp" placeholder="اكتب ملحوظة جديدة هنا...">
-            <button id="addNoteBtn" class="btn" data-i18n="btn_add">إضافة</button>
+            <input id="newNoteInp" class="inp" placeholder="إضافة ملحوظة...">
+            <button id="addNoteBtn" class="btn">إضافة</button>
         </div>
-        <textarea id="stNotes" class="inp" rows="3" readonly style="background:#f9f9f9; margin-top:5px; font-size:0.9em;"></textarea>
+        <textarea id="stNotes" class="inp" rows="3" readonly style="background:#f9f9f9; margin-top:5px;"></textarea>
         
         <div class="row wrap" style="margin-top:15px;">
-          <button id="saveStudentBtn" class="btn primary" data-i18n="btn_save">حفظ البيانات 💾</button>
-          <button id="markTodayBtn" class="btn success" data-i18n="btn_attend">✅ حضور</button>
-          <button id="unmarkTodayBtn" class="btn warning" data-i18n="btn_absent">✖ غياب</button>
-          <button id="deleteStudentBtn" class="btn danger adminOnly" style="margin-right:auto;" data-i18n="btn_delete">🗑️ حذف</button>
+          <button id="saveStudentBtn" class="btn primary">حفظ البيانات 💾</button>
+          <button id="markTodayBtn" class="btn success">✅ حضور</button>
+          <button id="unmarkTodayBtn" class="btn warning">✖ غياب</button>
+          <button id="deleteStudentBtn" class="btn danger adminOnly" style="margin-right:auto;">🗑️ حذف</button>
         </div>
-        <div id="studentMsg" class="msg"></div>
         
-        <h3 style="margin-top: 20px; font-size: 1em; color: var(--text-muted);">سجل التواريخ</h3>
-        <div id="attList" class="list mutedCenter" style="max-height: 150px; overflow-y: auto;">...</div>
+        <h3 style="margin-top: 20px; font-size: 0.9em; color: var(--text-muted);">سجل التواريخ</h3>
+        <div id="attList" class="list" style="max-height: 120px; overflow-y: auto;">...</div>
       </div>
     </section>
 
     <section id="secStudents" class="tab-section hidden">
-      <div class="card glassCard" style="width: 100%;">
+      <div class="card glassCard">
         <div class="flexBetween">
-          <h2 data-i18n="list_title">قائمة الطلاب المتقدمة</h2>
-          <input id="tableSearchInp" class="inp" style="width: 250px;" placeholder="بحث سريع في الجدول...">
+          <h2>قائمة البحث المتقدم</h2>
+          <input id="tableSearchInp" class="inp" style="width: 250px;" placeholder="🔍 ابحث في الجدول...">
         </div>
         
-        <div class="row" style="background:#f0f2f5; padding:10px; border-radius:8px; margin-bottom:10px;">
-          <select id="filterClass" class="inp" style="width:auto;">
-              <option value="all">-- كل المجموعات --</option>
-          </select>
+        <div class="row filters-row">
+          <select id="filterClass" class="inp" style="width:auto;"><option value="all">كل المجموعات</option></select>
           <select id="filterStatus" class="inp" style="width:auto;">
-              <option value="all">-- الحالة المالية --</option>
+              <option value="all">كل الحالات المالية</option>
               <option value="paid">✅ خالص</option>
-              <option value="partial">⚠️ عليه جزء</option>
-              <option value="unpaid">🔴 مدفعش</option>
+              <option value="partial">⚠️ جزء</option>
+              <option value="unpaid">🔴 لم يدفع</option>
           </select>
           <select id="filterAttend" class="inp" style="width:auto;">
-              <option value="all">-- حضور اليوم --</option>
+              <option value="all">كل الحضور</option>
               <option value="present">✅ الحضور فقط</option>
               <option value="absent">✖ الغياب فقط</option>
           </select>
@@ -194,15 +180,15 @@
            </div>
         </div>
 
-        <div class="tableWrap" style="overflow-x: auto;">
+        <div class="tableWrap">
           <table id="allStudentsTable">
             <thead>
               <tr>
                 <th><input type="checkbox" id="selectAllCheckbox"></th>
                 <th>ID</th>
-                <th data-i18n="th_name">الاسم</th>
-                <th data-i18n="th_class">المجموعة</th>
-                <th data-i18n="th_paid">المدفوع</th>
+                <th>الاسم</th>
+                <th>المجموعة</th>
+                <th>المدفوع</th>
                 <th>حضور اليوم</th> 
               </tr>
             </thead>
@@ -210,34 +196,81 @@
           </table>
         </div>
 
-        <div id="paginationControls" class="pagination">
+        <div class="pagination">
             <button id="prevPageBtn" class="btn smallBtn" disabled>السابق</button>
             <span id="pageIndicator">صفحة 1</span>
             <button id="nextPageBtn" class="btn smallBtn">التالي</button>
         </div>
       </div>
-    </section>
 
-    <section id="secAdmin" class="tab-section hidden">
-      <div class="card glassCard">
+      <div class="card glassCard" style="margin-top: 20px;">
         <div class="flexBetween">
-          <h2 data-i18n="report_title">تقرير الحضور المجمع والمفصل</h2>
-          <button id="copyReportBtn" class="btn success smallBtn" data-i18n="btn_copy_report">نسخ للواتس 📋</button>
+          <h2 data-i18n="report_title">حضور وتوريد بتاريخ</h2>
+          <button id="copyReportBtn" class="btn success smallBtn">نسخ للواتس 📋</button>
         </div>
         <div class="row">
           <input id="reportDate" class="inp" type="date">
-          <button id="reportBtn" class="btn primary" data-i18n="btn_show">عرض التقرير</button>
+          <button id="reportBtn" class="btn primary">عرض</button>
         </div>
         <div class="badges">
-          <span class="badge"><span data-i18n="rep_date">التاريخ:</span> <span id="reportDateLabel">—</span></span>
-          <span class="badge"><span data-i18n="rep_count">إجمالي العدد:</span> <span id="reportCount">0</span></span>
-          <span class="badge adminOnly" style="color:#2ea44f;"><span data-i18n="rep_money">إجمالي الإيراد:</span> <span id="reportMoney">0</span></span>
+          <span class="badge">التاريخ: <span id="reportDateLabel">—</span></span>
+          <span class="badge">العدد: <span id="reportCount">0</span></span>
+          <span class="badge adminOnly" style="color:#2ea44f;">الإيراد: <span id="reportMoney">0</span></span>
         </div>
-        <div id="reportList" class="list mutedCenter" style="background: #fff; padding: 10px; border-radius: 8px; margin-top: 15px;">...</div>
+        <div id="reportList" class="report-list-box">...</div>
       </div>
-      
-      <div style="text-align: center; margin-top: 30px; margin-bottom: 30px;">
-          <button id="openBinBtn" class="btn adminOnly" style="background:#444; color:#fff;" data-i18n="btn_recycle">♻️ فتح سلة المحذوفات</button>
+    </section>
+
+    <section id="secAdmin" class="tab-section hidden">
+      <div class="admin-dashboard">
+        
+        <div class="card glassCard note-card">
+            <h2>📝 نوت بوك السنتر (ملاحظات عامة)</h2>
+            <textarea id="centerNotebook" class="inp" rows="10" placeholder="اكتب هنا مهام اليوم، مواعيد المدرسين، أو أي ملاحظات عامة للسنتر..."></textarea>
+            <button id="saveNotebookBtn" class="btn primary" style="margin-top:10px; width: 100%;">حفظ النوته 💾</button>
+        </div>
+
+        <div class="card glassCard config-card">
+            <h2>⚙️ التحكم والإعدادات</h2>
+            
+            <div class="setting-item">
+                <label>تصدير البيانات:</label>
+                <button id="exportExcelBtn" class="btn success" style="width: 100%;">تصدير ملف Excel 📊</button>
+            </div>
+
+            <div class="setting-item">
+                <label>مبلغ الترم:</label>
+                <div class="row">
+                    <input id="termFeeInp" type="number" class="inp" placeholder="مثلاً: 500">
+                    <button id="saveFeeBtn" class="btn primary">حفظ</button>
+                </div>
+            </div>
+
+            <div class="setting-item">
+                <label>المظهر:</label>
+                <select id="themeSelector" class="inp">
+                    <option value="classic">🔵 كلاسيك</option>
+                    <option value="dark">🌑 ليلي</option>
+                    <option value="glass">🧊 زجاجي</option>
+                </select>
+            </div>
+
+            <div class="setting-item">
+                <label>استيراد:</label>
+                <label class="btn secondary" for="importExcelInput" style="width:100%; text-align:center; cursor:pointer;">📂 استيراد من Excel</label>
+                <input id="importExcelInput" type="file" accept=".xlsx,.xls" style="display:none;">
+            </div>
+
+            <div style="margin-top: 20px;">
+                <button id="openBinBtn" class="btn adminOnly" style="width:100%; background:#444; color:#fff;">♻️ سلة المحذوفات</button>
+            </div>
+
+            <div class="danger-zone adminOnly">
+                <h3>⚠️ منطقة الخطر</h3>
+                <button id="resetTermBtn" class="btn warning smallBtn">تصفير الترم</button>
+                <button id="resetBtn" class="btn danger smallBtn">ضبط المصنع</button>
+            </div>
+        </div>
       </div>
     </section>
 
@@ -257,79 +290,32 @@
     </nav>
   </div>
 
-  <div id="settingsModal" class="modal hidden">
-      <div class="modalContent">
-          <div class="flexBetween">
-              <h2>⚙️ الإعدادات / Settings</h2>
-              <button id="closeSettingsBtn" class="btn danger smallBtn">X</button>
-          </div>
-          
-          <div class="settingRow">
-              <label>اللغة / Language</label>
-              <button id="langToggleBtn" class="btn secondary">العربية / English</button>
-          </div>
-
-          <div class="settingRow">
-              <label>المظهر / Theme</label>
-              <select id="themeSelector" class="inp">
-                  <option value="classic">🔵 كلاسيك (أزرق)</option>
-                  <option value="dark">🌑 ليلي (Dark)</option>
-                  <option value="glass">🧊 زجاجي (Glassy)</option>
-              </select>
-          </div>
-
-          <div class="settingRow">
-              <label>صورة الخلفية / Wallpaper</label>
-              <input type="file" id="bgInput" accept="image/*" class="inp">
-              <button id="clearBgBtn" class="btn warning smallBtn">مسح</button>
-          </div>
-          
-          <div class="settingRow">
-              <label>المطلوب للترم / Term Fee</label>
-              <div class="row">
-                  <input id="termFeeInp" type="number" class="feeInp adminOnly" placeholder="0">
-                  <button id="saveFeeBtn" class="feeBtn adminOnly">💾</button>
-              </div>
-          </div>
-          
-          <div class="settingRow">
-              <label>استيراد بيانات / Import</label>
-              <label class="btn success adminOnly" for="importExcelInput" style="width:100%; text-align:center;">
-                  📂 اختيار ملف Excel (استيراد)
-              </label>
-              <input id="importExcelInput" type="file" accept=".xlsx,.xls" style="display:none;">
-          </div>
-
-          <div class="dangerZone adminOnly" style="margin-top:20px; border:2px dashed #cf222e; padding:15px; border-radius:10px; background:rgba(207,34,46,0.05);">
-             <h3 style="color:#cf222e; margin-top:0;">⚠️ منطقة الخطر (Danger Zone)</h3>
-             
-             <div class="settingRow" style="border:none;">
-                 <label>1. تصفير الترم</label>
-                 <button id="resetTermBtn" class="btn warning smallBtn">تصفير</button>
-             </div>
-             
-             <div class="settingRow" style="border:none;">
-                 <label>2. ضبط المصنع</label>
-                 <button id="resetBtn" class="btn danger smallBtn">مسح الكل</button>
-             </div>
-          </div>
-
-      </div>
-  </div>
-
-  <div id="recycleBinModal" class="modal hidden">
-    <div class="modalContent" style="max-width:600px;">
+  <div id="allStudentsModal" class="modal hidden">
+    <div class="modalContent hugeContent">
       <div class="flexBetween">
-        <h2 style="color:#d9534f;" data-i18n="bin_title">🗑️ سلة المحذوفات</h2>
-        <button id="closeBinBtn" class="btn smallBtn">X</button>
+        <h2>قائمة الطلاب المسجلين (عرض فقط)</h2>
+        <button id="closeModalBtn" class="btn danger smallBtn">❌</button>
       </div>
-      <div id="binList" class="list" style="max-height:400px; overflow-y:auto; margin-top:10px;"></div>
-      <div style="margin-top:15px; text-align:right;">
-          <button id="emptyBinBtn" class="btn danger" data-i18n="btn_empty_bin">إفراغ السلة نهائياً</button>
+      <div class="tableWrap">
+        <table id="simpleStudentsTable">
+          <thead><tr><th>ID</th><th>الاسم</th><th>المجموعة</th></tr></thead>
+          <tbody></tbody>
+        </table>
       </div>
     </div>
   </div>
 
-  <script src="app.js?v=PRO_1"></script>
+  <div id="recycleBinModal" class="modal hidden">
+    <div class="modalContent">
+      <div class="flexBetween">
+        <h2 style="color:#d9534f;">🗑️ سلة المحذوفات</h2>
+        <button id="closeBinBtn" class="btn smallBtn">X</button>
+      </div>
+      <div id="binList" class="list"></div>
+      <button id="emptyBinBtn" class="btn danger" style="width:100%; margin-top:15px;">إفراغ السلة نهائياً</button>
+    </div>
+  </div>
+
+  <script src="app.js?v=PRO_FINAL"></script>
 </body>
 </html>
