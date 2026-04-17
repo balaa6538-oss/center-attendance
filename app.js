@@ -565,7 +565,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div style="display:flex; flex-wrap:wrap; gap:6px;">
                     ${groups[g].map(id => `
                         <span class="badge" 
-                              style="cursor:pointer; background:#fff; border:1px solid ${gColor}; color:${gColor}; font-size:12px; transition:0.2s; padding:5px 10px; border-radius:6px;" 
+                              style="cursor:pointer; background:#fff; border:1px solid ${gColor} !important; color:${gColor}; font-size:12px; transition:0.2s; padding:5px 10px; border-radius:6px; border:1px solid;" 
                               onmouseover="this.style.background='${gColor}'; this.style.color='#fff'" 
                               onmouseout="this.style.background='#fff'; this.style.color='${gColor}'" 
                               onclick="window.extOpen('${id}')">#${id}</span>
@@ -592,14 +592,9 @@ document.addEventListener('DOMContentLoaded', () => {
         navigator.clipboard.writeText(txt).then(() => showToast("تم النسخ للواتساب بنجاح 📋"));
     });
 
-    // ====== 11. Modals, Export & Notebook ======
+    // ====== 11. Modals, Excel & Bin ======
     on("openAllStudentsBtn", "click", () => { renderSimpleTable(); $("allStudentsModal").classList.remove("hidden"); });
     on("closeModalBtn", "click", () => $("allStudentsModal").classList.add("hidden"));
-
-    if($("noteArea")) {
-        $("noteArea").value = localStorage.getItem("center_vpro_notes") || "";
-        on("noteArea", "input", (e) => { localStorage.setItem("center_vpro_notes", e.target.value); });
-    }
 
     on("exportExcelBtn", "click", () => {
         if (typeof XLSX === "undefined") return showToast("مكتبة الإكسيل غير موجودة!", "err");
@@ -608,45 +603,9 @@ document.addEventListener('DOMContentLoaded', () => {
         filled.forEach(st => { wsData.push([st.id, st.name, st.className, st.phone, st.paid, st.notes, (st.attendanceDates||[]).join(", ")]); });
         const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsData), "الطلاب");
         XLSX.writeFile(wb, `Center_Data_${nowDateStr()}.xlsx`);
-        playSound("success"); showToast("تم تصدير ملف الإكسيل 📊");
+        showToast("تم تصدير ملف الإكسيل 📊");
     });
 
-    // ====== 12. Final Initialization ======
-    loadAll(); ensureBase500(); checkAuth();
-});
-        
-        for(let g in groups) { txt += `📘 ${g}: ${groups[g]} طالب\n`; }
-        txt += `\n👥 إجمالي الحضور: ${ids.length}\n💰 إجمالي الإيراد: ${rev} ج\n\n-- Center V-PRO --`;
-        
-        navigator.clipboard.writeText(txt).then(() => showToast("تم النسخ للواتساب بنجاح 📋"));
-    });
-        
-        let txt = `📊 *تقرير السنتر: ${prettyDate(today)}*\n\n`;
-        let groups = {};
-        ids.forEach(id => { 
-            let c = (students[id] && students[id].className) ? students[id].className.trim() : "عام"; 
-            if(!groups[c]) groups[c] = 0; groups[c]++; 
-        });
-        
-        for(let g in groups) { txt += `📘 ${g}: ${groups[g]} طالب\n`; }
-        txt += `\n👥 إجمالي الحضور: ${ids.length}\n💰 إجمالي الإيراد: ${rev} ج\n\n-- Center V-PRO --`;
-        
-        navigator.clipboard.writeText(txt).then(() => showToast("تم النسخ للواتساب بنجاح 📋"));
-    });
-  
-    // ====== 11. Modals, Export & Danger Zone ======
-    on("openAllStudentsBtn", "click", () => { renderSimpleTable(); $("allStudentsModal").classList.remove("hidden"); });
-    on("closeModalBtn", "click", () => $("allStudentsModal").classList.add("hidden"));
-  
-    on("exportExcelBtn", "click", () => {
-        if (typeof XLSX === "undefined") return showToast("مكتبة الإكسيل غير موجودة!", "err");
-        const filled = Object.values(students).filter(st => st.name || st.paid>0).sort((a,b)=>a.id-b.id);
-        const wsData = [["كود", "الاسم", "المجموعة", "رقم الموبايل", "المدفوع", "ملاحظات", "سجل الحضور"]];
-        filled.forEach(st => { wsData.push([st.id, st.name, st.className, st.phone, st.paid, st.notes, (st.attendanceDates||[]).join(", ")]); });
-        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsData), "الطلاب");
-        XLSX.writeFile(wb, `Center_Data_${nowDateStr()}.xlsx`);
-        playSound("success"); showToast("تم تصدير ملف الإكسيل 📊");
-    });
     on("importExcelInput", "change", async () => {
         const f = $("importExcelInput").files[0]; if(!f) return;
         const wb = XLSX.read(await f.arrayBuffer(), {type:"array"});
@@ -654,7 +613,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
         students = {}; attByDate = {}; revenueByDate = {}; extraIds = [];
         for (let i = BASE_MIN_ID; i <= BASE_MAX_ID; i++) students[String(i)] = makeEmptyStudent(i);
-        
         rows.forEach(row => {
             const id = parseInt(row["كود"] || row["ID"]);
             if(id) {
@@ -662,7 +620,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 st.name = row["الاسم"] || row["Name"] || ""; st.className = row["المجموعة"] || row["Class"] || "";
                 st.phone = row["رقم الموبايل"] || row["Phone"] || ""; st.paid = parseInt(row["المدفوع"] || row["Paid"] || 0);
                 st.notes = row["ملاحظات"] || row["Notes"] || "";
-                let histStr = row["سجل الحضور"] || row["History"] || Object.values(row)[6] || "";
+                let histStr = row["سجل الحضور"] || row["History"] || "";
                 if(histStr && typeof histStr==='string') {
                     const dates = histStr.split(",").map(s => s.trim()).filter(s => s); st.attendanceDates = dates;
                     dates.forEach(d => { if(!attByDate[d]) attByDate[d] = []; if(!attByDate[d].includes(id)) attByDate[d].push(id); });
@@ -672,48 +630,58 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         saveAll(); showToast("تم استيراد البيانات ✅"); setTimeout(() => location.reload(), 1000);
     });
-  
+
     on("openBinBtn", "click", () => { renderBinList(); $("recycleBinModal").classList.remove("hidden"); });
     on("closeBinBtn", "click", () => $("recycleBinModal").classList.add("hidden"));
-    on("emptyBinBtn", "click", () => { if(confirm("حذف نهائي؟")) { deletedStudents={}; saveAll(); renderBinList(); }});
-  
+    on("emptyBinBtn", "click", () => { if(confirm("حذف السلة نهائياً؟")) { deletedStudents={}; saveAll(); renderBinList(); }});
+
     const renderBinList = () => {
         const bl = $("binList"); if(!bl) return; const ids = Object.keys(deletedStudents);
-        if(ids.length === 0) { bl.innerHTML = `<div class="mutedCenter" style="padding:20px;">السلة فارغة</div>`; return; }
-        bl.innerHTML = ids.map(id => { const s = deletedStudents[id]; return `<div class="item flexBetween"><b>${s.name} (${s.id})</b> <button class="btn success smallBtn" onclick="window.restoreSt(${s.id})">استرجاع</button></div>`; }).join("");
+        if(ids.length === 0) { bl.innerHTML = `<div class="mutedCenter">السلة فارغة</div>`; return; }
+        bl.innerHTML = ids.map(id => { 
+            const s = deletedStudents[id]; 
+            return `<div class="item flexBetween"><b>${s.name} (${id})</b> <button class="btn success smallBtn" onclick="window.restoreSt(${id})">استرجاع</button></div>`; 
+        }).join("");
     };
-  
+
     window.restoreSt = (id) => {
-        if(students[id] && (students[id].name || students[id].paid>0)) { if(!confirm("مكان الطالب مشغول حالياً. الكتابة فوقه؟")) return; }
         const st = deletedStudents[id];
-        if(st.paid > 0 && confirm(`استرجاع مصاريف الطالب (${st.paid} ج) للإيرادات؟`)) { revenueByDate[nowDateStr()] = (revenueByDate[nowDateStr()]||0) + st.paid; }
-        students[id] = st; delete deletedStudents[id]; saveAll(); renderBinList(); updateTopStats();
-        showToast("تم استرجاع الطالب ✅"); window.switchTab('Home'); window.extOpen(id);
+        students[id] = st; delete deletedStudents[id]; saveAll(); renderBinList();
+        showToast("تم استرجاع الطالب ✅"); window.extOpen(id);
     };
-  
+
+    // ====== 12. Notebook & Resets ======
+    if($("noteArea")) {
+        $("noteArea").value = localStorage.getItem("center_vpro_notes") || "";
+        on("noteArea", "input", (e) => { localStorage.setItem("center_vpro_notes", e.target.value); });
+    }
+
     on("resetTermBtn", "click", () => { 
         if(prompt("باسورد الأدمن:") === ADMIN_PASS && confirm("تصفير الفلوس والغياب؟")) { 
             for(let k in students) { students[k].paid=0; students[k].attendanceDates=[]; } 
-            attByDate={}; revenueByDate={}; saveAll(); alert("تم تصفير الترم ✅"); location.reload(); 
+            attByDate={}; revenueByDate={}; saveAll(); location.reload(); 
         }
     });
-    
+
     on("resetBtn", "click", () => { 
         if(prompt("باسورد الأدمن:") === ADMIN_PASS && confirm("مسح كل البيانات (ضبط مصنع)؟")) { localStorage.clear(); location.reload(); }
     });
-  
-    // Global Access
+
+    // ====== 13. Global Access & Init ======
     window.extOpen = (id) => { 
-        $("searchAny").value = ""; if($("searchMsg")) $("searchMsg").style.display="none"; 
+        $("searchAny").value = ""; 
+        if($("searchMsg")) $("searchMsg").style.display="none"; 
         updateStudentUI(id); 
-        const card = document.querySelector(".studentCard"); if(card) card.scrollIntoView({behavior:"smooth", block:"start"}); 
-   const existsId = (id) => !!students[String(id)];
+        const card = document.querySelector(".studentCard"); 
+        if(card) card.scrollIntoView({behavior:"smooth", block:"start"}); 
+    };
+
+    const existsId = (id) => !!students[String(id)];
     const checkQR = () => {
       const urlParams = new URLSearchParams(window.location.search);
       const qrId = toInt(urlParams.get("id"));
       if (qrId && existsId(qrId)) { addAttendance(qrId, nowDateStr()); window.extOpen(qrId); window.history.replaceState(null, null, window.location.pathname); }
     };
-  
-    // Init
+
     loadAll(); ensureBase500(); checkAuth();
 });
