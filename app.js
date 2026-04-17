@@ -105,13 +105,13 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   
     window.switchTab = (tabId) => {
-        document.querySelectorAll(".tab-section").forEach(s => s.classList.add("hidden"));
-        document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
-        
-        const sec = $(`sec${tabId}`); const btn = $(`btnTab${tabId}`);
-        if(sec) { sec.classList.remove("hidden"); }
-        if(btn) btn.classList.add("active");
-    };
+    document.querySelectorAll('.tab-section').forEach(s => s.classList.add('hidden'));
+    const target = document.getElementById('sec' + tabId);
+    if(target) target.classList.remove('hidden');
+    document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+    const activeBtn = document.getElementById('btnTab' + tabId);
+    if(activeBtn) activeBtn.classList.add('active');
+  };
   
     // Sounds
     const playSound = (type) => {
@@ -478,43 +478,23 @@ document.addEventListener('DOMContentLoaded', () => {
   
   on("deleteStudentBtn", "click", () => { 
       if(!currentId) return;
-      
-      // 1. رسالة تأكيد الحذف (لو داس إلغاء هيطرد الأمر فوراً)
-      const isSure = confirm("⚠️ هل أنت متأكد أنك تريد حذف هذا الطالب نهائياً؟");
-      if (!isSure) return; 
-
-      const targetId = currentId; 
-      const st = students[targetId];
+      if(!confirm("⚠️ هل أنت متأكد أنك تريد حذف هذا الطالب نهائياً؟")) return;
+      const targetId = currentId; const st = students[targetId];
       const backupSt = JSON.parse(JSON.stringify(st));
       let deducted = 0;
-      
-      // 2. رسالة خصم الفلوس
-      if(st.paid > 0) {
-          const deductMoney = confirm(`هل تريد خصم مدفوعات الطالب (${st.paid} ج) من إيراد اليوم؟`);
-          if (deductMoney) deducted = st.paid;
-      }
-      
+      if(st.paid > 0 && confirm(`هل تريد خصم مدفوعات الطالب (${st.paid} ج) من إيراد اليوم؟`)) deducted = st.paid;
       revenueByDate[nowDateStr()] = (revenueByDate[nowDateStr()]||0) - deducted;
       deletedStudents[targetId] = backupSt;
       students[targetId] = makeEmptyStudent(targetId);
-      if(targetId > BASE_MAX_ID) { 
-          delete students[targetId]; 
-          extraIds = extraIds.filter(x => x !== targetId); 
-      }
-      
-      saveAll(); 
-      updateStudentUI(null); 
-      renderReport(nowDateStr());
+      if(targetId > BASE_MAX_ID) { delete students[targetId]; extraIds = extraIds.filter(x => x !== targetId); }
+      saveAll(); updateStudentUI(null); renderReport(nowDateStr());
       window.switchTab('Home');
-      
       showUndoToast(`تم حذف الطالب #${targetId}`, () => {
           students[targetId] = backupSt;
           delete deletedStudents[targetId];
           revenueByDate[nowDateStr()] = (revenueByDate[nowDateStr()]||0) + deducted;
-          saveAll(); 
-          window.extOpen(targetId); 
-          renderReport(nowDateStr());
-         showToast("تم التراجع ورجوع الطالب بنجاح ✅");
+          saveAll(); window.extOpen(targetId); renderReport(nowDateStr());
+          showToast("تم التراجع ورجوع الطالب بنجاح ✅");
       });
   });
     on("waBtn", "click", () => { const ph = $("stPhone").value; if(ph) window.open(`https://wa.me/20${ph}`, '_blank'); else showToast("لا يوجد رقم هاتف!", "err"); });
@@ -541,8 +521,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll(".stCheckbox:checked").forEach(b => removeAttendance(b.dataset.id, nowDateStr()));
         showToast("تم تسجيل الغياب ✖", "warning"); renderList();
     });
-  
-    // ====== 10. Reports & WhatsApp Copy ======
+  // ====== 10. Reports & WhatsApp Copy (V-PRO Updated) ======
     const renderReport = (d) => {
         const list = $("reportList"); if(!list) return;
         const ids = attByDate[d] || [];
@@ -550,23 +529,51 @@ document.addEventListener('DOMContentLoaded', () => {
         if($("reportCount")) $("reportCount").textContent = ids.length;
         if($("reportMoney")) $("reportMoney").textContent = (revenueByDate[d]||0) + " ج";
         
-        if(!ids.length) { list.innerHTML = "<div class='mutedCenter' style='padding:20px;'>لا يوجد حضور مسجل</div>"; return; }
+        if(!ids.length) { 
+            list.innerHTML = "<div class='mutedCenter' style='padding:20px;'>لا يوجد حضور مسجل لهذا اليوم</div>"; 
+            return; 
+        }
         
         let groups = {};
+        let groupMoney = {}; // لحساب تحصيل كل سنة لوحدها
+
         ids.forEach(id => {
-            let c = (students[id] && students[id].className) ? students[id].className.trim() : "";
-            if(!c) c = "عام"; if(!groups[c]) groups[c] = []; groups[c].push(id);
+            const st = students[id];
+            let c = (st && st.className) ? st.className.trim() : "عام";
+            if(!groups[c]) { groups[c] = []; groupMoney[c] = 0; }
+            groups[c].push(id);
+            // حساب الفلوس اللي دفعها الطالب في اليوم ده
+            groupMoney[c] += (st && st.paid) ? st.paid : 0; 
         });
   
+        // دالة لاختيار لون مميز لكل مجموعة بناءً على اسمها
+        const getTagColor = (str) => {
+            const colors = ['#e74c3c', '#2ecc71', '#f1c40f', '#9b59b6', '#e67e22', '#1abc9c', '#34495e'];
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+            return colors[Math.abs(hash) % colors.length];
+        };
+
         let html = "";
         for(let g in groups) {
-            html += `<div style="background:rgba(47, 107, 255, 0.05); padding:12px; margin-top:10px; border-radius:8px; border:1px solid var(--border-color);">
-                        <b style="color:var(--primary); font-size:1.1em;">📘 ${g}</b> 
-                        <span class="badge" style="float:left; background:var(--primary); color:#fff;">${groups[g].length} طالب</span>
-                        <div style="margin-top:10px; font-size:0.9em; line-height:1.8;">
-                            ${groups[g].map(id => `<span class="badge" style="cursor:pointer; background:#fff; border:1px solid #ccc; color:#333;" onclick="window.switchTab('Home'); window.extOpen(${id})">${id}</span>`).join(" ")}
-                        </div>
-                     </div>`;
+            const gColor = getTagColor(g);
+            html += `
+            <div style="background:#fff; padding:15px; margin-top:12px; border-radius:12px; border-right: 6px solid ${gColor}; box-shadow: 0 2px 10px rgba(0,0,0,0.08);">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <b style="color:${gColor}; font-size:1.1em;">🏷️ ${g}</b> 
+                    <span style="font-weight:bold; color:#2c3e50; background:rgba(0,0,0,0.05); padding:2px 8px; border-radius:5px;">💰 ${groupMoney[g]} ج</span>
+                </div>
+                <div style="font-size: 0.85em; color:#7f8c8d; margin-bottom:10px;">عدد الحضور: ${groups[g].length} طالب</div>
+                <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                    ${groups[g].map(id => `
+                        <span class="badge" 
+                              style="cursor:pointer; background:#fff; border:1px solid ${gColor}; color:${gColor}; font-size:12px; transition:0.2s;" 
+                              onmouseover="this.style.background='${gColor}'; this.style.color='#fff'" 
+                              onmouseout="this.style.background='#fff'; this.style.color='${gColor}'" 
+                              onclick="window.extOpen('${id}')">#${id}</span>
+                    `).join("")}
+                </div>
+            </div>`;
         }
         list.innerHTML = html;
     };
@@ -579,7 +586,10 @@ document.addEventListener('DOMContentLoaded', () => {
         
         let txt = `📊 *تقرير السنتر: ${prettyDate(today)}*\n\n`;
         let groups = {};
-        ids.forEach(id => { let c = (students[id] && students[id].className) ? students[id].className.trim() : "عام"; if(!groups[c]) groups[c] = 0; groups[c]++; });
+        ids.forEach(id => { 
+            let c = (students[id] && students[id].className) ? students[id].className.trim() : "عام"; 
+            if(!groups[c]) groups[c] = 0; groups[c]++; 
+        });
         
         for(let g in groups) { txt += `📘 ${g}: ${groups[g]} طالب\n`; }
         txt += `\n👥 إجمالي الحضور: ${ids.length}\n💰 إجمالي الإيراد: ${rev} ج\n\n-- Center V-PRO --`;
@@ -600,7 +610,6 @@ document.addEventListener('DOMContentLoaded', () => {
         XLSX.writeFile(wb, `Center_Data_${nowDateStr()}.xlsx`);
         playSound("success"); showToast("تم تصدير ملف الإكسيل 📊");
     });
-  
     on("importExcelInput", "change", async () => {
         const f = $("importExcelInput").files[0]; if(!f) return;
         const wb = XLSX.read(await f.arrayBuffer(), {type:"array"});
