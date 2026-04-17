@@ -684,4 +684,3 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     loadAll(); ensureBase500(); checkAuth();
-});
