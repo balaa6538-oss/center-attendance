@@ -478,27 +478,37 @@ document.addEventListener('DOMContentLoaded', () => {
         saveAll(); showToast("تم الخصم بنجاح ⚠️", "warning"); updateStudentUI(currentId); renderReport(nowDateStr());
     });
   
-    on("deleteStudentBtn", "click", () => { 
-        if(!currentId) return;
-        const targetId = currentId; const st = students[targetId];
-        const backupSt = JSON.parse(JSON.stringify(st));
-        let deducted = 0;
-        
-        if(st.paid > 0 && confirm(`خصم المدفوعات (${st.paid} ج) من إيراد اليوم؟`)) deducted = st.paid;
-        
-        revenueByDate[nowDateStr()] = (revenueByDate[nowDateStr()]||0) - deducted;
-        deletedStudents[targetId] = backupSt;
-        students[targetId] = makeEmptyStudent(targetId);
-        if(targetId > BASE_MAX_ID) { delete students[targetId]; extraIds = extraIds.filter(x => x !== targetId); }
-        
-        saveAll(); updateStudentUI(null); renderReport(nowDateStr()); window.switchTab('Home');
-        
-        showUndoToast(`تم حذف الطالب #${targetId}`, () => {
-            students[targetId] = backupSt; delete deletedStudents[targetId];
-            revenueByDate[nowDateStr()] = (revenueByDate[nowDateStr()]||0) + deducted;
-            saveAll(); window.extOpen(targetId); renderReport(nowDateStr()); showToast("تم التراجع ورجوع الطالب ↩️");
-        });
-    });
+  on("deleteStudentBtn", "click", () => { 
+      if(!currentId) return;
+      
+      // 1. تأكيد الحذف الأساسي (لو داس إلغاء هيوقف العملية فوراً)
+      if(!confirm("⚠️ هل أنت متأكد أنك تريد حذف هذا الطالب نهائياً؟")) return;
+
+      const targetId = currentId; const st = students[targetId];
+      const backupSt = JSON.parse(JSON.stringify(st));
+      let deducted = 0;
+      
+      // 2. سؤال الخصم من الدرج
+      if(st.paid > 0 && confirm(`هل تريد خصم مدفوعات الطالب (${st.paid} ج) من إيراد اليوم؟`)) {
+          deducted = st.paid;
+      }
+      
+      revenueByDate[nowDateStr()] = (revenueByDate[nowDateStr()]||0) - deducted;
+      deletedStudents[targetId] = backupSt;
+      students[targetId] = makeEmptyStudent(targetId);
+      if(targetId > BASE_MAX_ID) { delete students[targetId]; extraIds = extraIds.filter(x => x !== targetId); }
+      
+      saveAll(); updateStudentUI(null); renderReport(nowDateStr());
+      window.switchTab('Home');
+      
+      showUndoToast(`تم حذف الطالب #${targetId}`, () => {
+          students[targetId] = backupSt;
+          delete deletedStudents[targetId];
+          revenueByDate[nowDateStr()] = (revenueByDate[nowDateStr()]||0) + deducted;
+          saveAll(); window.extOpen(targetId); renderReport(nowDateStr());
+          showToast("تم التراجع ورجوع الطالب بنجاح ✅");
+      });
+  });
   
     on("waBtn", "click", () => { const ph = $("stPhone").value; if(ph) window.open(`https://wa.me/20${ph}`, '_blank'); else showToast("لا يوجد رقم هاتف!", "err"); });
   
