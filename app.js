@@ -521,7 +521,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll(".stCheckbox:checked").forEach(b => removeAttendance(b.dataset.id, nowDateStr()));
         showToast("تم تسجيل الغياب ✖", "warning"); renderList();
     });
-  // ====== 10. Reports & WhatsApp Copy (V-PRO Updated) ======
+// ====== 10. Reports & WhatsApp Copy (V-PRO Updated) ======
     const renderReport = (d) => {
         const list = $("reportList"); if(!list) return;
         const ids = attByDate[d] || [];
@@ -535,18 +535,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         let groups = {};
-        let groupMoney = {}; // لحساب تحصيل كل سنة لوحدها
+        let groupMoney = {}; 
 
         ids.forEach(id => {
             const st = students[id];
             let c = (st && st.className) ? st.className.trim() : "عام";
             if(!groups[c]) { groups[c] = []; groupMoney[c] = 0; }
             groups[c].push(id);
-            // حساب الفلوس اللي دفعها الطالب في اليوم ده
             groupMoney[c] += (st && st.paid) ? st.paid : 0; 
         });
   
-        // دالة لاختيار لون مميز لكل مجموعة بناءً على اسمها
         const getTagColor = (str) => {
             const colors = ['#e74c3c', '#2ecc71', '#f1c40f', '#9b59b6', '#e67e22', '#1abc9c', '#34495e'];
             let hash = 0;
@@ -583,6 +581,19 @@ document.addEventListener('DOMContentLoaded', () => {
     on("copyReportBtn", "click", () => {
         const today = $("reportDate").value || nowDateStr();
         const ids = attByDate[today] || []; const rev = revenueByDate[today] || 0;
+        
+        let txt = `📊 *تقرير السنتر: ${prettyDate(today)}*\n\n`;
+        let groups = {};
+        ids.forEach(id => { 
+            let c = (students[id] && students[id].className) ? students[id].className.trim() : "عام"; 
+            if(!groups[c]) groups[c] = 0; groups[c]++; 
+        });
+        
+        for(let g in groups) { txt += `📘 ${g}: ${groups[g]} طالب\n`; }
+        txt += `\n👥 إجمالي الحضور: ${ids.length}\n💰 إجمالي الإيراد: ${rev} ج\n\n-- Center V-PRO --`;
+        
+        navigator.clipboard.writeText(txt).then(() => showToast("تم النسخ للواتساب بنجاح 📋"));
+    });
         
         let txt = `📊 *تقرير السنتر: ${prettyDate(today)}*\n\n`;
         let groups = {};
