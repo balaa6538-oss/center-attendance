@@ -139,7 +139,7 @@ body.theme-glass .topbar { backdrop-filter: blur(12px); }
   display: inline-flex; align-items: center; gap: 5px;
 }
 .statItem b { font-family: 'Cairo', sans-serif; }
-.statItem.clickable { cursor: pointer; transition: 0.2s; }
+.statItem.clickable { cursor: default; transition: 0.2s; }
 .statItem.clickable:hover { background: rgba(47, 107, 255, 0.15); }
 
 .blurTarget.blurred { filter: blur(6px); user-select: none; cursor: pointer; }
@@ -171,7 +171,8 @@ label.btn { display: flex; width: 100%; text-align: center; }
 .btn.primary { background: var(--primary); color: #fff; box-shadow: 0 4px 10px rgba(47, 107, 255, 0.3); }
 .btn.success { background: var(--success); color: #fff; }
 .btn.warning { background: var(--warning); color: #fff; }
-.btn.danger  { background: var(--danger); color: #fff; }
+.btn.danger  { background: var(--danger); color: #fff; transition: all 0.3s ease; }
+.btn.danger:hover { background: #b01b25; transform: scale(1.05); box-shadow: 0 5px 15px rgba(207, 34, 46, 0.4); }
 .btn.secondary { background: #e2e8f0; color: #333; }
 .iconOnly { padding: 8px 12px; font-size: 1.2em; }
 
