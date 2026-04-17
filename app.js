@@ -192,12 +192,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const isAdmin = (currentUserRole === "admin");
         document.querySelectorAll(".adminOnly").forEach(el => {
             if(isAdmin) el.classList.remove("hidden"); else el.classList.add("hidden");
-        });
-        if(!isAdmin) {
+       if(!isAdmin) {
             if($("deleteStudentBtn")) $("deleteStudentBtn").classList.add("hidden");
             if($("correctPayBtn")) $("correctPayBtn").classList.add("hidden");
         }
-    };
   
     const doLogin = () => {
         const u = $("user").value.trim(); const p = $("pass").value.trim();
@@ -663,9 +661,7 @@ document.addEventListener('DOMContentLoaded', () => {
         $("searchAny").value = ""; if($("searchMsg")) $("searchMsg").style.display="none"; 
         updateStudentUI(id); 
         const card = document.querySelector(".studentCard"); if(card) card.scrollIntoView({behavior:"smooth", block:"start"}); 
-    };
-    
-    const existsId = (id) => !!students[String(id)];
+   const existsId = (id) => !!students[String(id)];
     const checkQR = () => {
       const urlParams = new URLSearchParams(window.location.search);
       const qrId = toInt(urlParams.get("id"));
@@ -674,4 +670,4 @@ document.addEventListener('DOMContentLoaded', () => {
   
     // Init
     loadAll(); ensureBase500(); checkAuth();
-  });
+});
