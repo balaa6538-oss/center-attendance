@@ -3,6 +3,7 @@
    - Fixed: ALL Syntax Errors.
    - NEW: Colorful Reports, Bottom Nav, Autosave Notebook.
    - NEW: Eye Icon Toggle (Privacy), Detailed Attendance Modal.
+   - NEW: Language Toggle, Custom BG, Daily Backup Red Dot.
    ============================================= */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -740,6 +741,148 @@ document.addEventListener('DOMContentLoaded', () => {
       const qrId = toInt(urlParams.get("id"));
       if (qrId && existsId(qrId)) { addAttendance(qrId, nowDateStr()); window.extOpen(qrId); window.history.replaceState(null, null, window.location.pathname); }
     };
+
+    // ==========================================
+    // 🚀 V-PRO NEW FEATURES (Backup Alert, BG, Lang)
+    // ==========================================
+
+    const checkDailyBackup = () => {
+        const lastBackup = localStorage.getItem(K_LAST_BACKUP);
+        const today = nowDateStr();
+        const adminTab = $("btnTabAdmin");
+        
+        if(lastBackup !== today) {
+            if(adminTab) adminTab.classList.add("needs-backup");
+            setTimeout(() => {
+                showToast("⚠️ تذكير: لم تقم بتصدير نسخة Excel اليوم لحفظ بياناتك!", "warning");
+            }, 3000);
+        } else {
+            if(adminTab) adminTab.classList.remove("needs-backup");
+        }
+    };
+
+    if($("exportExcelBtn")) {
+        $("exportExcelBtn").addEventListener("click", () => {
+            localStorage.setItem(K_LAST_BACKUP, nowDateStr());
+            if($("btnTabAdmin")) $("btnTabAdmin").classList.remove("needs-backup");
+        });
+    }
+
+    if($("bgInput")) {
+        $("bgInput").addEventListener("change", (e) => {
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const imgData = event.target.result;
+                document.body.style.backgroundImage = `url('${imgData}')`;
+                document.body.style.backgroundSize = "cover";
+                document.body.style.backgroundAttachment = "fixed";
+                localStorage.setItem(K_BG_IMAGE, imgData);
+                showToast("تم تغيير خلفية السنتر بنجاح 🖼️", "success");
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    const dict = {
+        "login_title": { ar: "دخول لوحة السنتر", en: "Center Login" },
+        "login_desc": { ar: "الدخول للمسؤول فقط", en: "Admin access only" },
+        "login_btn": { ar: "دخول", en: "Login" },
+        "brand_name": { ar: "لوحة السنتر V-PRO", en: "Center V-PRO" },
+        "stat_students": { ar: "👥 مسجلين:", en: "👥 Enrolled:" },
+        "stat_attend": { ar: "✅ حضور اليوم :", en: "✅ Today's Attend:" },
+        "stat_revenue": { ar: "💰 إيراد:", en: "💰 Revenue:" },
+        "btn_logout": { ar: "خروج 🚪", en: "Logout 🚪" },
+        "nav_settings": { ar: "الإعدادات", en: "Settings" },
+        "nav_home": { ar: "الرئيسية", en: "Home" },
+        "nav_students": { ar: "الطلاب", en: "Students" },
+        "quick_title": { ar: "سريع (QR)", en: "Quick (QR)" },
+        "btn_record": { ar: "سجل حضور", en: "Record" },
+        "search_title": { ar: "بحث شامل", en: "Global Search" },
+        "btn_open": { ar: "فتح", en: "Open" },
+        "add_title": { ar: "+ إضافة طالب جديد", en: "+ Add New Student" },
+        "btn_add_open": { ar: "إضافة وفتح", en: "Add & Open" },
+        "st_details": { ar: "بيانات الطالب", en: "Student Details" },
+        "lbl_name": { ar: "الاسم", en: "Name" },
+        "lbl_class": { ar: "الصف / المجموعة", en: "Class / Group" },
+        "lbl_phone": { ar: "رقم الموبايل", en: "Phone Number" },
+        "lbl_finance": { ar: "نظام المصاريف", en: "Finance System" },
+        "lbl_total_paid": { ar: "💰 إجمالي المدفوع:", en: "💰 Total Paid:" },
+        "btn_discount": { ar: "خصم", en: "Discount" },
+        "lbl_new_pay": { ar: "➕ دفعة جديدة:", en: "➕ New Payment:" },
+        "btn_deposit": { ar: "إيداع", en: "Deposit" },
+        "lbl_notes": { ar: "ملاحظات (مؤرخة)", en: "Notes (Dated)" },
+        "btn_add_note": { ar: "إضافة", en: "Add Note" },
+        "btn_save_st": { ar: "حفظ البيانات 💾", en: "Save Data 💾" },
+        "btn_delete": { ar: "🗑️ حذف", en: "🗑️ Delete" },
+        "lbl_history": { ar: "سجل التواريخ", en: "Attendance History" },
+        "settings_title": { ar: "⚙️ إعدادات النظام (V-PRO)", en: "⚙️ System Settings" },
+        "note_title": { ar: "📝 مفكرة السنتر السريعة", en: "📝 Quick Notebook" },
+        "note_warning": { ar: "⚠️ تنبيه: هذه المفكرة مؤقتة وتُحفظ تلقائياً في هذا المتصفح فقط.", en: "⚠️ Temp notes saved in browser only." },
+        "set_data_title": { ar: "💾 البيانات والنسخ الاحتياطي", en: "💾 Data & Backup" },
+        "set_data_desc": { ar: "احتفظ بنسخة من بياناتك يومياً لتجنب فقدانها.", en: "Keep daily backups to avoid data loss." },
+        "btn_export_ex": { ar: "📥 تصدير البيانات (Excel)", en: "📥 Export (Excel)" },
+        "btn_import_ex": { ar: "📤 استيراد بيانات (Excel)", en: "📤 Import (Excel)" },
+        "btn_recycle": { ar: "🗑️ سلة المحذوفات", en: "🗑️ Recycle Bin" },
+        "set_ui_title": { ar: "🎨 المظهر والتخصيص", en: "🎨 UI & Personalization" },
+        "lbl_theme": { ar: "ثيم البرنامج:", en: "App Theme:" },
+        "btn_change_bg": { ar: "🖼️ تغيير خلفية السنتر", en: "🖼️ Change Background" },
+        "btn_change_lang": { ar: "🌐 تغيير اللغة (Ar / En)", en: "🌐 Change Language (Ar / En)" },
+        "set_fin_title": { ar: "💰 إعدادات مالية", en: "💰 Financial Settings" },
+        "btn_save": { ar: "حفظ", en: "Save" },
+        "set_danger_title": { ar: "⚠️ منطقة الخطر", en: "⚠️ Danger Zone" },
+        "set_danger_desc": { ar: "تنبيه: لا يمكن التراجع عن هذه الإجراءات.", en: "Warning: These actions cannot be undone." },
+        "btn_reset_term": { ar: "🔄 تصفير الترم", en: "🔄 Reset Term" },
+        "btn_factory_reset": { ar: "❌ مسح النظام بالكامل (ضبط مصنع)", en: "❌ Factory Reset" },
+        "adv_search_title": { ar: "قائمة البحث المتقدم", en: "Advanced Search List" },
+        "tbl_name": { ar: "الاسم", en: "Name" },
+        "tbl_class": { ar: "المجموعة", en: "Class" },
+        "tbl_paid": { ar: "المدفوع", en: "Paid" },
+        "tbl_today": { ar: "حضور اليوم", en: "Today's Attend" },
+        "btn_prev": { ar: "السابق", en: "Previous" },
+        "btn_next": { ar: "التالي", en: "Next" },
+        "report_title": { ar: "حضور وتوريد بتاريخ", en: "Attendance & Revenue Date" },
+        "btn_copy_wa": { ar: "نسخ للواتس 📋", en: "Copy for WA 📋" },
+        "btn_view": { ar: "عرض", en: "View" },
+        "badge_date": { ar: "التاريخ:", en: "Date:" },
+        "badge_count": { ar: "العدد:", en: "Count:" },
+        "badge_rev": { ar: "الإيراد:", en: "Rev:" }
+    };
+
+    const toggleLanguage = () => {
+        currentLang = currentLang === "ar" ? "en" : "ar";
+        localStorage.setItem(K_LANG, currentLang);
+        applyLanguage();
+    };
+
+    const applyLanguage = () => {
+        document.documentElement.lang = currentLang;
+        document.documentElement.dir = currentLang === "ar" ? "rtl" : "ltr";
+        
+        document.querySelectorAll("[data-i18n]").forEach(el => {
+            const key = el.getAttribute("data-i18n");
+            if(dict[key] && dict[key][currentLang]) {
+                el.innerHTML = dict[key][currentLang];
+            }
+        });
+        
+        const langBtn = $("changeLangBtn");
+        if(langBtn) langBtn.innerText = currentLang === "ar" ? "🌐 تغيير اللغة (Ar / En)" : "🌐 Switch Language (En / Ar)";
+        
+        const nav = document.querySelector('.bottom-nav');
+        if(nav) nav.style.flexDirection = currentLang === "ar" ? "row" : "row-reverse";
+    };
+
+    if($("changeLangBtn")) $("changeLangBtn").addEventListener("click", toggleLanguage);
+
+    setTimeout(() => {
+        currentLang = localStorage.getItem(K_LANG) || "ar";
+        applyLanguage();
+        checkDailyBackup();
+    }, 500);
+
+    // ==========================================
 
     loadAll(); ensureBase500(); checkAuth();
 });
