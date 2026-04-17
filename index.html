@@ -51,7 +51,7 @@
       </div>
 
       <div class="topActions">
-        <button id="logoutBtn" class="btn danger" style="padding: 12px 25px; font-size: 1.1em; font-weight: 800;">خروج 🚪</button>
+        <button id="logoutBtn" class="btn danger" style="padding: 12px 25px; font-size: 1.1em; font-weight: 800;" data-i18n="btn_logout">خروج 🚪</button>
       </div>
     </div>
 
@@ -66,7 +66,7 @@
           <div id="quickMsg" class="msg"></div>
           
           <div class="live-feed-section">
-              <label class="lbl">آخر حضور تم تسجيله ⏱️</label>
+              <label class="lbl" data-i18n="lbl_last_scan">آخر حضور تم تسجيله ⏱️</label>
               <div id="liveFeedBox" class="feed-list">بانتظار مسح كود...</div>
           </div>
         </div>
@@ -115,37 +115,37 @@
           <button id="waBtn" class="btn success">💬</button>
         </div>
 
-        <label class="lbl" style="margin-top:20px; border-top:1px dashed #ccc; padding-top:10px;">نظام المصاريف</label>
+        <label class="lbl" style="margin-top:20px; border-top:1px dashed #ccc; padding-top:10px;" data-i18n="lbl_finance">نظام المصاريف</label>
         <div class="paymentBox">
             <div class="payRow">
-                <span class="payLabel">💰 إجمالي المدفوع:</span>
+                <span class="payLabel" data-i18n="lbl_total_paid">💰 إجمالي المدفوع:</span>
                 <input id="stTotalPaid" class="inp blurTarget" readonly style="font-weight:bold; color:#2f6bff; width:120px; text-align:center;">
-                <button id="correctPayBtn" class="btn warning smallBtn adminOnly">خصم</button>
+                <button id="correctPayBtn" class="btn warning smallBtn adminOnly" data-i18n="btn_discount">خصم</button>
             </div>
             <div class="payRow">
-                <span class="payLabel">➕ دفعة جديدة:</span>
+                <span class="payLabel" data-i18n="lbl_new_pay">➕ دفعة جديدة:</span>
                 <div class="row" style="flex:1;">
                     <input id="newPaymentInput" type="number" class="inp">
-                    <button id="addPaymentBtn" class="btn success">إيداع</button>
+                    <button id="addPaymentBtn" class="btn success" data-i18n="btn_deposit">إيداع</button>
                 </div>
             </div>
         </div>
 
-        <label class="lbl">ملاحظات (مؤرخة)</label>
+        <label class="lbl" data-i18n="lbl_notes">ملاحظات (مؤرخة)</label>
         <div class="row">
             <input id="newNoteInp" class="inp" placeholder="إضافة ملحوظة...">
-            <button id="addNoteBtn" class="btn">إضافة</button>
+            <button id="addNoteBtn" class="btn" data-i18n="btn_add_note">إضافة</button>
         </div>
         <textarea id="stNotes" class="inp" rows="3" readonly style="background:#f9f9f9; margin-top:5px;"></textarea>
         
         <div class="row wrap" style="margin-top:15px;">
-          <button id="saveStudentBtn" class="btn primary">حفظ البيانات 💾</button>
-          <button id="markTodayBtn" class="btn success">✅ حضور</button>
-          <button id="unmarkTodayBtn" class="btn warning">✖ غياب</button>
-          <button id="deleteStudentBtn" class="btn danger adminOnly" style="margin-right:auto;">🗑️ حذف</button>
+          <button id="saveStudentBtn" class="btn primary" data-i18n="btn_save_st">حفظ البيانات 💾</button>
+          <button id="markTodayBtn" class="btn success" data-i18n="btn_mark_present">✅ حضور</button>
+          <button id="unmarkTodayBtn" class="btn warning" data-i18n="btn_mark_absent">✖ غياب</button>
+          <button id="deleteStudentBtn" class="btn danger adminOnly" style="margin-right:auto;" data-i18n="btn_delete">🗑️ حذف</button>
         </div>
         
-        <h3 style="margin-top: 20px; font-size: 0.9em; color: var(--text-muted);">سجل التواريخ</h3>
+        <h3 style="margin-top: 20px; font-size: 0.9em; color: var(--text-muted);" data-i18n="lbl_history">سجل التواريخ</h3>
         <div id="attList" class="list" style="max-height: 120px; overflow-y: auto;">...</div>
       </div>
     </section>
@@ -153,7 +153,7 @@
     <section id="secStudents" class="tab-section hidden">
       <div class="card glassCard">
         <div class="flexBetween">
-          <h2>قائمة البحث المتقدم</h2>
+          <h2 data-i18n="adv_search_title">قائمة البحث المتقدم</h2>
           <input id="tableSearchInp" class="inp" style="width: 250px;" placeholder="🔍 ابحث في الجدول...">
         </div>
         
@@ -186,10 +186,10 @@
               <tr>
                 <th><input type="checkbox" id="selectAllCheckbox"></th>
                 <th>ID</th>
-                <th>الاسم</th>
-                <th>المجموعة</th>
-                <th>المدفوع</th>
-                <th>حضور اليوم</th> 
+                <th data-i18n="tbl_name">الاسم</th>
+                <th data-i18n="tbl_class">المجموعة</th>
+                <th data-i18n="tbl_paid">المدفوع</th>
+                <th data-i18n="tbl_today">حضور اليوم</th> 
               </tr>
             </thead>
             <tbody></tbody>
@@ -197,25 +197,25 @@
         </div>
 
         <div class="pagination">
-            <button id="prevPageBtn" class="btn smallBtn" disabled>السابق</button>
+            <button id="prevPageBtn" class="btn smallBtn" disabled data-i18n="btn_prev">السابق</button>
             <span id="pageIndicator">صفحة 1</span>
-            <button id="nextPageBtn" class="btn smallBtn">التالي</button>
+            <button id="nextPageBtn" class="btn smallBtn" data-i18n="btn_next">التالي</button>
         </div>
       </div>
 
       <div class="card glassCard" style="margin-top: 20px;">
         <div class="flexBetween">
           <h2 data-i18n="report_title">حضور وتوريد بتاريخ</h2>
-          <button id="copyReportBtn" class="btn success smallBtn">نسخ للواتس 📋</button>
+          <button id="copyReportBtn" class="btn success smallBtn" data-i18n="btn_copy_wa">نسخ للواتس 📋</button>
         </div>
         <div class="row">
           <input id="reportDate" class="inp" type="date">
-          <button id="reportBtn" class="btn primary">عرض</button>
+          <button id="reportBtn" class="btn primary" data-i18n="btn_view">عرض</button>
         </div>
         <div class="badges">
-          <span class="badge">التاريخ: <span id="reportDateLabel">—</span></span>
-          <span class="badge">العدد: <span id="reportCount">0</span></span>
-          <span class="badge adminOnly" style="color:#2ea44f;">الإيراد: <span id="reportMoney">0</span></span>
+          <span class="badge" data-i18n="badge_date">التاريخ: <span id="reportDateLabel">—</span></span>
+          <span class="badge" data-i18n="badge_count">العدد: <span id="reportCount">0</span></span>
+          <span class="badge adminOnly" style="color:#2ea44f;" data-i18n="badge_rev">الإيراد: <span id="reportMoney">0</span></span>
         </div>
         <div id="reportList" class="report-list-box">...</div>
       </div>
@@ -223,54 +223,63 @@
 
     <section id="secAdmin" class="tab-section hidden">
       <div class="admin-dashboard">
+        <h2 style="margin-bottom: 10px; display:flex; align-items:center; gap:10px;" data-i18n="settings_title">⚙️ إعدادات النظام (V-PRO)</h2>
         
-        <div class="card" style="margin-top:20px;">
-          <h3>📝 مفكرة السنتر السريعة</h3>
-          <div style="background:#fff3cd; color:#856404; padding:8px; border-radius:5px; margin-bottom:10px; font-size:13px; border:1px solid #ffeeba;">
-              ⚠️ تنبيه: هذه المفكرة مؤقتة وتُحفظ تلقائياً في هذا المتصفح فقط.
-          </div>
-          <textarea id="centerNotebook" style="width:100%; height:150px; background:#f9f9f9; padding:10px; border-radius:8px; border:2px dashed var(--primary); resize:none;" placeholder="اكتب أي ملاحظات سريعة هنا..."></textarea>
+        <div class="card" style="margin-bottom:20px;">
+            <h3 data-i18n="note_title">📝 مفكرة السنتر السريعة</h3>
+            <div style="background:#fff3cd; color:#856404; padding:8px; border-radius:5px; margin-bottom:10px; font-size:13px; border:1px solid #ffeeba;" data-i18n="note_warning">
+                ⚠️ تنبيه: هذه المفكرة مؤقتة وتُحفظ تلقائياً في هذا المتصفح فقط.
+            </div>
+            <textarea id="centerNotebook" style="width:100%; height:120px; background:#f9f9f9; padding:10px; border-radius:8px; border:2px dashed var(--primary); resize:none;" placeholder="اكتب أي ملاحظات سريعة هنا..."></textarea>
         </div>
 
-        <div class="card glassCard config-card">
-            <h2>⚙️ التحكم والإعدادات</h2>
-            
-            <div class="setting-item">
-                <label>تصدير البيانات:</label>
-                <button id="exportExcelBtn" class="btn success" style="width: 100%;">تصدير ملف Excel 📊</button>
-            </div>
-
-            <div class="setting-item">
-                <label>مبلغ الترم:</label>
-                <div class="row">
-                    <input id="termFeeInp" type="number" class="inp" placeholder="مثلاً: 500">
-                    <button id="saveFeeBtn" class="btn primary">حفظ</button>
+        <div class="settings-grid">
+            <div class="settings-card success-card">
+                <h3 data-i18n="set_data_title">💾 البيانات والنسخ الاحتياطي</h3>
+                <p style="font-size:13px; color:#666; margin-bottom:15px;" data-i18n="set_data_desc">احتفظ بنسخة من بياناتك يومياً لتجنب فقدانها.</p>
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                    <button class="btn success w100" id="exportExcelBtn" style="padding:12px; font-weight:bold;" data-i18n="btn_export_ex">📥 تصدير البيانات (Excel)</button>
+                    <label class="btn info w100" style="padding:12px; text-align:center; cursor:pointer;" data-i18n="btn_import_ex">
+                        📤 استيراد بيانات (Excel)
+                        <input type="file" id="importExcelInput" accept=".xlsx, .xls" hidden>
+                    </label>
+                    <button class="btn danger w100" id="openBinBtn" style="padding:12px;" data-i18n="btn_recycle">🗑️ سلة المحذوفات</button>
                 </div>
             </div>
 
-            <div class="setting-item">
-                <label>المظهر:</label>
-                <select id="themeSelector" class="inp">
-                    <option value="classic">🔵 كلاسيك</option>
-                    <option value="dark">🌑 ليلي</option>
-                    <option value="glass">🧊 زجاجي</option>
-                </select>
+            <div class="settings-card">
+                <h3 data-i18n="set_ui_title">🎨 المظهر والتخصيص</h3>
+                <div style="display:flex; flex-direction:column; gap:15px;">
+                    <div>
+                        <label data-i18n="lbl_theme">ثيم البرنامج:</label>
+                        <select id="themeSelector" class="inp" style="width:100%; margin-top:5px;">
+                            <option value="classic">🔵 كلاسيك</option>
+                            <option value="dark">🌑 ليلي</option>
+                            <option value="glass">🧊 زجاجي</option>
+                        </select>
+                    </div>
+                    <button class="btn secondary w100" id="changeBgBtn" onclick="document.getElementById('bgInput').click()" data-i18n="btn_change_bg">🖼️ تغيير خلفية السنتر</button>
+                    <input type="file" id="bgInput" accept="image/*" hidden>
+                    
+                    <button class="btn primary w100" id="changeLangBtn" data-i18n="btn_change_lang">🌐 تغيير اللغة (Ar / En)</button>
+                </div>
             </div>
 
-            <div class="setting-item">
-                <label>استيراد:</label>
-                <label class="btn secondary" for="importExcelInput" style="width:100%; text-align:center; cursor:pointer;">📂 استيراد من Excel</label>
-                <input id="importExcelInput" type="file" accept=".xlsx,.xls" style="display:none;">
+            <div class="settings-card adminOnly">
+                <h3 data-i18n="set_fin_title">💰 إعدادات مالية</h3>
+                <div style="display:flex; gap:5px; margin-bottom:10px;">
+                    <input type="number" id="termFeeInp" class="inp" placeholder="مصاريف الترم للكل">
+                    <button class="btn success" id="saveFeeBtn" data-i18n="btn_save">حفظ</button>
+                </div>
             </div>
 
-            <div style="margin-top: 20px;">
-                <button id="openBinBtn" class="btn adminOnly" style="width:100%; background:#444; color:#fff;">♻️ سلة المحذوفات</button>
-            </div>
-
-            <div class="danger-zone adminOnly">
-                <h3>⚠️ منطقة الخطر</h3>
-                <button id="resetTermBtn" class="btn warning smallBtn">تصفير الترم</button>
-                <button id="resetBtn" class="btn danger smallBtn">ضبط المصنع</button>
+            <div class="settings-card danger-card adminOnly">
+                <h3 data-i18n="set_danger_title">⚠️ منطقة الخطر</h3>
+                <p style="font-size:13px; color:var(--danger); margin-bottom:15px;" data-i18n="set_danger_desc">تنبيه: لا يمكن التراجع عن هذه الإجراءات.</p>
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                    <button class="btn warning w100" id="resetTermBtn" data-i18n="btn_reset_term">🔄 تصفير الترم</button>
+                    <button class="btn danger w100" id="resetBtn" data-i18n="btn_factory_reset">❌ مسح النظام بالكامل (ضبط مصنع)</button>
+                </div>
             </div>
         </div>
       </div>
@@ -279,15 +288,15 @@
     <nav class="bottom-nav">
         <button id="btnTabAdmin" class="nav-item">
             <span class="nav-icon">⚙️</span>
-            <span class="nav-text">الإعدادات</span>
+            <span class="nav-text" data-i18n="nav_settings">الإعدادات</span>
         </button>
         <button id="btnTabHome" class="nav-item active">
             <span class="nav-icon">🏠</span>
-            <span class="nav-text">الرئيسية</span>
+            <span class="nav-text" data-i18n="nav_home">الرئيسية</span>
         </button>
         <button id="btnTabStudents" class="nav-item">
             <span class="nav-icon">👥</span>
-            <span class="nav-text">الطلاب</span>
+            <span class="nav-text" data-i18n="nav_students">الطلاب</span>
         </button>
     </nav>
   </div>
@@ -324,8 +333,7 @@
             <h3 style="color: var(--primary);">👥 حضور اليوم مفصل</h3>
             <button class="btn danger smallBtn" id="closeTodayModal">إغلاق ✖</button>
         </div>
-        <div id="todayModalBody" style="max-height: 60vh; overflow-y: auto; padding: 15px 0;">
-            </div>
+        <div id="todayModalBody" style="max-height: 60vh; overflow-y: auto; padding: 15px 0;"></div>
     </div>
   </div>
 
