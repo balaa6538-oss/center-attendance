@@ -519,7 +519,6 @@ document.addEventListener('DOMContentLoaded', () => {
           showToast("تم التراجع ورجوع الطالب بنجاح ✅");
       });
   });
-  });
   
     on("waBtn", "click", () => { const ph = $("stPhone").value; if(ph) window.open(`https://wa.me/20${ph}`, '_blank'); else showToast("لا يوجد رقم هاتف!", "err"); });
   
