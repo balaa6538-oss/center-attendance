@@ -553,3 +553,23 @@ body.theme-dark .bottom-nav, body.theme-glass.dark-glass .bottom-nav {
     transition: height 0.5s ease; min-height: 5px;
 }
 .chart-label { font-size: 0.75em; color: #666; margin-top: 5px; }
+/* =========================================
+   تحديثات المصروفات وصافي الربح
+========================================= */
+.finance-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+.finance-card {
+    background: #fff; border-radius: 10px; padding: 15px;
+    border-right: 5px solid var(--primary);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+.finance-card.green-border { border-right-color: var(--success); }
+.finance-card.red-border { border-right-color: var(--danger); }
+.finance-card h4 { margin: 0 0 10px 0; color: #666; font-size: 0.9em; }
+.finance-card .amount { font-size: 1.8em; font-weight: bold; color: #333; }
+.theme-dark .finance-card { background: #2c2c2c; border-color: #444; }
+.theme-glass .finance-card { background: rgba(255,255,255,0.1); }
