@@ -109,8 +109,13 @@
         
         <label class="lbl" data-i18n="lbl_name">الاسم</label>
         <input id="stName" class="inp">
-        <label class="lbl" data-i18n="lbl_class">الصف / المجموعة</label>
-        <input id="stClass" class="inp">
+        
+        <label class="lbl" data-i18n="lbl_class">الصف / المجموعة / الباقة</label>
+        <select id="stClass" class="inp">
+            <option value="">-- اختر الباقة / المجموعة --</option>
+            <option value="عام">عام</option>
+        </select>
+
         <label class="lbl" data-i18n="lbl_phone">رقم الموبايل</label>
         <div class="row">
           <input id="stPhone" class="inp" inputmode="tel">
@@ -261,6 +266,36 @@
 
     </section>
 
+    <section id="secSyllabus" class="tab-section hidden">
+      <div class="card glassCard adminOnly" style="margin-bottom: 20px;">
+        <h2 style="color:var(--primary);">🗺️ تحديث خريطة المنهج (للمدير)</h2>
+        <div class="grid2" style="margin-bottom: 0;">
+          <div>
+            <label class="lbl">اسم الشابتر / الدرس</label>
+            <input id="syllName" class="inp" placeholder="مثال: Chapter 1 - Introduction">
+          </div>
+          <div>
+            <label class="lbl">الحالة</label>
+            <select id="syllStatus" class="inp">
+              <option value="not_started">⚪ لم يبدأ</option>
+              <option value="in_progress">🟡 جاري الشرح</option>
+              <option value="completed">🟢 تم الانتهاء</option>
+            </select>
+          </div>
+        </div>
+        <label class="lbl">ملاحظات الحصة الأخيرة (للأسستنت والطلاب)</label>
+        <input id="syllNotes" class="inp" placeholder="مثال: خلصنا لحد صفحة 85 والمرة الجاية كويز">
+        <button id="saveSyllabusBtn" class="btn primary full-btn" style="margin-top:15px;">حفظ وتحديث المنهج 💾</button>
+      </div>
+
+      <div class="card glassCard">
+        <h2>📍 خريطة سير المنهج</h2>
+        <div id="syllabusTimeline" class="syllabus-timeline">
+           <div class="mutedCenter">جاري تحميل المنهج...</div>
+        </div>
+      </div>
+    </section>
+
     <section id="secAdmin" class="tab-section hidden adminOnly">
       <div class="admin-dashboard">
         <h2 style="margin-bottom: 10px; display:flex; align-items:center; gap:10px;" data-i18n="settings_title">⚙️ إعدادات النظام (V-PRO)</h2>
@@ -332,6 +367,10 @@
             <span class="nav-icon">🏠</span>
             <span class="nav-text" data-i18n="nav_home">الرئيسية</span>
         </button>
+        <button id="btnTabSyllabus" class="nav-item">
+            <span class="nav-icon">🗺️</span>
+            <span class="nav-text">المنهج</span>
+        </button>
         <button id="btnTabStudents" class="nav-item">
             <span class="nav-icon">👥</span>
             <span class="nav-text" data-i18n="nav_students">الطلاب</span>
@@ -391,10 +430,10 @@
   <div id="groupFeesModal" class="modal hidden">
     <div class="modalContent" style="max-width: 500px;">
         <div class="flexBetween" style="border-bottom: 2px solid #eee; padding-bottom: 10px;">
-            <h3 style="color: var(--primary);" data-i18n="modal_grp_fees">⚙️ تخصيص مصاريف المجموعات</h3>
+            <h3 style="color: var(--primary);" data-i18n="modal_grp_fees">⚙️ إدارة مصاريف الباقات/المجموعات</h3>
             <button class="btn danger smallBtn" id="closeGroupFeesModal">✖</button>
         </div>
-        <p style="font-size:13px; color:#666; margin-top:10px;" data-i18n="grp_fees_desc">تم جلب المجموعات تلقائياً من بيانات الطلاب.</p>
+        <p style="font-size:13px; color:#666; margin-top:10px;" data-i18n="grp_fees_desc">أضف الباقات هنا وسيتم عرضها للأسستنت أثناء تسجيل الطالب.</p>
         <div id="groupFeesList" style="max-height: 50vh; overflow-y: auto; padding: 15px 0;"></div>
         <button id="saveGroupFeesBtn" class="btn success w100" style="margin-top:10px; padding:12px; font-weight:bold;" data-i18n="btn_save_changes">حفظ التعديلات 💾</button>
     </div>
