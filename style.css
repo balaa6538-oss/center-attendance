@@ -602,3 +602,25 @@ body.theme-dark .bottom-nav, body.theme-glass.dark-glass .bottom-nav {
     background: #f0f2f5; padding: 6px 12px; border-radius: 6px; font-weight: bold; color: #333;
 }
 .theme-dark .group-revenue-amount { background: #444; color: #fff; }
+/* إصلاح الكلام الأبيض في التقارير وقائمة الحضور */
+.badges .badge, 
+.badge, 
+#reportList .badge, 
+#todayModalBody .badge {
+    color: #333333 !important; /* لون الخط أسود غامق */
+    text-shadow: 0.5px 0.5px 1px rgba(0,0,0,0.2); /* ظل أسود خفيف جداً عشان يوضح الكلام */
+    font-weight: bold;
+}
+
+/* إصلاح العناوين (التاريخ: العدد: إلخ) */
+.badge span[data-i18n] {
+    color: #000000 !important;
+    margin-left: 5px;
+}
+
+/* لو في وضع ليلي، رجعهم أبيض عشان يبانوا */
+.theme-dark .badges .badge, 
+.theme-dark .badge {
+    color: #ffffff !important;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
