@@ -4,11 +4,8 @@
    - 100% Full Translation Dictionary (Arabic / English)
    - Smart Consecutive Attendance (Group-based Streak)
    - Advanced Financial Module (Expenses, Daily/Monthly Net Profit)
-   - Dynamic Group Fee Management (Auto Class Detection)
-   - WhatsApp Manager Report (Automated Formatting & Fixed Text)
-   - Weekly Analytics Chart (Dynamic Heights Fixed)
-   - Clean Finance Report UI (Group boxes, no IDs)
-   - Color Badges Restored for Classes
+   - Dynamic Group Fee Management (Package Builder)
+   - Syllabus Map Module (Course Timeline & Tracker)
    ============================================================================= */
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -41,6 +38,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const K_NOTEBOOK     = "ca_notebook_v1";
     const K_GROUP_FEES   = "ca_group_fees_v1";
     const K_EXPENSES     = "ca_expenses_v1";
+    const K_SYLLABUS     = "ca_syllabus_v1"; // مفتاح حفظ المنهج الجديد
 
     // ==========================================
     // 2. GLOBAL SYSTEM STATE
@@ -52,6 +50,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let revenueByDate    = {}; 
     let groupFees        = {}; 
     let expensesByDate   = {};
+    let syllabusData     = []; // بيانات المنهج
     
     let currentId        = null;
     let currentUserRole  = "admin";
@@ -89,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function() {
         "rank_normal": { ar: "🟢 عادي", en: "🟢 Normal" },
         "rank_warn": { ar: "⚠️ إنذار", en: "⚠️ Warning" },
         "lbl_name": { ar: "الاسم", en: "Name" },
-        "lbl_class": { ar: "الصف / المجموعة", en: "Class / Group" },
+        "lbl_class": { ar: "الصف / الباقة", en: "Package / Class" },
         "lbl_phone": { ar: "رقم الموبايل", en: "Phone Number" },
         "lbl_finance": { ar: "نظام المصاريف", en: "Tuition System" },
         "lbl_total_paid": { ar: "💰 إجمالي المدفوع:", en: "💰 Total Paid:" },
@@ -116,7 +115,7 @@ document.addEventListener('DOMContentLoaded', function() {
         "flt_abs_only": { ar: "✖ الغياب فقط", en: "✖ Absent Only" },
         "lbl_selected": { ar: "تم تحديد", en: "Selected" },
         "tbl_name": { ar: "الاسم", en: "Name" },
-        "tbl_class": { ar: "المجموعة", en: "Class" },
+        "tbl_class": { ar: "الباقة", en: "Package" },
         "tbl_paid": { ar: "المدفوع", en: "Paid" },
         "tbl_today": { ar: "حضور اليوم", en: "Today" },
         "btn_prev": { ar: "السابق", en: "Prev" },
@@ -150,8 +149,8 @@ document.addEventListener('DOMContentLoaded', function() {
         "theme_glass": { ar: "🧊 زجاجي", en: "🧊 Glass" },
         "btn_change_bg": { ar: "🖼️ تغيير الخلفية", en: "🖼️ Change Background" },
         "btn_change_lang": { ar: "🌐 تغيير اللغة (Ar / En)", en: "🌐 Switch Language" },
-        "set_fin_title": { ar: "💰 إعدادات مالية", en: "💰 Group Pricing" },
-        "btn_group_fees": { ar: "⚙️ إدارة مصاريف المجموعات", en: "⚙️ Manage Group Fees" },
+        "set_fin_title": { ar: "💰 إعدادات مالية", en: "💰 Package Pricing" },
+        "btn_group_fees": { ar: "⚙️ إدارة الباقات والمصاريف", en: "⚙️ Manage Packages" },
         "set_danger_title": { ar: "⚠️ منطقة الخطر", en: "⚠️ Danger Zone" },
         "btn_reset_term": { ar: "🔄 تصفير الترم", en: "🔄 Reset Term Data" },
         "btn_factory_reset": { ar: "❌ مسح النظام بالكامل", en: "❌ Full Reset" },
@@ -167,8 +166,8 @@ document.addEventListener('DOMContentLoaded', function() {
         "btn_empty_bin": { ar: "إفراغ السلة نهائياً", en: "Empty Bin Permanently" },
         "modal_today_att": { ar: "👥 حضور اليوم مفصل", en: "👥 Detailed Attendance" },
         "btn_close": { ar: "إغلاق ✖", en: "Close Window ✖" },
-        "modal_grp_fees": { ar: "⚙️ تخصيص مصاريف المجموعات", en: "⚙️ Manage Group Pricing" },
-        "grp_fees_desc": { ar: "تم جلب المجموعات تلقائياً من بيانات الطلاب.", en: "Groups are auto-detected from records." },
+        "modal_grp_fees": { ar: "⚙️ إدارة مصاريف الباقات/المجموعات", en: "⚙️ Manage Package Pricing" },
+        "grp_fees_desc": { ar: "أضف الباقات هنا وسيتم عرضها للأسستنت أثناء تسجيل الطالب.", en: "Add packages here to display them to the assistant." },
         "btn_save_changes": { ar: "حفظ التعديلات 💾", en: "Save Changes 💾" },
         "msg_saved": { ar: "تم الحفظ بنجاح ✅", en: "Progress saved! ✅" },
         "msg_err_pass": { ar: "كلمة مرور خاطئة ❌", en: "Incorrect Password! ❌" },
@@ -279,7 +278,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ==========================================
-    // 5. GLOBAL NAVIGATION & TABS (FIXED FOR EXT OPEN)
+    // 5. GLOBAL NAVIGATION & TABS
     // ==========================================
     window.switchTab = function(tabId) {
         document.querySelectorAll('.tab-section').forEach(s => s.classList.add('hidden'));
@@ -296,9 +295,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Fix: Force switch to Home tab first
         window.switchTab('Home'); 
-        
         if($("searchAny")) $("searchAny").value = ""; 
         if($("searchMsg")) $("searchMsg").style.display = "none";
         
@@ -323,6 +320,7 @@ document.addEventListener('DOMContentLoaded', function() {
             localStorage.setItem(K_GROUP_FEES, JSON.stringify(groupFees)); 
             localStorage.setItem(K_EXPENSES, JSON.stringify(expensesByDate));
             localStorage.setItem(K_DELETED, JSON.stringify(deletedStudents));
+            localStorage.setItem(K_SYLLABUS, JSON.stringify(syllabusData)); // حفظ المنهج
             updateTopStats(); updateFinanceSummary(); renderCharts();
         } catch(e) { 
             showToast("الذاكرة ممتلئة! يرجى حذف الخلفية لتوفير مساحة", "err"); 
@@ -337,6 +335,7 @@ document.addEventListener('DOMContentLoaded', function() {
             attByDate      = JSON.parse(localStorage.getItem(K_ATT_BY_DATE) || "{}");
             groupFees      = JSON.parse(localStorage.getItem(K_GROUP_FEES) || "{}");
             deletedStudents= JSON.parse(localStorage.getItem(K_DELETED) || "{}");
+            syllabusData   = JSON.parse(localStorage.getItem(K_SYLLABUS) || "[]");
             
             applyTheme(localStorage.getItem(K_THEME) || "classic");
             
@@ -377,6 +376,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if($("reportDate")) $("reportDate").value = nowDateStr();
         renderReport(nowDateStr());
         updateTopStats();
+        populatePackages(); // ملء الباقات في القوائم المنسدلة
         window.switchTab('Home');
     }
 
@@ -473,6 +473,27 @@ document.addEventListener('DOMContentLoaded', function() {
             else { if(d === today) continue; break; }
         }
         return streak;
+    }
+
+    // دالة لتعبئة الباقات في الـ Dropdown الخاص بكارت الطالب
+    function populatePackages() {
+        const select = $("stClass");
+        if (!select) return;
+        
+        let currentVal = select.value; 
+        let html = `<option value="">-- اختر الباقة / المجموعة --</option>`;
+        
+        let hasGroups = false;
+        for (let g in groupFees) {
+            html += `<option value="${g}">${g}</option>`;
+            hasGroups = true;
+        }
+        if(!hasGroups) html += `<option value="عام">عام</option>`;
+        select.innerHTML = html;
+        
+        if(currentVal && groupFees[currentVal] !== undefined) {
+            select.value = currentVal;
+        }
     }
 
     function updateStudentUI(id) {
@@ -631,7 +652,6 @@ document.addEventListener('DOMContentLoaded', function() {
             chartData.push({ date: d, net: net });
         }
         
-        // FIX: حساب النسبة بشكل ديناميكي صحيح
         let baseline = maxNet > 0 ? maxNet : 100;
         
         let html = "";
@@ -667,13 +687,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (filterStatusEl) fStatus = filterStatusEl.value;
         if (filterAttendEl) fAttend = filterAttendEl.value;
         
+        // تحديث فلتر المجاميع بناءً على الباقات المتاحة بدلاً من الطلاب
         if(filterClassEl && filterClassEl.options.length <= 1) { 
-            const allClasses = new Set();
-            const studValues = Object.values(students);
-            for (let i = 0; i < studValues.length; i++) {
-                if(studValues[i].name && studValues[i].className) allClasses.add(studValues[i].className.trim()); 
-            }
-            allClasses.forEach(function(c) { 
+            const classes = Object.keys(groupFees);
+            if(classes.length === 0) classes.push("عام");
+            classes.forEach(function(c) { 
                 const opt = document.createElement("option"); opt.value = c; opt.innerText = c; filterClassEl.appendChild(opt); 
             });
         }
@@ -810,7 +828,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // FIX: Report UI Clean Up (No IDs, Just Counts)
     function renderReport(d) {
         const list = $("reportList"); 
         if(!list) return;
@@ -928,7 +945,76 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ==========================================
-    // 13. BINDINGS & EVENT LISTENERS
+    // 13. SYLLABUS MODULE (وحدة خريطة المنهج)
+    // ==========================================
+    function renderSyllabus() {
+        const tl = $("syllabusTimeline");
+        if (!tl) return;
+        if (syllabusData.length === 0) {
+            tl.innerHTML = `<div class="mutedCenter">لا توجد بيانات في خريطة المنهج حتى الآن. 📭</div>`;
+            return;
+        }
+        
+        let html = "";
+        for (let i = 0; i < syllabusData.length; i++) {
+            let s = syllabusData[i];
+            let statusClass = "status-" + s.status;
+            let statusIcon = s.status === "completed" ? "🟢 تم الانتهاء" : (s.status === "in_progress" ? "🟡 جاري الشرح" : "⚪ لم يبدأ");
+            
+            html += `
+            <div class="syll-card ${statusClass}">
+                <div class="syll-header">
+                    <span>${s.name}</span>
+                    <div class="row" style="width:auto;">
+                        <span style="font-size:0.8em; font-weight:normal;">${statusIcon}</span>
+                        <button class="btn danger smallBtn iconOnly adminOnly" onclick="window.deleteSyllabus(${i})">🗑️</button>
+                    </div>
+                </div>
+                ${s.notes ? `<div class="syll-notes">📝 ${s.notes}</div>` : ''}
+                <div class="syll-date">📅 أخر تحديث: ${prettyDate(s.date)}</div>
+            </div>
+            `;
+        }
+        tl.innerHTML = html;
+        applyPermissions(); 
+    }
+
+    window.deleteSyllabus = function(index) {
+        if(confirm("⚠️ متأكد من حذف هذا الدرس من المنهج؟")) {
+            syllabusData.splice(index, 1);
+            saveAll();
+            renderSyllabus();
+        }
+    };
+
+    on("saveSyllabusBtn", "click", function() {
+        let name = $("syllName").value.trim();
+        let status = $("syllStatus").value;
+        let notes = $("syllNotes").value.trim();
+        
+        if(!name) return showToast("يرجى كتابة اسم الشابتر / الدرس أولاً!", "err");
+
+        let existing = syllabusData.find(x => x.name === name);
+        if(existing) {
+            existing.status = status;
+            existing.notes = notes;
+            existing.date = nowDateStr();
+        } else {
+            syllabusData.push({ name: name, status: status, notes: notes, date: nowDateStr() });
+        }
+        
+        saveAll();
+        renderSyllabus();
+        showToast("تم تحديث خريطة المنهج ✅");
+        
+        $("syllName").value = "";
+        $("syllStatus").value = "not_started";
+        $("syllNotes").value = "";
+    });
+
+
+    // ==========================================
+    // 14. BINDINGS & EVENT LISTENERS
     // ==========================================
     
     on("loginBtn", "click", function() {
@@ -954,7 +1040,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     on("customPassCancel", "click", function() { if($("customPassModal")) $("customPassModal").classList.add("hidden"); });
 
-    // ==== FIX: Toggle Revenue Eye Icon ====
     on("toggleRevBtn", "click", function(e) {
         if(e) e.stopPropagation();
         isRevHidden = !isRevHidden;
@@ -1018,9 +1103,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if ($("stName")) s.name = $("stName").value; 
         if ($("stClass")) s.className = $("stClass").value; 
         if ($("stPhone")) s.phone = $("stPhone").value;
-        saveAll(); showToast(t("msg_saved"));
+        saveAll(); showToast(t("msg_saved")); updateStudentUI(currentId);
     });
-// ==== أزرار تصنيف الطالب (VIP / إنذار) ====
+
     on("rankNormalBtn", "click", function() {
         if(!currentId) return;
         students[currentId].rank = "normal";
@@ -1038,6 +1123,7 @@ document.addEventListener('DOMContentLoaded', function() {
         students[currentId].rank = "warn";
         saveAll(); updateStudentUI(currentId); showToast("تم إعطاء إنذار ⚠️", "warning");
     });
+    
     on("markTodayBtn", "click", function() { 
         if(currentId) { addAttendance(currentId, nowDateStr()); updateStudentUI(currentId); renderReport(nowDateStr()); }
     });
@@ -1064,13 +1150,13 @@ document.addEventListener('DOMContentLoaded', function() {
         if(req > 0 && st.paid >= req) fireConfetti();
         playSound("money"); showToast(t("msg_deposit"));
         
-        // ==== FIX: WhatsApp Msg After Payment ====
         if(st.phone) {
             let msg = `مرحباً ${st.name}،\nتم إيداع مبلغ ${v} ج ✅\nإجمالي المدفوع: ${st.paid} ج.\n\n-- إدارة السنتر --`;
             setTimeout(function() { 
                 window.open(`https://wa.me/20${st.phone}?text=${encodeURIComponent(msg)}`, '_blank'); 
             }, 1000);
         }
+        payInp.value = "";
     });
 
     on("correctPayBtn", "click", function() {
@@ -1126,7 +1212,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (phInp && phInp.value) window.open(`https://wa.me/20${phInp.value}`, '_blank'); 
     });
 
-    // Settings & Config
     on("saveExpenseBtn", "click", function() {
         if (!$("expenseAmtInp") || !$("expenseReasonInp")) return;
         const a = toInt($("expenseAmtInp").value);
@@ -1141,26 +1226,59 @@ document.addEventListener('DOMContentLoaded', function() {
         showToast(t("msg_exp_saved")); renderReport(today);
     });
 
+    // وحدة صانع الباقات الجديدة
+    window.renderGroupFeesModal = function() {
+        let h = `
+        <div style="display:flex; gap:10px; margin-bottom:15px; background:#eef2f5; padding:10px; border-radius:8px;">
+            <input type="text" id="newPkgName" class="inp" placeholder="اسم الباقة (مثال: ترم كامل)">
+            <input type="number" id="newPkgPrice" class="inp" placeholder="السعر" style="width:100px;">
+            <button class="btn primary" id="addNewPkgBtn">إضافة</button>
+        </div>
+        `;
+        
+        for(let g in groupFees) {
+            let val = groupFees[g];
+            h += `<div class="group-fee-row">
+                    <label>📘 ${g}</label>
+                    <div class="row" style="width:auto;">
+                        <input type="number" class="inp g-fee-inp" data-group="${g}" value="${val}"> ج
+                        <button class="btn danger smallBtn iconOnly delete-pkg-btn" data-group="${g}">🗑️</button>
+                    </div>
+                  </div>`;
+        }
+        if ($("groupFeesList")) $("groupFeesList").innerHTML = h;
+
+        // ربط زر إضافة باقة جديدة
+        if($("addNewPkgBtn")) {
+            $("addNewPkgBtn").onclick = function() {
+                let n = $("newPkgName").value.trim();
+                let p = toInt($("newPkgPrice").value);
+                if(n) {
+                    groupFees[n] = p;
+                    saveAll(); renderGroupFeesModal(); populatePackages(); showToast("تم إضافة الباقة");
+                }
+            };
+        }
+
+        // ربط أزرار حذف الباقات
+        document.querySelectorAll(".delete-pkg-btn").forEach(btn => {
+            btn.onclick = function() {
+                let g = this.getAttribute("data-group");
+                if(confirm("⚠️ متأكد من حذف هذه الباقة من السيستم؟")) {
+                    delete groupFees[g];
+                    saveAll(); renderGroupFeesModal(); populatePackages(); showToast("تم الحذف");
+                }
+            }
+        });
+    }
+
     on("openGroupFeesBtn", "click", function() {
         askAdminPass(function() {
-            const groups = new Set(); 
-            const allStuds = Object.values(students);
-            for (let i = 0; i < allStuds.length; i++) {
-                if(allStuds[i].className) groups.add(allStuds[i].className.trim()); 
-            }
-            if(groups.size === 0) groups.add("عام");
-            
-            let h = ""; 
-            groups.forEach(function(g) {
-                let val = groupFees[g] ? groupFees[g] : 0;
-                h += `<div class="group-fee-row"><label>📘 ${g}</label><div><input type="number" class="inp g-fee-inp" data-group="${g}" value="${val}"> ج</div></div>`;
-            });
-            if ($("groupFeesList")) $("groupFeesList").innerHTML = h; 
+            renderGroupFeesModal();
             if ($("groupFeesModal")) $("groupFeesModal").classList.remove("hidden");
         });
     });
 
-    // ==== FIX: إغلاق مودال المصاريف ====
     on("closeGroupFeesModal", "click", function() {
         if ($("groupFeesModal")) $("groupFeesModal").classList.add("hidden");
     });
@@ -1172,6 +1290,7 @@ document.addEventListener('DOMContentLoaded', function() {
             groupFees[groupName] = toInt(inputs[i].value);
         }
         saveAll(); 
+        populatePackages(); // تحديث القوائم المنسدلة
         if ($("groupFeesModal")) $("groupFeesModal").classList.add("hidden"); 
         showToast(t("msg_saved"));
         if(currentId) updateStudentUI(currentId);
@@ -1237,7 +1356,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         for(let g in groups) { txt += `📘 ${g}: ${groups[g]} طالب\n`; }
         
-        // ==== FIX: تعديل جملة الحضور للمدير ====
         txt += `\n👥 إجمالي الحضور اليوم: ${ids.length}`;
         txt += `\n💰 ${t("badge_rev")} ${rev} ج`;
         
@@ -1327,11 +1445,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if(confirm(confMsg)) { deletedStudents = {}; saveAll(); renderBinList(); }
     });
 
-    window.restoreSt = function(idStr) {
-        const id = String(idStr); const st = deletedStudents[id]; if(!st) return;
-        students[id] = st; delete deletedStudents[id]; saveAll(); renderBinList(); showToast("تم الاسترجاع ✅"); window.extOpen(id); 
-    };
-
     on("openAllStudentsBtn", "click", function() { renderSimpleTable(); if ($("allStudentsModal")) $("allStudentsModal").classList.remove("hidden"); });
     on("closeModalBtn", "click", function() { if ($("allStudentsModal")) $("allStudentsModal").classList.add("hidden"); });
 
@@ -1374,7 +1487,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     on("closeTodayModal", "click", function() { if ($("todayModal")) $("todayModal").classList.add("hidden"); });
 
-    // Reset Functions
     on("resetTermBtn", "click", function() {
         askAdminPass(function() {
             let msg = currentLang==='ar' ? "تصفير فلوس وغياب الترم بالكامل للجميع؟" : "Reset all fees and attendance?";
@@ -1426,7 +1538,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // ==========================================
-    // 14. INITIALIZATION (START ENGINE)
+    // 15. INITIALIZATION (START ENGINE)
     // ==========================================
     function checkDailyBackup() {
         const last = localStorage.getItem(K_LAST_BACKUP);
@@ -1454,6 +1566,7 @@ document.addEventListener('DOMContentLoaded', function() {
     on("btnTabStudents", "click", function() { window.switchTab('Students'); renderList(); });
     on("btnTabRevenue", "click", function() { window.switchTab('Revenue'); renderCharts(); updateFinanceSummary(); });
     on("btnTabAdmin", "click", function() { window.switchTab('Admin'); });
+    on("btnTabSyllabus", "click", function() { window.switchTab('Syllabus'); renderSyllabus(); });
 
     // Startup Sequence
     loadAll(); 
