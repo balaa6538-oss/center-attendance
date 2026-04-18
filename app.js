@@ -954,6 +954,9 @@ document.addEventListener('DOMContentLoaded', function() {
             tl.innerHTML = `<div class="mutedCenter">لا توجد بيانات في خريطة المنهج حتى الآن. 📭</div>`;
             return;
         }
+
+        // هنتأكد مين اللي فاتح (المدير ولا الأسستنت) عشان نرسم زرار الحذف على الأساس ده
+        const isAdmin = (currentUserRole === "admin");
         
         let html = "";
         for (let i = 0; i < syllabusData.length; i++) {
@@ -961,13 +964,16 @@ document.addEventListener('DOMContentLoaded', function() {
             let statusClass = "status-" + s.status;
             let statusIcon = s.status === "completed" ? "🟢 تم الانتهاء" : (s.status === "in_progress" ? "🟡 جاري الشرح" : "⚪ لم يبدأ");
             
+            // لو مدير، هنرسم الزرار، لو أسستنت مش هنرسمه خالص
+            let deleteBtnHtml = isAdmin ? `<button class="btn danger smallBtn iconOnly" onclick="window.deleteSyllabus(${i})">🗑️</button>` : "";
+            
             html += `
             <div class="syll-card ${statusClass}">
                 <div class="syll-header">
                     <span>${s.name}</span>
                     <div class="row" style="width:auto;">
                         <span style="font-size:0.8em; font-weight:normal;">${statusIcon}</span>
-                        <button class="btn danger smallBtn iconOnly adminOnly" onclick="window.deleteSyllabus(${i})">🗑️</button>
+                        ${deleteBtnHtml}
                     </div>
                 </div>
                 ${s.notes ? `<div class="syll-notes">📝 ${s.notes}</div>` : ''}
@@ -976,7 +982,7 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
         }
         tl.innerHTML = html;
-        applyPermissions(); 
+        // تم مسح السطر اللي كان بيعمل المشكلة من هنا
     }
 
     window.deleteSyllabus = function(index) {
@@ -1011,8 +1017,6 @@ document.addEventListener('DOMContentLoaded', function() {
         $("syllStatus").value = "not_started";
         $("syllNotes").value = "";
     });
-
-
     // ==========================================
     // 14. BINDINGS & EVENT LISTENERS
     // ==========================================
