@@ -1020,7 +1020,24 @@ document.addEventListener('DOMContentLoaded', function() {
         if ($("stPhone")) s.phone = $("stPhone").value;
         saveAll(); showToast(t("msg_saved"));
     });
+// ==== أزرار تصنيف الطالب (VIP / إنذار) ====
+    on("rankNormalBtn", "click", function() {
+        if(!currentId) return;
+        students[currentId].rank = "normal";
+        saveAll(); updateStudentUI(currentId); showToast("تم التحديث لـ عادي 🟢");
+    });
 
+    on("rankVipBtn", "click", function() {
+        if(!currentId) return;
+        students[currentId].rank = "vip";
+        saveAll(); updateStudentUI(currentId); showToast("تم الترقية لـ VIP ⭐");
+    });
+
+    on("rankWarnBtn", "click", function() {
+        if(!currentId) return;
+        students[currentId].rank = "warn";
+        saveAll(); updateStudentUI(currentId); showToast("تم إعطاء إنذار ⚠️", "warning");
+    });
     on("markTodayBtn", "click", function() { 
         if(currentId) { addAttendance(currentId, nowDateStr()); updateStudentUI(currentId); renderReport(nowDateStr()); }
     });
