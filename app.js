@@ -1,5 +1,5 @@
 /* =============================================================================
-   Center System V-PRO MAX (THE ULTIMATE SHIELD EDITION)
+   Center System V-PRO MAX (THE ULTIMATE SHIELD EDITION - FIXED)
    -----------------------------------------------------------------------------
    - 100% Full Translation Dictionary (Arabic / English)
    - Smart Consecutive Attendance (Group-based Streak)
@@ -305,7 +305,7 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 
-    // ==== FIX 2: جعل دالة switchTab عامة (Global) عشان الزراير تشوفها ====
+    // ==== FIX 1: الدوال دي لازم تبقى Global عشان الواجهة تشوفها ====
     window.switchTab = function(tabId) {
         document.querySelectorAll('.tab-section').forEach(s => s.classList.add('hidden'));
         const target = $("sec" + tabId); 
@@ -313,6 +313,20 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
         const activeBtn = $("btnTab" + tabId); 
         if(activeBtn) activeBtn.classList.add('active');
+    };
+
+    window.extOpen = function(id) {
+        if(!id || !students[String(id)]) {
+            showToast(currentLang === 'ar' ? "الطالب غير مسجل" : "Student not found", "err");
+            return;
+        }
+        window.switchTab('Home'); // بيضمن إنك ترجع للرئيسية الأول
+        $("searchAny").value = ""; 
+        if($("searchMsg")) $("searchMsg").style.display = "none";
+        
+        updateStudentUI(String(id)); 
+        const card = document.querySelector(".studentCard"); 
+        if(card) card.scrollIntoView({behavior:"smooth", block:"start"}); 
     };
 
     // ==========================================
@@ -425,7 +439,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if($("todayCountTop")) $("todayCountTop").textContent = todayCount;
         
         if($("todayRevenue")) {
-            $("todayRevenue").textContent = isRevHidden ? "****** ج" : revenue + " ج";
+            $("todayRevenue").textContent = isRevHidden ? "******" : revenue + " ج";
         }
         if($("toggleRevBtn")) {
             $("toggleRevBtn").textContent = isRevHidden ? "👁️‍🗨️" : "👁️";
@@ -737,7 +751,6 @@ document.addEventListener('DOMContentLoaded', function() {
             
             tr.onclick = (e) => { 
                 if(e.target.type !== "checkbox") { 
-                    window.switchTab('Home'); 
                     window.extOpen(s.id); 
                 } 
             };
@@ -763,7 +776,6 @@ document.addEventListener('DOMContentLoaded', function() {
             
             tr.onclick = () => { 
                 $("allStudentsModal").classList.add("hidden"); 
-                window.switchTab('Home'); 
                 window.extOpen(s.id); 
             };
             tb.appendChild(tr);
@@ -809,7 +821,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="card" style="margin-top:10px; border-right:4px solid var(--primary); padding:10px;">
                 <b style="color:var(--primary);">🏷️ ${g}</b> (${groups[g].length})<br>
                 <div style="display:flex; flex-wrap:wrap; gap:5px; margin-top:5px;">
-                    ${groups[g].map(id => `<span class="badge" style="cursor:pointer;" onclick="window.extOpen('${id}')">#${id}</span>`).join("")}
+                    ${groups[g].map(id => `<span class="badge" style="cursor:pointer;" onclick="window.switchTab('Home'); window.extOpen('${id}')">#${id}</span>`).join("")}
                 </div>
             </div>`;
         }
@@ -937,7 +949,7 @@ document.addEventListener('DOMContentLoaded', function() {
         $("customPassModal").classList.add("hidden");
     });
 
-    // ==== FIX 1: زرار العين (إخفاء الإيراد) ====
+    // ==== FIX 2: Eye Icon Fix (إخفاء الإيرادات) ====
     on("toggleRevBtn", "click", function(e) {
         if(e) e.stopPropagation();
         isRevHidden = !isRevHidden;
@@ -957,8 +969,10 @@ document.addEventListener('DOMContentLoaded', function() {
         $("quickAttendId").focus();
     });
 
+    // ==== FIX 3: فتح الطالب من زرار البحث الشامل ====
     on("openBtn", "click", () => {
-        window.extOpen(toInt($("openId").value));
+        const id = toInt($("openId").value);
+        if(id) window.extOpen(id);
     });
 
     on("searchAny", "input", (e) => {
@@ -1005,6 +1019,25 @@ document.addEventListener('DOMContentLoaded', function() {
         showToast(t("msg_saved"));
     });
 
+    // ==== FIX 4: برمجة زراير (عادي - VIP - إنذار) ====
+    on("rankNormalBtn", "click", () => {
+        if(!currentId) return;
+        students[currentId].rank = "normal";
+        saveAll(); updateStudentUI(currentId); showToast("تم التحديث");
+    });
+
+    on("rankVipBtn", "click", () => {
+        if(!currentId) return;
+        students[currentId].rank = "vip";
+        saveAll(); updateStudentUI(currentId); showToast("VIP ⭐");
+    });
+
+    on("rankWarnBtn", "click", () => {
+        if(!currentId) return;
+        students[currentId].rank = "warn";
+        saveAll(); updateStudentUI(currentId); showToast("إنذار ⚠️", "warning");
+    });
+
     on("markTodayBtn", "click", () => { 
         if(currentId) { 
             addAttendance(currentId, nowDateStr()); 
@@ -1041,7 +1074,7 @@ document.addEventListener('DOMContentLoaded', function() {
         playSound("money");
         showToast(t("msg_deposit"));
 
-        // ==== FIX 3: رسالة الواتساب بعد الإيداع ====
+        // ==== FIX 5: رسالة واتس الإيداع للمستلم ====
         if(st.phone) {
             const msg = `مرحباً ${st.name}،\nتم إيداع مبلغ ${v} ج بنجاح ✅\nإجمالي المدفوع: ${st.paid} ج.\n\n-- إدارة السنتر --`;
             setTimeout(() => { 
@@ -1240,7 +1273,7 @@ document.addEventListener('DOMContentLoaded', function() {
             txt += `📘 ${g}: ${groups[g]} طالب\n`; 
         }
         
-        // ==== FIX 4: تعديل جملة الحضور في الواتساب للمدير ====
+        // ==== FIX 6: تعديل جملة الحضور للمدير ====
         txt += `\n👥 إجمالي الحضور اليوم: ${ids.length}`;
         txt += `\n💰 ${t("badge_rev")} ${rev} ج`;
         
@@ -1390,7 +1423,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <h4 style="color:var(--primary); margin-top:0; margin-bottom:10px; border-bottom:1px solid #ddd; padding-bottom:5px;">📘 ${g} (${groups[g].length})</h4>
                 <div style="display:flex; flex-wrap:wrap; gap:8px;">
                     ${groups[g].map(s => `
-                        <div class="badge" style="background:#fff; color:#333; border:1px solid #ccc; padding:8px 12px; border-radius:8px; cursor:pointer; font-size:13px;" onclick="$('todayModal').classList.add('hidden'); window.switchTab('Home'); window.extOpen('${s.id}')">
+                        <div class="badge" style="background:#fff; color:#333; border:1px solid #ccc; padding:8px 12px; border-radius:8px; cursor:pointer; font-size:13px;" onclick="$('todayModal').classList.add('hidden'); window.extOpen('${s.id}')">
                             #${s.id} - ${s.name || 'بدون اسم'}
                         </div>`
                     ).join("")}
