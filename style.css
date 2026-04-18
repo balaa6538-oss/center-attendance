@@ -305,7 +305,7 @@ body.theme-dark .bottom-nav, body.theme-glass.dark-glass .bottom-nav {
     color: var(--text-muted);
     cursor: pointer;
     transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    width: 33%;
+    width: 25%; /* اتعدلت عشان تناسب 5 زراير بدل 4 */
 }
 .nav-icon { font-size: 1.5em; transition: 0.3s; }
 .nav-text { font-size: 0.8em; font-weight: 700; font-family: var(--font-main); }
@@ -313,14 +313,14 @@ body.theme-dark .bottom-nav, body.theme-glass.dark-glass .bottom-nav {
 /* الأيقونة النشطة: بتكبر، بتترفع لفوق، وبيظهر تحتها شرطة زرقاء */
 .nav-item.active {
     color: var(--primary);
-    transform: translateY(-5px); /* الرفعة اللي عندك */
+    transform: translateY(-5px);
     position: relative;
     transition: all 0.3s ease;
 }
 
 .nav-item.active .nav-icon {
-    transform: scale(1.2); /* التكبير اللي عندك */
-    filter: drop-shadow(0 4px 6px rgba(47, 107, 255, 0.4)); /* الظل اللي عندك */
+    transform: scale(1.2);
+    filter: drop-shadow(0 4px 6px rgba(47, 107, 255, 0.4));
 }
 
 /* إضافة الشرطة الزرقاء تحت الأيقونة النشطة */
@@ -334,7 +334,7 @@ body.theme-dark .bottom-nav, body.theme-glass.dark-glass .bottom-nav {
     height: 4px;
     background: var(--primary);
     border-radius: 10px;
-    animation: slideIn 0.3s ease-out; /* حركة الظهور */
+    animation: slideIn 0.3s ease-out;
 }
 
 @keyframes slideIn {
@@ -448,26 +448,10 @@ body.theme-dark .bottom-nav, body.theme-glass.dark-glass .bottom-nav {
 /* زرار العين بتاع الإيراد */
 #toggleRevBtn { cursor: pointer; transition: 0.2s; font-size: 1.2em; margin-left: 10px; }
 #toggleRevBtn:hover { transform: scale(1.2); }
-/* =========================================
-   تحديثات صفحة الإعدادات (V-PRO) والنقطة الحمراء
-========================================= */
 
-/* النقطة الحمراء للتنبيه (بتنور وتطفي) */
-.needs-backup { position: relative; }
-.needs-backup::after {
-    content: '';
-    position: absolute;
-    top: 2px;
-    right: 5px;
-    width: 12px;
-    height: 12px;
-    background-color: #ff3b30;
-    border-radius: 50%;
-    border: 2px solid #fff;
-    box-shadow: 0 0 8px rgba(255, 59, 48, 0.8);
-    animation: blinkRed 1.5s infinite;
-}
-@keyframes blinkRed { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.2); } 100% { opacity: 1; transform: scale(1); } }
+/* =========================================
+   تحديثات صفحة الإعدادات (V-PRO) 
+========================================= */
 
 /* نظام شبكة الإعدادات (Cards Grid) */
 .settings-grid {
@@ -488,6 +472,7 @@ body.theme-dark .bottom-nav, body.theme-glass.dark-glass .bottom-nav {
 
 .settings-card h3 { margin-top: 0; color: var(--primary); font-size: 1.1em; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
 .settings-card.danger-card h3 { color: var(--danger); }
+
 /* =========================================
    تحديثات المجموعات وحذف الخلفية (V-PRO)
 ========================================= */
@@ -507,6 +492,7 @@ body.theme-dark .bottom-nav, body.theme-glass.dark-glass .bottom-nav {
 .theme-glass .group-fee-row { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
 .group-fee-row label { font-weight: bold; color: var(--primary); margin:0; font-size: 1.1em; }
 .group-fee-row input { width: 120px; text-align: center; font-weight: bold; }
+
 /* =========================================
    تحديثات الإيرادات، الباسورد، والمتبقي (V-PRO)
 ========================================= */
@@ -553,6 +539,7 @@ body.theme-dark .bottom-nav, body.theme-glass.dark-glass .bottom-nav {
     transition: height 0.5s ease; min-height: 5px;
 }
 .chart-label { font-size: 0.75em; color: #666; margin-top: 5px; }
+
 /* =========================================
    تحديثات المصروفات وصافي الربح
 ========================================= */
@@ -573,10 +560,10 @@ body.theme-dark .bottom-nav, body.theme-glass.dark-glass .bottom-nav {
 .finance-card .amount { font-size: 1.8em; font-weight: bold; color: #333; }
 .theme-dark .finance-card { background: #2c2c2c; border-color: #444; }
 .theme-glass .finance-card { background: rgba(255,255,255,0.1); }
+
 /* =========================================
    إصلاحات الألوان وتقارير الماليات
 ========================================= */
-/* إصلاح الخطوط في الوضع الكلاسيكي */
 .finance-card { background: #ffffff; color: #333333; }
 .finance-card h4 { color: #555555; }
 .finance-card .amount { color: #111111; }
@@ -584,7 +571,6 @@ body.theme-dark .bottom-nav, body.theme-glass.dark-glass .bottom-nav {
 .theme-dark .finance-card h4 { color: #cccccc; }
 .theme-dark .finance-card .amount { color: #ffffff; }
 
-/* تنسيق كارت المجموعة الجديد في صفحة الماليات (بدون IDs) */
 .group-revenue-card {
     background: #ffffff;
     border-radius: 8px;
@@ -602,25 +588,65 @@ body.theme-dark .bottom-nav, body.theme-glass.dark-glass .bottom-nav {
     background: #f0f2f5; padding: 6px 12px; border-radius: 6px; font-weight: bold; color: #333;
 }
 .theme-dark .group-revenue-amount { background: #444; color: #fff; }
-/* إصلاح الكلام الأبيض في التقارير وقائمة الحضور */
-.badges .badge, 
-.badge, 
-#reportList .badge, 
-#todayModalBody .badge {
-    color: #333333 !important; /* لون الخط أسود غامق */
-    text-shadow: 0.5px 0.5px 1px rgba(0,0,0,0.2); /* ظل أسود خفيف جداً عشان يوضح الكلام */
+
+.badges .badge, .badge, #reportList .badge, #todayModalBody .badge {
+    color: #333333 !important; 
+    text-shadow: 0.5px 0.5px 1px rgba(0,0,0,0.2);
     font-weight: bold;
 }
-
-/* إصلاح العناوين (التاريخ: العدد: إلخ) */
-.badge span[data-i18n] {
-    color: #000000 !important;
-    margin-left: 5px;
-}
-
-/* لو في وضع ليلي، رجعهم أبيض عشان يبانوا */
-.theme-dark .badges .badge, 
-.theme-dark .badge {
+.badge span[data-i18n] { color: #000000 !important; margin-left: 5px; }
+.theme-dark .badges .badge, .theme-dark .badge {
     color: #ffffff !important;
     text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+/* =========================================
+   تحديثات خريطة المنهج (Syllabus Timeline)
+========================================= */
+.syllabus-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.syll-card {
+    background: var(--card-bg);
+    border-left: 5px solid #ccc;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: 0.3s;
+}
+.theme-dark .syll-card { background: #2c2c2c; }
+
+.syll-card.status-completed { border-left-color: var(--success); }
+.syll-card.status-progress { border-left-color: var(--warning); }
+.syll-card.status-not_started { border-left-color: #a0aec0; opacity: 0.7; }
+
+.syll-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.syll-notes {
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 0.9em;
+    color: #555;
+    border: 1px dashed #ccc;
+}
+.theme-dark .syll-notes { background: #1a1a1a; color: #ccc; border-color: #555; }
+
+.syll-date {
+    font-size: 0.8em;
+    color: var(--text-muted);
+    text-align: left;
 }
