@@ -507,3 +507,49 @@ body.theme-dark .bottom-nav, body.theme-glass.dark-glass .bottom-nav {
 .theme-glass .group-fee-row { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
 .group-fee-row label { font-weight: bold; color: var(--primary); margin:0; font-size: 1.1em; }
 .group-fee-row input { width: 120px; text-align: center; font-weight: bold; }
+/* =========================================
+   تحديثات الإيرادات، الباسورد، والمتبقي (V-PRO)
+========================================= */
+
+/* مربع المتبقي */
+.remain-box {
+    padding: 8px 15px;
+    border-radius: 8px;
+    font-weight: bold;
+    text-align: center;
+    font-size: 1.1em;
+    margin-top: 10px;
+    border: 2px solid transparent;
+    transition: 0.3s;
+}
+.remain-red { background: #ffe5e5; color: #d9534f; border-color: #d9534f; }
+.remain-green { background: #e5ffe5; color: #2ea44f; border-color: #2ea44f; }
+
+/* أزرار تصنيف الطالب (VIP) */
+.st-rank-btn {
+    background: transparent; border: 1px solid #ccc; border-radius: 20px;
+    padding: 5px 10px; font-size: 0.9em; cursor: pointer; transition: 0.2s;
+}
+.st-rank-btn.active-normal { background: #eee; border-color: #999; color: #333; }
+.st-rank-btn.active-vip { background: #fff3cd; border-color: #ffc107; color: #856404; }
+.st-rank-btn.active-warn { background: #f8d7da; border-color: #dc3545; color: #721c24; }
+
+/* مودال الباسورد الاحترافي */
+.pass-input-modal {
+    width: 100%; padding: 12px; font-size: 1.2em; text-align: center;
+    border: 2px solid var(--primary); border-radius: 8px; margin: 15px 0;
+    letter-spacing: 5px; font-family: monospace;
+}
+
+/* الرسوم البيانية (مبدئي) */
+.chart-container {
+    display: flex; align-items: flex-end; justify-content: space-around;
+    height: 150px; background: #f9f9f9; border-radius: 10px; padding: 15px 10px 0 10px;
+    margin-top: 15px; border: 1px solid #eee;
+}
+.chart-bar-wrap { display: flex; flex-direction: column; align-items: center; flex: 1; }
+.chart-bar {
+    width: 30px; background: var(--primary); border-radius: 5px 5px 0 0;
+    transition: height 0.5s ease; min-height: 5px;
+}
+.chart-label { font-size: 0.75em; color: #666; margin-top: 5px; }
