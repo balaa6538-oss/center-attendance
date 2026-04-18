@@ -305,14 +305,15 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 
-    function switchTab(tabId) {
+    // ==== FIX 2: جعل دالة switchTab عامة (Global) عشان الزراير تشوفها ====
+    window.switchTab = function(tabId) {
         document.querySelectorAll('.tab-section').forEach(s => s.classList.add('hidden'));
         const target = $("sec" + tabId); 
         if(target) target.classList.remove('hidden');
         document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
         const activeBtn = $("btnTab" + tabId); 
         if(activeBtn) activeBtn.classList.add('active');
-    }
+    };
 
     // ==========================================
     // 5. DATA MANAGEMENT (Storage Layer)
@@ -393,7 +394,7 @@ document.addEventListener('DOMContentLoaded', function() {
         $("reportDate").value = nowDateStr();
         renderReport(nowDateStr());
         updateTopStats();
-        switchTab('Home');
+        window.switchTab('Home');
     }
 
     function applyPermissions() {
@@ -424,7 +425,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if($("todayCountTop")) $("todayCountTop").textContent = todayCount;
         
         if($("todayRevenue")) {
-            $("todayRevenue").textContent = isRevHidden ? "******" : revenue + " ج";
+            $("todayRevenue").textContent = isRevHidden ? "****** ج" : revenue + " ج";
         }
         if($("toggleRevBtn")) {
             $("toggleRevBtn").textContent = isRevHidden ? "👁️‍🗨️" : "👁️";
@@ -936,6 +937,13 @@ document.addEventListener('DOMContentLoaded', function() {
         $("customPassModal").classList.add("hidden");
     });
 
+    // ==== FIX 1: زرار العين (إخفاء الإيراد) ====
+    on("toggleRevBtn", "click", function(e) {
+        if(e) e.stopPropagation();
+        isRevHidden = !isRevHidden;
+        updateTopStats();
+    });
+
     // Quick Actions
     on("quickAttendBtn", "click", () => {
         const id = toInt($("quickAttendId").value); 
@@ -1032,6 +1040,14 @@ document.addEventListener('DOMContentLoaded', function() {
         
         playSound("money");
         showToast(t("msg_deposit"));
+
+        // ==== FIX 3: رسالة الواتساب بعد الإيداع ====
+        if(st.phone) {
+            const msg = `مرحباً ${st.name}،\nتم إيداع مبلغ ${v} ج بنجاح ✅\nإجمالي المدفوع: ${st.paid} ج.\n\n-- إدارة السنتر --`;
+            setTimeout(() => { 
+                window.open(`https://wa.me/20${st.phone}?text=${encodeURIComponent(msg)}`, '_blank'); 
+            }, 1000);
+        }
     });
 
     on("correctPayBtn", "click", () => {
@@ -1224,7 +1240,8 @@ document.addEventListener('DOMContentLoaded', function() {
             txt += `📘 ${g}: ${groups[g]} طالب\n`; 
         }
         
-        txt += `\n👥 ${t("badge_count")} ${ids.length}`;
+        // ==== FIX 4: تعديل جملة الحضور في الواتساب للمدير ====
+        txt += `\n👥 إجمالي الحضور اليوم: ${ids.length}`;
         txt += `\n💰 ${t("badge_rev")} ${rev} ج`;
         
         if(expArr.length > 0) {
@@ -1235,7 +1252,7 @@ document.addEventListener('DOMContentLoaded', function() {
             txt += `\n\n💵 *${t("wa_net")}: ${rev - totalExp} ج*`;
         }
         
-        txt += `\n\n-- ${t("brand_name")} --`;
+        txt += `\n\n-- إدارة السنتر --`;
         
         navigator.clipboard.writeText(txt).then(() => {
             showToast(t("msg_copied"));
@@ -1461,16 +1478,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // ==========================================
     // 12. INITIALIZATION (START ENGINE)
     // ==========================================
-    window.extOpen = (id) => { 
-        if(!id) return; 
-        $("searchAny").value = ""; 
-        if($("searchMsg")) $("searchMsg").style.display = "none";
-        
-        updateStudentUI(String(id)); 
-        const card = document.querySelector(".studentCard"); 
-        if(card) card.scrollIntoView({behavior:"smooth", block:"start"}); 
-    };
-
+    
     function checkDailyBackup() {
         const last = localStorage.getItem(K_LAST_BACKUP);
         if(last !== nowDateStr()) {
@@ -1493,10 +1501,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Tab Routing
-    on("btnTabHome", "click", () => switchTab('Home'));
-    on("btnTabStudents", "click", () => { switchTab('Students'); renderList(); });
-    on("btnTabRevenue", "click", () => { switchTab('Revenue'); renderCharts(); updateFinanceSummary(); });
-    on("btnTabAdmin", "click", () => switchTab('Admin'));
+    on("btnTabHome", "click", () => window.switchTab('Home'));
+    on("btnTabStudents", "click", () => { window.switchTab('Students'); renderList(); });
+    on("btnTabRevenue", "click", () => { window.switchTab('Revenue'); renderCharts(); updateFinanceSummary(); });
+    on("btnTabAdmin", "click", () => window.switchTab('Admin'));
 
     // Execute Startup Sequence
     loadAll(); 
