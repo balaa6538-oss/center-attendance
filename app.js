@@ -1,15 +1,14 @@
 /* =============================================================================
-   Center System V-PRO MAX (THE ULTIMATE SHIELD EDITION - FIXED)
+   Center System V-PRO MAX (THE ULTIMATE SHIELD EDITION - SURGICAL FIX)
    -----------------------------------------------------------------------------
    - 100% Full Translation Dictionary (Arabic / English)
    - Smart Consecutive Attendance (Group-based Streak)
    - Advanced Financial Module (Expenses, Daily/Monthly Net Profit)
    - Dynamic Group Fee Management (Auto Class Detection)
-   - High-Security Custom Password Modal
-   - WhatsApp Manager Report (Automated Formatting)
-   - Weekly Analytics Chart & Performance Tracking
-   - Full Data Recovery & Recycle Bin Logic
-   - Hoisting Fixed: ZERO ReferenceErrors.
+   - WhatsApp Manager Report (Automated Formatting & Fixed Text)
+   - Weekly Analytics Chart (Dynamic Heights Fixed)
+   - Clean Finance Report UI (Group boxes, no IDs)
+   - Color Badges Restored for Classes
    ============================================================================= */
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -27,7 +26,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const BASE_MAX_ID = 500; 
     const ITEMS_PER_PAGE = 50;
 
-    // مفاتيح التخزين المحلية (LocalStorage Keys)
+    // مفاتيح التخزين المحلية
     const K_AUTH         = "ca_auth_v2";
     const K_ROLE         = "ca_role_v1";
     const K_STUDENTS     = "ca_students_v6";
@@ -44,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const K_EXPENSES     = "ca_expenses_v1";
 
     // ==========================================
-    // 2. GLOBAL SYSTEM STATE (المتغيرات العامة)
+    // 2. GLOBAL SYSTEM STATE
     // ==========================================
     let students         = {}; 
     let deletedStudents  = {}; 
@@ -64,23 +63,23 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentLang      = localStorage.getItem(K_LANG) || "ar";
 
     // ==========================================
-    // 3. THE COMPREHENSIVE DICTIONARY (القاموس)
+    // 3. THE COMPREHENSIVE DICTIONARY
     // ==========================================
     const dict = {
-        "login_title": { ar: "دخول لوحة السنتر", en: "Center Login Dashboard" },
-        "login_desc": { ar: "الدخول للمسؤول فقط", en: "Authorized Access Only" },
+        "login_title": { ar: "دخول لوحة السنتر", en: "Center Login" },
+        "login_desc": { ar: "الدخول للمسؤول فقط", en: "Admin Access Only" },
         "login_btn": { ar: "دخول", en: "Login" },
         "brand_name": { ar: "لوحة السنتر V-PRO", en: "V-PRO Dashboard" },
         "stat_students": { ar: "👥 مسجلين:", en: "👥 Enrolled:" },
         "stat_attend": { ar: "✅ حضور:", en: "✅ Attend:" },
         "stat_revenue": { ar: "💰 إيراد:", en: "💰 Revenue:" },
         "btn_logout": { ar: "خروج 🚪", en: "Logout 🚪" },
-        "quick_title": { ar: "سريع (QR)", en: "Quick Record (QR)" },
+        "quick_title": { ar: "سريع (QR)", en: "Quick Record" },
         "btn_record": { ar: "سجل حضور", en: "Record" },
         "lbl_last_scan": { ar: "آخر حضور تم تسجيله ⏱️", en: "Recent Activity ⏱️" },
         "wait_scan": { ar: "بانتظار مسح كود...", en: "Waiting for scan..." },
         "search_title": { ar: "بحث شامل", en: "Global Search" },
-        "btn_open": { ar: "فتح", en: "Open Profile" },
+        "btn_open": { ar: "فتح", en: "Open" },
         "search_plc": { ar: "الاسم / الرقم / الكود...", en: "Name / Phone / ID..." },
         "search_tbl_plc": { ar: "🔍 ابحث في الجدول...", en: "🔍 Search table..." },
         "add_title": { ar: "+ إضافة طالب جديد", en: "+ New Student" },
@@ -129,14 +128,14 @@ document.addEventListener('DOMContentLoaded', function() {
         "exp_amt_plc": { ar: "المبلغ (مثال: 150)", en: "Amount" },
         "exp_rsn_plc": { ar: "سبب الصرف (مثال: ورق)", en: "Reason" },
         "btn_save_exp": { ar: "خصم وحفظ", en: "Deduct & Save" },
-        "report_title": { ar: "تقرير الحضور والماليات", en: "Attendance & Finance Report" },
+        "report_title": { ar: "تقرير الحضور والماليات", en: "Finance Report" },
         "btn_copy_wa": { ar: "نسخ التقرير للمدير 📋", en: "Copy for Manager 📋" },
         "btn_view": { ar: "عرض", en: "View Report" },
         "badge_date": { ar: "التاريخ:", en: "Date:" },
         "badge_count": { ar: "العدد:", en: "Count:" },
         "badge_rev": { ar: "إيراد:", en: "Revenue:" },
         "badge_exp": { ar: "مصروف:", en: "Expenses:" },
-        "chart_title": { ar: "📈 لوحة أرباح الأسبوع", en: "📈 Weekly Performance Chart" },
+        "chart_title": { ar: "📈 لوحة أرباح الأسبوع", en: "📈 Weekly Chart" },
         "settings_title": { ar: "⚙️ إعدادات النظام", en: "⚙️ System Settings" },
         "note_title": { ar: "📝 مفكرة السنتر السريعة", en: "📝 Quick Notebook" },
         "note_plc_main": { ar: "اكتب ملاحظاتك هنا...", en: "Type your notes here..." },
@@ -146,16 +145,16 @@ document.addEventListener('DOMContentLoaded', function() {
         "btn_recycle": { ar: "🗑️ سلة المحذوفات", en: "🗑️ Recycle Bin" },
         "set_ui_title": { ar: "🎨 المظهر والتخصيص", en: "🎨 UI & Theme" },
         "lbl_theme": { ar: "ثيم البرنامج:", en: "App Theme:" },
-        "theme_cls": { ar: "🔵 كلاسيك", en: "🔵 Classic Light" },
-        "theme_dark": { ar: "🌑 ليلي", en: "🌑 Dark Night" },
-        "theme_glass": { ar: "🧊 زجاجي", en: "🧊 Modern Glass" },
+        "theme_cls": { ar: "🔵 كلاسيك", en: "🔵 Classic" },
+        "theme_dark": { ar: "🌑 ليلي", en: "🌑 Dark" },
+        "theme_glass": { ar: "🧊 زجاجي", en: "🧊 Glass" },
         "btn_change_bg": { ar: "🖼️ تغيير الخلفية", en: "🖼️ Change Background" },
         "btn_change_lang": { ar: "🌐 تغيير اللغة (Ar / En)", en: "🌐 Switch Language" },
         "set_fin_title": { ar: "💰 إعدادات مالية", en: "💰 Group Pricing" },
         "btn_group_fees": { ar: "⚙️ إدارة مصاريف المجموعات", en: "⚙️ Manage Group Fees" },
         "set_danger_title": { ar: "⚠️ منطقة الخطر", en: "⚠️ Danger Zone" },
-        "btn_reset_term": { ar: "🔄 تصفير الترم", en: "🔄 Reset All Term Data" },
-        "btn_factory_reset": { ar: "❌ مسح النظام بالكامل", en: "❌ Full System Reset" },
+        "btn_reset_term": { ar: "🔄 تصفير الترم", en: "🔄 Reset Term Data" },
+        "btn_factory_reset": { ar: "❌ مسح النظام بالكامل", en: "❌ Full Reset" },
         "nav_settings": { ar: "الإعدادات", en: "Settings" },
         "nav_revenue": { ar: "الماليات", en: "Finances" },
         "nav_home": { ar: "الرئيسية", en: "Home" },
@@ -169,58 +168,52 @@ document.addEventListener('DOMContentLoaded', function() {
         "modal_today_att": { ar: "👥 حضور اليوم مفصل", en: "👥 Detailed Attendance" },
         "btn_close": { ar: "إغلاق ✖", en: "Close Window ✖" },
         "modal_grp_fees": { ar: "⚙️ تخصيص مصاريف المجموعات", en: "⚙️ Manage Group Pricing" },
-        "grp_fees_desc": { ar: "تم جلب المجموعات تلقائياً من بيانات الطلاب.", en: "Groups are auto-detected from student records." },
+        "grp_fees_desc": { ar: "تم جلب المجموعات تلقائياً من بيانات الطلاب.", en: "Groups are auto-detected from records." },
         "btn_save_changes": { ar: "حفظ التعديلات 💾", en: "Save Changes 💾" },
         "msg_saved": { ar: "تم الحفظ بنجاح ✅", en: "Progress saved! ✅" },
         "msg_err_pass": { ar: "كلمة مرور خاطئة ❌", en: "Incorrect Password! ❌" },
         "msg_att_ok": { ar: "تم تسجيل الحضور ✅", en: "Attendance Recorded ✅" },
         "msg_att_warn": { ar: "حاضر مسبقاً ⚠️", en: "Already marked present! ⚠️" },
         "msg_added": { ar: "تم إضافة الطالب بنجاح ✅", en: "Student registered! ✅" },
-        "msg_deleted": { ar: "تم حذف الطالب ونقله للسلة", en: "Student moved to recycle bin" },
+        "msg_deleted": { ar: "تم حذف الطالب", en: "Student deleted" },
         "msg_undo": { ar: "تم التراجع بنجاح ✅", en: "Action Undone ✅" },
         "msg_copied": { ar: "تم نسخ التقرير 📋", en: "Report Copied 📋" },
         "txt_streak": { ar: "حصة متتالية", en: "Classes Streak" },
-        "txt_paid_full": { ar: "✅ خالص (مكتمل الدفع)", en: "✅ Fully Paid" },
-        "txt_free": { ar: "✅ مسجل بدون مصاريف", en: "✅ Enrolled for Free" },
+        "txt_paid_full": { ar: "✅ خالص (مكتمل)", en: "✅ Fully Paid" },
+        "txt_free": { ar: "✅ بدون مصاريف", en: "✅ Free" },
         "wa_net": { ar: "💵 صافي الربح", en: "💵 Net Profit" },
         "wa_exp": { ar: "🔻 المصروفات", en: "🔻 Expenses" }
     };
 
     // ==========================================
-    // 4. CORE UTILITY FUNCTIONS (Hoisted)
+    // 4. CORE UTILITY FUNCTIONS
     // ==========================================
-    function $(id) { 
-        return document.getElementById(id); 
-    }
-
+    function $(id) { return document.getElementById(id); }
+    
     function on(id, event, handler) { 
         const el = $(id); 
         if(el) el.addEventListener(event, handler); 
     }
 
-    function t(key) { 
-        return (dict[key] && dict[key][currentLang]) ? dict[key][currentLang] : key; 
-    }
+    function t(key) { return (dict[key] && dict[key][currentLang]) ? dict[key][currentLang] : key; }
+    function nowDateStr() { return new Date().toISOString().split('T')[0]; }
+    function prettyDate(d) { return d ? d.split("-").reverse().join("-") : "—"; }
+    function toInt(v) { const n = parseInt(v); return isNaN(n) ? 0 : n; }
 
-    function nowDateStr() { 
-        return new Date().toISOString().split('T')[0]; 
-    }
-
-    function prettyDate(d) { 
-        return d ? d.split("-").reverse().join("-") : "—"; 
-    }
-
-    function toInt(v) { 
-        const n = parseInt(v); 
-        return isNaN(n) ? 0 : n; 
+    function getTagColor(str) {
+        if (!str) return '#3498db';
+        const colors = ['#e74c3c', '#2ecc71', '#f1c40f', '#9b59b6', '#e67e22', '#1abc9c', '#34495e'];
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        return colors[Math.abs(hash) % colors.length];
     }
 
     function showToast(msg, type = "success") {
-        let container = $("toastContainer"); 
-        if(!container) return;
+        let container = $("toastContainer"); if(!container) return;
         const toast = document.createElement("div"); 
         toast.className = `toast toast-${type}`;
-        toast.innerHTML = `<span style="margin-left:10px;">${type==='success'?'✅':(type==='err'?'❌':'⚠️')}</span> ${msg}`;
+        let icon = type==='err' ? '❌' : (type==='warning' ? '⚠️' : '✅');
+        toast.innerHTML = `<span style="margin-left:10px;">${icon}</span> ${msg}`;
         container.appendChild(toast);
         setTimeout(() => { 
             toast.style.animation = "slideOut 0.3s forwards"; 
@@ -229,8 +222,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function showUndoToast(msg, onUndo) {
-        let container = $("toastContainer"); 
-        if(!container) return;
+        let container = $("toastContainer"); if(!container) return;
         const toast = document.createElement("div"); 
         toast.className = `toast toast-warning undo-toast`;
         const undoTxt = currentLang === 'ar' ? 'تراجع ↩️' : 'Undo ↩️';
@@ -238,9 +230,7 @@ document.addEventListener('DOMContentLoaded', function() {
         container.appendChild(toast); 
         let isUndone = false;
         toast.querySelector("#tempUndoBtn").onclick = () => { 
-            isUndone = true; 
-            onUndo(); 
-            toast.remove(); 
+            isUndone = true; onUndo(); toast.remove(); 
         };
         setTimeout(() => { 
             if(!isUndone) { 
@@ -251,11 +241,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function fireConfetti() {
+        const colors = ['#2ea44f', '#2f6bff', '#d69e2e', '#cf222e', '#9b59b6'];
         for(let i = 0; i < 35; i++) {
-            const conf = document.createElement("div"); 
-            conf.className = "confetti";
+            const conf = document.createElement("div"); conf.className = "confetti";
             conf.style.left = Math.random() * 100 + "vw"; 
-            conf.style.backgroundColor = ['#2ea44f', '#2f6bff', '#d69e2e', '#cf222e', '#9b59b6'][Math.floor(Math.random()*5)];
+            conf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
             conf.style.animationDuration = (Math.random() * 2 + 1) + "s"; 
             document.body.appendChild(conf);
             setTimeout(() => conf.remove(), 3000);
@@ -265,47 +255,32 @@ document.addEventListener('DOMContentLoaded', function() {
     function playSound(type) {
         try {
             const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            const osc = ctx.createOscillator(); 
-            const gain = ctx.createGain();
-            osc.connect(gain); 
-            gain.connect(ctx.destination);
-            
+            const osc = ctx.createOscillator(); const gain = ctx.createGain();
+            osc.connect(gain); gain.connect(ctx.destination);
             if(type === "money") { 
                 osc.type = "sine"; 
                 osc.frequency.setValueAtTime(1200, ctx.currentTime); 
                 osc.frequency.exponentialRampToValueAtTime(2500, ctx.currentTime + 0.1); 
                 gain.gain.setValueAtTime(0.2, ctx.currentTime); 
                 gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5); 
-                osc.start(); 
-                osc.stop(ctx.currentTime + 0.5); 
+                osc.start(); osc.stop(ctx.currentTime + 0.5); 
             } else if(type === "success") {
                 osc.frequency.setValueAtTime(587, ctx.currentTime); 
                 osc.frequency.exponentialRampToValueAtTime(1174, ctx.currentTime + 0.1); 
                 gain.gain.setValueAtTime(0.1, ctx.currentTime); 
                 gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3); 
-                osc.start(); 
-                osc.stop(ctx.currentTime + 0.3); 
+                osc.start(); osc.stop(ctx.currentTime + 0.3); 
             }
-        } catch(e) {
-            console.log("Audio not supported or blocked.");
-        }
+        } catch(e) {}
     }
 
     function makeEmptyStudent(id) {
-        return { 
-            id: id, 
-            name: "", 
-            className: "", 
-            phone: "", 
-            paid: 0, 
-            notes: "", 
-            rank: "normal", 
-            joinedDate: nowDateStr(), 
-            attendanceDates: [] 
-        };
+        return { id: id, name: "", className: "", phone: "", paid: 0, notes: "", rank: "normal", joinedDate: nowDateStr(), attendanceDates: [] };
     }
 
-    // ==== FIX 1: الدوال دي لازم تبقى Global عشان الواجهة تشوفها ====
+    // ==========================================
+    // 5. GLOBAL NAVIGATION & TABS (FIXED FOR EXT OPEN)
+    // ==========================================
     window.switchTab = function(tabId) {
         document.querySelectorAll('.tab-section').forEach(s => s.classList.add('hidden'));
         const target = $("sec" + tabId); 
@@ -320,17 +295,25 @@ document.addEventListener('DOMContentLoaded', function() {
             showToast(currentLang === 'ar' ? "الطالب غير مسجل" : "Student not found", "err");
             return;
         }
-        window.switchTab('Home'); // بيضمن إنك ترجع للرئيسية الأول
-        $("searchAny").value = ""; 
+        
+        // Fix: Force switch to Home tab first
+        window.switchTab('Home'); 
+        
+        if($("searchAny")) $("searchAny").value = ""; 
         if($("searchMsg")) $("searchMsg").style.display = "none";
         
         updateStudentUI(String(id)); 
+        
         const card = document.querySelector(".studentCard"); 
-        if(card) card.scrollIntoView({behavior:"smooth", block:"start"}); 
+        if(card) {
+            setTimeout(() => {
+                card.scrollIntoView({behavior: "smooth", block: "start"}); 
+            }, 100);
+        }
     };
 
     // ==========================================
-    // 5. DATA MANAGEMENT (Storage Layer)
+    // 6. DATA MANAGEMENT (Storage Layer)
     // ==========================================
     function saveAll() {
         try {
@@ -340,11 +323,8 @@ document.addEventListener('DOMContentLoaded', function() {
             localStorage.setItem(K_GROUP_FEES, JSON.stringify(groupFees)); 
             localStorage.setItem(K_EXPENSES, JSON.stringify(expensesByDate));
             localStorage.setItem(K_DELETED, JSON.stringify(deletedStudents));
-            updateTopStats(); 
-            updateFinanceSummary(); 
-            renderCharts();
+            updateTopStats(); updateFinanceSummary(); renderCharts();
         } catch(e) { 
-            console.error("Quota Exceeded", e);
             showToast("الذاكرة ممتلئة! يرجى حذف الخلفية لتوفير مساحة", "err"); 
         }
     }
@@ -366,46 +346,35 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.body.style.backgroundSize = "cover"; 
                 document.body.style.backgroundAttachment = "fixed"; 
             }
+            if($("centerNotebook")) $("centerNotebook").value = localStorage.getItem(K_NOTEBOOK) || "";
             
-            if($("centerNotebook")) {
-                $("centerNotebook").value = localStorage.getItem(K_NOTEBOOK) || "";
-            }
-            
-            updateTopStats(); 
-            updateFinanceSummary(); 
-            renderCharts();
-        } catch(e) { 
-            console.error("Data Load Error", e);
-        }
+            updateTopStats(); updateFinanceSummary(); renderCharts();
+        } catch(e) { console.error("Data Load Error", e); }
     }
 
     function ensureBase500() {
         for (let i = BASE_MIN_ID; i <= BASE_MAX_ID; i++) { 
-            if(!students[String(i)]) {
-                students[String(i)] = makeEmptyStudent(i); 
-            }
+            if(!students[String(i)]) students[String(i)] = makeEmptyStudent(i); 
         }
         saveAll();
     }
 
     // ==========================================
-    // 6. UI & AUTHENTICATION LOGIC
+    // 7. AUTHENTICATION & SECURITY
     // ==========================================
     function checkAuth() {
         if(localStorage.getItem(K_AUTH) === "1") {
             currentUserRole = localStorage.getItem(K_ROLE) || "admin";
-            $("loginBox").classList.add("hidden");
-            $("appBox").classList.remove("hidden");
+            $("loginBox").classList.add("hidden"); $("appBox").classList.remove("hidden");
             showApp();
         } else {
-            $("loginBox").classList.remove("hidden");
-            $("appBox").classList.add("hidden");
+            $("loginBox").classList.remove("hidden"); $("appBox").classList.add("hidden");
         }
     }
 
     function showApp() {
         applyPermissions();
-        $("reportDate").value = nowDateStr();
+        if($("reportDate")) $("reportDate").value = nowDateStr();
         renderReport(nowDateStr());
         updateTopStats();
         window.switchTab('Home');
@@ -424,92 +393,100 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function askAdminPass(cb) {
-        $("customPassInput").value = "";
+        if($("customPassInput")) $("customPassInput").value = "";
         passSuccessCallback = cb;
-        $("customPassModal").classList.remove("hidden");
-        setTimeout(() => $("customPassInput").focus(), 100);
+        if($("customPassModal")) $("customPassModal").classList.remove("hidden");
+        setTimeout(() => { if($("customPassInput")) $("customPassInput").focus(); }, 100);
     }
 
+    // ==========================================
+    // 8. TOP STATISTICS & LIVE FEED
+    // ==========================================
     function updateTopStats() {
-        const filledCount = Object.values(students).filter(s => s.name || s.paid > 0).length;
-        const todayCount = (attByDate[nowDateStr()] || []).length;
+        const studentValues = Object.values(students);
+        let filledCount = 0;
+        for (let i = 0; i < studentValues.length; i++) {
+            if (studentValues[i].name || studentValues[i].paid > 0) filledCount++;
+        }
+        
+        let todayCount = 0;
+        if (attByDate[nowDateStr()]) todayCount = attByDate[nowDateStr()].length;
+        
         const revenue = revenueByDate[nowDateStr()] || 0;
         
         if($("totalStudentsCount")) $("totalStudentsCount").textContent = filledCount;
         if($("todayCountTop")) $("todayCountTop").textContent = todayCount;
         
-        if($("todayRevenue")) {
-            $("todayRevenue").textContent = isRevHidden ? "******" : revenue + " ج";
-        }
-        if($("toggleRevBtn")) {
-            $("toggleRevBtn").textContent = isRevHidden ? "👁️‍🗨️" : "👁️";
-        }
+        if($("todayRevenue")) $("todayRevenue").textContent = isRevHidden ? "****** ج" : revenue + " ج";
+        if($("toggleRevBtn")) $("toggleRevBtn").textContent = isRevHidden ? "👁️‍🗨️" : "👁️";
     }
 
     function updateLiveFeed(st) {
-        recentScans.unshift({ 
-            name: st.name || "بدون اسم", 
-            id: st.id, 
-            cls: st.className || "عام", 
-            time: new Date().toLocaleTimeString(currentLang==='ar'?'ar-EG':'en-US', {hour:'2-digit', minute:'2-digit'}) 
-        });
+        let sName = st.name || "بدون اسم";
+        let sClass = st.className || "عام";
+        const timeStr = new Date().toLocaleTimeString(currentLang==='ar'?'ar-EG':'en-US', {hour:'2-digit', minute:'2-digit'});
+        
+        recentScans.unshift({ name: sName, id: st.id, cls: sClass, time: timeStr });
         if(recentScans.length > 5) recentScans.pop();
         
         const feed = $("liveFeedBox");
         if(feed) {
-            feed.innerHTML = recentScans.map(s => 
-                `<div class="feed-item"><span class="feed-time">${s.time}</span> <b>${s.name}</b> <span class="badge" style="background:var(--primary);">${s.cls}</span> <span>#${s.id}</span></div>`
-            ).join("");
+            let html = "";
+            for (let i = 0; i < recentScans.length; i++) {
+                const s = recentScans[i];
+                let gColor = getTagColor(s.cls);
+                html += `
+                <div class="feed-item">
+                    <span class="feed-time">${s.time}</span> 
+                    <b>${s.name}</b> 
+                    <span class="badge" style="background:${gColor}; border-color:${gColor}; color:#fff;">${s.cls}</span> 
+                    <span>#${s.id}</span>
+                </div>`;
+            }
+            feed.innerHTML = html;
         }
     }
 
     // ==========================================
-    // 7. STUDENT PROFILE & SMART STREAK
+    // 9. STUDENT PROFILE & SMART STREAK
     // ==========================================
     function calculateSmartStreak(st) {
         if(!st.attendanceDates || st.attendanceDates.length === 0) return 0;
-        let c = (st.className || "").trim();
-        if(!c) c = "عام";
+        let c = st.className ? st.className.trim() : "عام";
         
         let classDates = new Set();
-        for(let d in attByDate) {
-            for(let id of attByDate[d]) {
-                let s = students[id];
-                if(s && (s.className || "").trim() === c) { 
-                    classDates.add(d); 
-                    break; 
-                }
+        for(let dateKey in attByDate) {
+            let idsForDate = attByDate[dateKey];
+            for(let i = 0; i < idsForDate.length; i++) {
+                let s = students[idsForDate[i]];
+                if(s && (s.className || "").trim() === c) { classDates.add(dateKey); break; }
             }
         }
-        let sortedDates = Array.from(classDates).sort((a,b) => new Date(b) - new Date(a));
         
+        let sortedDates = Array.from(classDates).sort((a,b) => new Date(b) - new Date(a));
         let streak = 0;
         let today = nowDateStr();
-        for(let d of sortedDates) {
-            if(st.attendanceDates.includes(d)) {
-                streak++;
-            } else {
-                if(d === today) continue; 
-                break; 
-            }
+        
+        for(let i = 0; i < sortedDates.length; i++) {
+            let d = sortedDates[i];
+            if(st.attendanceDates.includes(d)) { streak++; } 
+            else { if(d === today) continue; break; }
         }
         return streak;
     }
 
     function updateStudentUI(id) {
-        currentId = id; 
-        const st = students[id]; 
-        if (!st) return; 
+        currentId = id; const st = students[id]; if (!st) return; 
         
-        $("studentIdPill").textContent = `ID: ${id}`;
-        $("stName").value = st.name || ""; 
-        $("stClass").value = st.className || ""; 
-        $("stPhone").value = st.phone || ""; 
-        $("stNotes").value = st.notes || ""; 
+        if($("studentIdPill")) $("studentIdPill").textContent = `ID: ${id}`;
+        if($("stName")) $("stName").value = st.name || ""; 
+        if($("stClass")) $("stClass").value = st.className || ""; 
+        if($("stPhone")) $("stPhone").value = st.phone || ""; 
+        if($("stNotes")) $("stNotes").value = st.notes || ""; 
         
         const paid = st.paid || 0; 
-        let stClassName = (st.className || "").trim();
-        let req = stClassName && groupFees[stClassName] !== undefined ? toInt(groupFees[stClassName]) : 0;
+        let stClassName = st.className ? st.className.trim() : "";
+        let req = (stClassName && groupFees[stClassName] !== undefined) ? toInt(groupFees[stClassName]) : 0;
         
         let remain = req - paid;
         let percent = req > 0 ? Math.min((paid/req)*100, 100) : 0;
@@ -530,46 +507,52 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         let remBox = $("remainingBox");
-        if(req === 0) {
-            remBox.className = "remain-box remain-green";
-            remBox.innerHTML = `✅ ${t("txt_free")}`;
-        } else if(remain <= 0) {
-            remBox.className = "remain-box remain-green";
-            remBox.innerHTML = `✅ ${t("txt_paid_full")}`;
-        } else {
-            remBox.className = "remain-box remain-red";
-            remBox.innerHTML = `${t("lbl_remaining")} <span id="stRemainingAmt">${remain}</span> ج`;
+        if (remBox) {
+            if(req === 0) {
+                remBox.className = "remain-box remain-green";
+                remBox.innerHTML = `✅ ${t("txt_free")}`;
+            } else if(remain <= 0) {
+                remBox.className = "remain-box remain-green";
+                remBox.innerHTML = `✅ ${t("txt_paid_full")}`;
+            } else {
+                remBox.className = "remain-box remain-red";
+                remBox.innerHTML = `${t("lbl_remaining")} <span id="stRemainingAmt">${remain}</span> ج`;
+            }
         }
 
         let r = st.rank || "normal";
-        $("rankNormalBtn").className = "st-rank-btn " + (r === "normal" ? "active-normal" : "");
-        $("rankVipBtn").className = "st-rank-btn " + (r === "vip" ? "active-vip" : "");
-        $("rankWarnBtn").className = "st-rank-btn " + (r === "warn" ? "active-warn" : "");
+        if($("rankNormalBtn")) $("rankNormalBtn").className = "st-rank-btn " + (r === "normal" ? "active-normal" : "");
+        if($("rankVipBtn")) $("rankVipBtn").className = "st-rank-btn " + (r === "vip" ? "active-vip" : "");
+        if($("rankWarnBtn")) $("rankWarnBtn").className = "st-rank-btn " + (r === "warn" ? "active-warn" : "");
 
         const today = nowDateStr();
         const dates = st.attendanceDates || [];
         const isPresent = dates.includes(today);
         
-        const statusEl = $("todayStatus");
-        if(isPresent) {
-            statusEl.textContent = t("btn_mark_present");
-            statusEl.style.color = "green";
-            $("stAvatar").classList.add("present");
-        } else {
-            statusEl.textContent = t("btn_mark_absent");
-            statusEl.style.color = "red";
-            $("stAvatar").classList.remove("present");
+        if($("todayStatus")) {
+            $("todayStatus").textContent = isPresent ? t("btn_mark_present") : t("btn_mark_absent");
+            $("todayStatus").style.color = isPresent ? "green" : "red";
+        }
+        if($("stAvatar")) {
+            if(isPresent) $("stAvatar").classList.add("present");
+            else $("stAvatar").classList.remove("present");
         }
 
         let streakCount = calculateSmartStreak(st);
-        $("daysCount").innerHTML = `🔥 ${streakCount} ${t("txt_streak")}`;
+        if($("daysCount")) $("daysCount").innerHTML = `🔥 ${streakCount} ${t("txt_streak")}`;
         
-        $("attList").innerHTML = dates.slice().reverse().slice(0,20).map(d => `<div class="item">${prettyDate(d)}</div>`).join("");
+        if($("attList")) {
+            let datesHtml = "";
+            let reverseDates = dates.slice().reverse().slice(0,20);
+            for(let i=0; i<reverseDates.length; i++) {
+                datesHtml += `<div class="item">${prettyDate(reverseDates[i])}</div>`;
+            }
+            $("attList").innerHTML = datesHtml;
+        }
         
-        if(dates.length === 0 && st.name) {
-            $("newBadge").classList.remove("hidden"); 
-        } else {
-            $("newBadge").classList.add("hidden");
+        if($("newBadge")) {
+            if(dates.length === 0 && st.name) $("newBadge").classList.remove("hidden"); 
+            else $("newBadge").classList.add("hidden");
         }
     }
 
@@ -580,7 +563,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if(!s.attendanceDates.includes(d)) {
             s.attendanceDates.push(d); 
             if(!attByDate[d]) attByDate[d] = []; 
-            attByDate[d].push(id); 
+            attByDate[d].push(String(id)); 
+            
             saveAll(); 
             updateLiveFeed(s);
             playSound("success");
@@ -591,72 +575,75 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function removeAttendance(id, d) {
-        const s = students[String(id)]; 
-        if(!s) return;
+        const s = students[String(id)]; if(!s) return;
         s.attendanceDates = s.attendanceDates.filter(date => date !== d);
-        if(attByDate[d]) {
-            attByDate[d] = attByDate[d].filter(x => x !== id);
-        }
+        if(attByDate[d]) attByDate[d] = attByDate[d].filter(x => x !== String(id));
         saveAll();
     }
 
     // ==========================================
-    // 8. FINANCIAL & ANALYTICS MODULE
+    // 10. FINANCIAL & ANALYTICS MODULE
     // ==========================================
     function updateFinanceSummary() {
         const today = nowDateStr();
         const tRev = revenueByDate[today] || 0;
-        const tExp = (expensesByDate[today] || []).reduce((sum, ex) => sum + ex.amount, 0);
-        
-        if($("todayNetProfit")) {
-            $("todayNetProfit").textContent = (tRev - tExp);
+        let tExp = 0;
+        if (expensesByDate[today]) {
+            for (let i = 0; i < expensesByDate[today].length; i++) {
+                tExp += expensesByDate[today][i].amount;
+            }
         }
+        
+        if($("todayNetProfit")) $("todayNetProfit").textContent = (tRev - tExp);
 
         const currentMonth = today.slice(0, 7); 
-        let mRev = 0;
-        let mExp = 0;
+        let mRev = 0, mExp = 0;
         
-        for(let d in revenueByDate) { 
-            if(d.startsWith(currentMonth)) mRev += revenueByDate[d]; 
-        }
-        
+        for(let d in revenueByDate) { if(d.startsWith(currentMonth)) mRev += revenueByDate[d]; }
         for(let d in expensesByDate) { 
             if(d.startsWith(currentMonth)) { 
-                expensesByDate[d].forEach(ex => mExp += ex.amount); 
+                for (let i = 0; i < expensesByDate[d].length; i++) mExp += expensesByDate[d][i].amount; 
             } 
         }
-        
-        if($("monthNetProfit")) {
-            $("monthNetProfit").textContent = (mRev - mExp);
-        }
+        if($("monthNetProfit")) $("monthNetProfit").textContent = (mRev - mExp);
     }
 
     function renderCharts() {
-        const box = $("weeklyChartBox"); 
-        if(!box) return;
+        const box = $("weeklyChartBox"); if(!box) return;
         
         let days = []; 
         for(let i=6; i>=0; i--) { 
-            let d = new Date(); 
-            d.setDate(d.getDate() - i); 
-            days.push(d.toISOString().split('T')[0]); 
+            let d = new Date(); d.setDate(d.getDate() - i); days.push(d.toISOString().split('T')[0]); 
         }
         
         let maxNet = 0;
-        let chartData = days.map(d => {
+        let chartData = [];
+        
+        for (let i = 0; i < days.length; i++) {
+            let d = days[i];
             let rev = revenueByDate[d] || 0;
-            let exp = (expensesByDate[d] || []).reduce((sum, ex) => sum + ex.amount, 0);
+            let exp = 0;
+            if (expensesByDate[d]) {
+                for (let j = 0; j < expensesByDate[d].length; j++) exp += expensesByDate[d][j].amount;
+            }
             let net = rev - exp;
             if(net > maxNet) maxNet = net;
-            return { date: d, net: net };
-        });
+            chartData.push({ date: d, net: net });
+        }
         
-        if(maxNet <= 0) maxNet = 100; // Default scale if no revenue
+        // FIX: حساب النسبة بشكل ديناميكي صحيح
+        let baseline = maxNet > 0 ? maxNet : 100;
         
         let html = "";
-        chartData.forEach(item => {
-            let h = Math.max(5, (item.net / maxNet) * 100);
-            let dayName = new Date(item.date).toLocaleDateString(currentLang==='ar'?'ar-EG':'en-US', {weekday: 'short'});
+        for (let i = 0; i < chartData.length; i++) {
+            let item = chartData[i];
+            let h = 5;
+            if (item.net > 0) {
+                h = Math.max(5, (item.net / baseline) * 100);
+            }
+            
+            let locale = currentLang === 'en' ? 'en-US' : 'ar-EG';
+            let dayName = new Date(item.date).toLocaleDateString(locale, {weekday: 'short'});
             let barColor = item.net > 0 ? "var(--success)" : "#ccc";
             
             html += `
@@ -665,57 +652,74 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="chart-bar" style="height:${h}%; background:${barColor};"></div>
                 <div class="chart-label">${dayName}</div>
             </div>`;
-        });
+        }
         box.innerHTML = html;
     }
 
     // ==========================================
-    // 9. TABLE & SEARCH ENGINE
+    // 11. TABLE & SEARCH ENGINE
     // ==========================================
     function renderList() {
-        const fClass = $("filterClass").value;
-        const fStatus = $("filterStatus").value;
-        const fAttend = $("filterAttend").value;
+        const filterClassEl = $("filterClass"), filterStatusEl = $("filterStatus"), filterAttendEl = $("filterAttend");
+        let fClass = "all", fStatus = "all", fAttend = "all";
         
-        const sel = $("filterClass");
+        if (filterClassEl) fClass = filterClassEl.value;
+        if (filterStatusEl) fStatus = filterStatusEl.value;
+        if (filterAttendEl) fAttend = filterAttendEl.value;
         
-        if(sel.options.length <= 1) { 
+        if(filterClassEl && filterClassEl.options.length <= 1) { 
             const allClasses = new Set();
-            Object.values(students).forEach(s => { 
-                if(s.name && s.className) allClasses.add(s.className.trim()); 
-            });
-            allClasses.forEach(c => { 
-                const opt = document.createElement("option"); 
-                opt.value = c; 
-                opt.innerText = c; 
-                sel.appendChild(opt); 
+            const studValues = Object.values(students);
+            for (let i = 0; i < studValues.length; i++) {
+                if(studValues[i].name && studValues[i].className) allClasses.add(studValues[i].className.trim()); 
+            }
+            allClasses.forEach(function(c) { 
+                const opt = document.createElement("option"); opt.value = c; opt.innerText = c; filterClassEl.appendChild(opt); 
             });
         }
 
-        const filled = Object.values(students).filter(s => s.name || s.paid > 0);
+        let filled = [];
+        const allStudents = Object.values(students);
+        for (let i = 0; i < allStudents.length; i++) {
+            if (allStudents[i].name || allStudents[i].paid > 0) filled.push(allStudents[i]);
+        }
+        
         const today = nowDateStr(); 
+        currentFilteredList = [];
+        
+        for (let i = 0; i < filled.length; i++) {
+            let s = filled[i];
+            let isValid = true;
+            
+            if(fClass !== "all" && s.className !== fClass) isValid = false;
+            
+            let sClass = s.className ? s.className.trim() : "";
+            let req = (sClass && groupFees[sClass] !== undefined) ? toInt(groupFees[sClass]) : 0;
+            let p = s.paid || 0;
+            
+            if(fStatus !== "all") {
+                if(fStatus === "paid" && (p < req || req === 0)) isValid = false;
+                if(fStatus === "partial" && (p === 0 || p >= req)) isValid = false;
+                if(fStatus === "unpaid" && p > 0) isValid = false;
+            }
+            
+            let isP = (s.attendanceDates && s.attendanceDates.includes(today));
+            if(fAttend === "present" && !isP) isValid = false;
+            if(fAttend === "absent" && isP) isValid = false;
+            
+            if (isValid) currentFilteredList.push(s);
+        }
 
-        currentFilteredList = filled.filter(s => {
-            if(fClass !== "all" && s.className !== fClass) return false;
-            
-            let req = groupFees[(s.className || "").trim()] || 0;
-            
-            if(fStatus === "paid" && (s.paid < req || req === 0)) return false;
-            if(fStatus === "partial" && (s.paid === 0 || s.paid >= req)) return false;
-            if(fStatus === "unpaid" && s.paid > 0) return false;
-            
-            const isP = (s.attendanceDates || []).includes(today);
-            if(fAttend === "present" && !isP) return false;
-            if(fAttend === "absent" && isP) return false;
-            
-            return true;
-        });
-
-        const q = $("tableSearchInp").value.toLowerCase();
+        const searchInp = $("tableSearchInp");
+        let q = searchInp ? searchInp.value.toLowerCase() : "";
+        
         if(q) {
-            currentFilteredList = currentFilteredList.filter(s => 
-                (s.name && s.name.toLowerCase().includes(q)) || String(s.id).includes(q)
-            );
+            let searchedList = [];
+            for (let i = 0; i < currentFilteredList.length; i++) {
+                let s = currentFilteredList[i];
+                if ((s.name && s.name.toLowerCase().includes(q)) || String(s.id).includes(q)) searchedList.push(s);
+            }
+            currentFilteredList = searchedList;
         }
         
         currentPage = 1; 
@@ -723,84 +727,99 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function renderPage() {
-        const tb = $("allStudentsTable").querySelector("tbody"); 
-        tb.innerHTML = "";
+        const tb = $("allStudentsTable"); if (!tb) return;
+        const tbody = tb.querySelector("tbody"); if (!tbody) return;
+        
+        tbody.innerHTML = "";
         
         const start = (currentPage - 1) * ITEMS_PER_PAGE;
         const end = start + ITEMS_PER_PAGE;
-        const pageItems = currentFilteredList.slice(start, end);
         const today = nowDateStr();
 
-        pageItems.forEach(s => {
+        for (let i = start; i < end && i < currentFilteredList.length; i++) {
+            let s = currentFilteredList[i];
             const tr = document.createElement("tr");
             
-            let req = groupFees[(s.className || "").trim()] || 0;
+            let sClass = s.className ? s.className.trim() : "";
+            let req = (sClass && groupFees[sClass] !== undefined) ? toInt(groupFees[sClass]) : 0;
             let percent = req > 0 ? Math.min((s.paid/req)*100, 100) : 0;
-            let pBar = `<div style="width:100%; background:#eee; height:5px; border-radius:3px;"><div style="width:${percent}%; height:100%; background:var(--success); border-radius:3px;"></div></div>`;
+            let pBar = `<div style="width:100%; background:#eee; height:5px; border-radius:3px; margin-top:3px;"><div style="width:${percent}%; height:100%; background:var(--success); border-radius:3px;"></div></div>`;
             
-            const attendTxt = (s.attendanceDates || []).includes(today) ? "✅" : "➖";
+            let isAttended = (s.attendanceDates && s.attendanceDates.includes(today));
+            let attendTxt = isAttended ? "✅" : "➖";
             let rankIcon = s.rank === 'vip' ? ' ⭐' : (s.rank === 'warn' ? ' ⚠️' : '');
+            let gColor = getTagColor(sClass);
 
             tr.innerHTML = `
                 <td><input type="checkbox" class="stCheckbox" data-id="${s.id}"></td>
                 <td>${s.id}</td>
                 <td><b>${s.name}</b>${rankIcon}</td>
-                <td><span class="badge" style="background:var(--primary);">${s.className}</span></td>
+                <td><span class="badge" style="background:${gColor}; border-color:${gColor}; color:#fff;">${s.className || 'عام'}</span></td>
                 <td>${s.paid} ج ${pBar}</td>
                 <td>${attendTxt}</td>`;
             
-            tr.onclick = (e) => { 
-                if(e.target.type !== "checkbox") { 
-                    window.extOpen(s.id); 
-                } 
+            tr.onclick = function(e) { 
+                if(e.target.type !== "checkbox") window.extOpen(s.id); 
             };
-            tb.appendChild(tr);
-        });
+            tbody.appendChild(tr);
+        }
         
-        $("pageIndicator").textContent = `${currentPage} / ${Math.ceil(currentFilteredList.length / ITEMS_PER_PAGE) || 1}`;
-        $("prevPageBtn").disabled = (currentPage === 1);
-        $("nextPageBtn").disabled = (end >= currentFilteredList.length);
+        const pageInd = $("pageIndicator");
+        if (pageInd) {
+            let totalPages = Math.ceil(currentFilteredList.length / ITEMS_PER_PAGE) || 1;
+            pageInd.textContent = `${currentPage} / ${totalPages}`;
+        }
+        
+        if ($("prevPageBtn")) $("prevPageBtn").disabled = (currentPage === 1);
+        if ($("nextPageBtn")) $("nextPageBtn").disabled = (end >= currentFilteredList.length);
     }
 
     function renderSimpleTable() {
-        const tb = $("simpleStudentsTable").querySelector("tbody"); 
-        if(!tb) return; 
-        tb.innerHTML = "";
+        const tb = $("simpleStudentsTable"); if (!tb) return;
+        const tbody = tb.querySelector("tbody"); if(!tbody) return; 
         
-        Object.values(students).filter(s => s.name || s.paid > 0).forEach(s => {
-            const tr = document.createElement("tr");
-            let rankIcon = s.rank === 'vip' ? ' ⭐' : (s.rank === 'warn' ? ' ⚠️' : '');
-            
-            tr.innerHTML = `<td>${s.id}</td><td><b>${s.name}</b>${rankIcon}</td><td>${s.className}</td>`;
-            tr.style.cursor = "pointer";
-            
-            tr.onclick = () => { 
-                $("allStudentsModal").classList.add("hidden"); 
-                window.extOpen(s.id); 
-            };
-            tb.appendChild(tr);
-        });
+        tbody.innerHTML = "";
+        
+        const allStuds = Object.values(students);
+        for (let i = 0; i < allStuds.length; i++) {
+            let s = allStuds[i];
+            if (s.name || s.paid > 0) {
+                const tr = document.createElement("tr");
+                let rankIcon = s.rank === 'vip' ? ' ⭐' : (s.rank === 'warn' ? ' ⚠️' : '');
+                
+                tr.innerHTML = `<td>${s.id}</td><td><b>${s.name}</b>${rankIcon}</td><td>${s.className || 'عام'}</td>`;
+                tr.style.cursor = "pointer";
+                
+                tr.onclick = function() { 
+                    if($("allStudentsModal")) $("allStudentsModal").classList.add("hidden"); 
+                    window.extOpen(s.id); 
+                };
+                tbody.appendChild(tr);
+            }
+        }
     }
 
     function handleBulk() {
         const boxes = document.querySelectorAll(".stCheckbox:checked");
-        if($("selectedCount")) $("selectedCount").textContent = boxes.length;
+        if ($("selectedCount")) $("selectedCount").textContent = boxes.length;
         
-        if(boxes.length > 0) {
-            $("bulkActionBar").classList.remove("hidden");
-        } else {
-            $("bulkActionBar").classList.add("hidden");
+        const bulkBar = $("bulkActionBar");
+        if (bulkBar) {
+            if(boxes.length > 0) bulkBar.classList.remove("hidden");
+            else bulkBar.classList.add("hidden");
         }
     }
 
+    // FIX: Report UI Clean Up (No IDs, Just Counts)
     function renderReport(d) {
         const list = $("reportList"); 
         if(!list) return;
         
-        const ids = attByDate[d] || [];
-        const rev = revenueByDate[d] || 0;
-        const expArr = expensesByDate[d] || [];
-        const totalExp = expArr.reduce((sum, ex) => sum + ex.amount, 0);
+        let ids = attByDate[d] || [];
+        let rev = revenueByDate[d] || 0;
+        let expArr = expensesByDate[d] || [];
+        let totalExp = 0;
+        for (let i = 0; i < expArr.length; i++) totalExp += expArr[i].amount;
         
         if($("reportDateLabel")) $("reportDateLabel").textContent = prettyDate(d);
         if($("reportCount")) $("reportCount").textContent = ids.length;
@@ -808,20 +827,24 @@ document.addEventListener('DOMContentLoaded', function() {
         if($("reportExpense")) $("reportExpense").textContent = totalExp;
         
         let groups = {}; 
-        ids.forEach(id => {
+        for (let i = 0; i < ids.length; i++) {
+            let id = ids[i];
             const st = students[id]; 
             let c = (st && st.className) ? st.className.trim() : "عام";
-            if(!groups[c]) groups[c] = []; 
-            groups[c].push(id);
-        });
+            if(!groups[c]) groups[c] = { count: 0 }; 
+            groups[c].count++;
+        }
         
         let html = "";
         for(let g in groups) {
+            let gColor = getTagColor(g);
             html += `
-            <div class="card" style="margin-top:10px; border-right:4px solid var(--primary); padding:10px;">
-                <b style="color:var(--primary);">🏷️ ${g}</b> (${groups[g].length})<br>
-                <div style="display:flex; flex-wrap:wrap; gap:5px; margin-top:5px;">
-                    ${groups[g].map(id => `<span class="badge" style="cursor:pointer;" onclick="window.switchTab('Home'); window.extOpen('${id}')">#${id}</span>`).join("")}
+            <div class="group-revenue-card" style="border-right: 5px solid ${gColor};">
+                <div class="group-revenue-details">
+                    <b style="color:${gColor}; font-size:1.1em;">🏷️ ${g}</b>
+                </div>
+                <div class="group-revenue-amount">
+                    العدد: ${groups[g].count} طالب
                 </div>
             </div>`;
         }
@@ -829,47 +852,54 @@ document.addEventListener('DOMContentLoaded', function() {
         if(expArr.length > 0) {
             html += `
             <h4 style="color:var(--danger); margin-top:15px;">${t("wa_exp")}</h4>
-            <ul style="font-size:14px; color:#d9534f; list-style: inside;">`;
-            
-            expArr.forEach(ex => { 
-                html += `<li>${ex.amount} ج - ${ex.reason}</li>`; 
-            });
+            <ul style="font-size:14px; color:#d9534f; list-style: inside; background:#fff; padding:15px; border-radius:8px;">`;
+            for (let i = 0; i < expArr.length; i++) {
+                html += `<li>${expArr[i].amount} ج - ${expArr[i].reason}</li>`; 
+            }
             html += `</ul>`;
         }
         
-        list.innerHTML = html || `<div class="mutedCenter">${t("wait_scan")}</div>`;
+        if (html === "") {
+            list.innerHTML = `<div class="mutedCenter">${t("wait_scan")}</div>`;
+        } else {
+            list.innerHTML = html;
+        }
     }
 
     function renderBinList() {
-        const bl = $("binList"); 
-        if(!bl) return; 
-        
+        const bl = $("binList"); if(!bl) return; 
         const ids = Object.keys(deletedStudents);
-        if(ids.length === 0) { 
-            bl.innerHTML = `<div class="mutedCenter">Empty</div>`; 
-            return; 
-        }
+        if(ids.length === 0) { bl.innerHTML = `<div class="mutedCenter">Empty</div>`; return; }
         
-        bl.innerHTML = ids.map(id => { 
+        let html = "";
+        for (let i = 0; i < ids.length; i++) {
+            let id = ids[i];
             const s = deletedStudents[id]; 
-            return `
+            html += `
             <div class="item flexBetween" style="margin-bottom:8px;">
                 <b>${s.name} (${id})</b> 
-                <button class="btn success smallBtn" onclick="window.restoreSt(${id})">استرجاع</button>
+                <button class="btn success smallBtn" onclick="window.restoreSt('${id}')">استرجاع</button>
             </div>`; 
-        }).join("");
+        }
+        bl.innerHTML = html;
     }
 
+    window.restoreSt = function(idStr) {
+        const id = String(idStr);
+        const st = deletedStudents[id]; 
+        if(!st) return;
+        
+        students[id] = st; delete deletedStudents[id]; saveAll(); renderBinList(); 
+        showToast("تم الاسترجاع ✅"); window.extOpen(id); 
+    };
+
     // ==========================================
-    // 10. SYSTEM THEME & LANGUAGE APPLY
+    // 12. SYSTEM THEME & LANGUAGE APPLY
     // ==========================================
     function applyTheme(theme) {
         document.body.className = ""; 
-        if(theme === "dark") {
-            document.body.classList.add("theme-dark"); 
-        } else if(theme === "glass") {
-            document.body.classList.add("theme-glass");
-        }
+        if(theme === "dark") document.body.classList.add("theme-dark"); 
+        else if(theme === "glass") document.body.classList.add("theme-glass");
         localStorage.setItem(K_THEME, theme); 
         if($("themeSelector")) $("themeSelector").value = theme;
     }
@@ -880,355 +910,268 @@ document.addEventListener('DOMContentLoaded', function() {
         
         document.querySelectorAll("[data-i18n]").forEach(el => {
             const key = el.getAttribute("data-i18n");
-            if(dict[key] && dict[key][currentLang]) {
-                el.innerHTML = dict[key][currentLang];
-            }
+            if(dict[key] && dict[key][currentLang]) el.innerHTML = dict[key][currentLang];
         });
         
         document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
             const key = el.getAttribute("data-i18n-placeholder");
-            if(dict[key] && dict[key][currentLang]) {
-                el.placeholder = dict[key][currentLang];
-            }
+            if(dict[key] && dict[key][currentLang]) el.placeholder = dict[key][currentLang];
         });
         
-        const langBtn = $("changeLangBtn");
-        if(langBtn) {
-            langBtn.innerText = currentLang === "ar" ? "🌐 تغيير اللغة (Ar / En)" : "🌐 Switch Language";
+        if($("changeLangBtn")) {
+            $("changeLangBtn").innerText = currentLang === "ar" ? "🌐 تغيير اللغة (Ar / En)" : "🌐 Switch Language";
         }
         
-        const nav = document.querySelector('.bottom-nav');
-        if(nav) {
-            nav.style.flexDirection = currentLang === "ar" ? "row" : "row-reverse";
+        if(document.querySelector('.bottom-nav')) {
+            document.querySelector('.bottom-nav').style.flexDirection = currentLang === "ar" ? "row" : "row-reverse";
         }
     }
 
     // ==========================================
-    // 11. BINDINGS & EVENT LISTENERS
+    // 13. BINDINGS & EVENT LISTENERS
     // ==========================================
     
-    // Auth & Login
     on("loginBtn", "click", function() {
-        const u = $("user").value.trim();
-        const p = $("pass").value.trim();
+        const u = $("user") ? $("user").value.trim() : "";
+        const p = $("pass") ? $("pass").value.trim() : "";
         
         if(u === ADMIN_USER && p === ADMIN_PASS) { 
-            localStorage.setItem(K_AUTH, "1"); 
-            localStorage.setItem(K_ROLE, "admin"); 
-            checkAuth(); 
+            localStorage.setItem(K_AUTH, "1"); localStorage.setItem(K_ROLE, "admin"); checkAuth(); 
         } else if (u.toLowerCase() === ASST_USER.toLowerCase() && p === ASST_PASS) { 
-            localStorage.setItem(K_AUTH, "1"); 
-            localStorage.setItem(K_ROLE, "assistant"); 
-            checkAuth(); 
-        } else { 
-            showToast(t("msg_err_pass"), "err"); 
-        }
+            localStorage.setItem(K_AUTH, "1"); localStorage.setItem(K_ROLE, "assistant"); checkAuth(); 
+        } else { showToast(t("msg_err_pass"), "err"); }
     });
 
-    on("logoutBtn", "click", () => { 
-        localStorage.removeItem(K_AUTH); 
-        location.reload(); 
-    });
+    on("logoutBtn", "click", function() { localStorage.removeItem(K_AUTH); location.reload(); });
+    on("togglePass", "click", function() { const p = $("pass"); if (p) p.type = p.type === "password" ? "text" : "password"; });
 
-    on("togglePass", "click", () => { 
-        const p = $("pass"); 
-        p.type = p.type === "password" ? "text" : "password"; 
-    });
-
-    // Custom Password Modal
     on("customPassConfirm", "click", function() {
-        if($("customPassInput").value === ADMIN_PASS) { 
-            $("customPassModal").classList.add("hidden"); 
+        if ($("customPassInput") && $("customPassInput").value === ADMIN_PASS) { 
+            if($("customPassModal")) $("customPassModal").classList.add("hidden"); 
             if(passSuccessCallback) passSuccessCallback(); 
-        } else { 
-            showToast(t("msg_err_pass"), "err"); 
-        }
+        } else { showToast(t("msg_err_pass"), "err"); }
     });
 
-    on("customPassCancel", "click", () => {
-        $("customPassModal").classList.add("hidden");
-    });
+    on("customPassCancel", "click", function() { if($("customPassModal")) $("customPassModal").classList.add("hidden"); });
 
-    // ==== FIX 2: Eye Icon Fix (إخفاء الإيرادات) ====
+    // ==== FIX: Toggle Revenue Eye Icon ====
     on("toggleRevBtn", "click", function(e) {
         if(e) e.stopPropagation();
         isRevHidden = !isRevHidden;
         updateTopStats();
     });
 
-    // Quick Actions
-    on("quickAttendBtn", "click", () => {
-        const id = toInt($("quickAttendId").value); 
-        if(!id || !students[String(id)]) return showToast("الطالب غير مسجل", "err");
+    on("quickAttendBtn", "click", function() {
+        const idInp = $("quickAttendId");
+        if (!idInp) return;
+        const id = toInt(idInp.value); 
+        if(!id || !students[String(id)]) { showToast("الطالب غير مسجل", "err"); return; }
         
         const res = addAttendance(id, nowDateStr());
         showToast(res.msg, res.ok ? "success" : "warning");
-        updateStudentUI(id); 
-        updateTopStats(); 
-        $("quickAttendId").value = "";
-        $("quickAttendId").focus();
+        updateStudentUI(id); updateTopStats(); 
+        idInp.value = ""; idInp.focus();
     });
 
-    // ==== FIX 3: فتح الطالب من زرار البحث الشامل ====
-    on("openBtn", "click", () => {
-        const id = toInt($("openId").value);
-        if(id) window.extOpen(id);
+    on("openBtn", "click", function() {
+        if ($("openId")) window.extOpen(toInt($("openId").value));
     });
 
-    on("searchAny", "input", (e) => {
+    on("searchAny", "input", function(e) {
         const q = e.target.value.toLowerCase();
-        if(!q) { 
-            $("searchMsg").style.display="none"; 
-            return; 
+        const searchMsg = $("searchMsg");
+        if(!searchMsg) return;
+        if(!q) { searchMsg.style.display = "none"; return; }
+        
+        let found = [];
+        const allStuds = Object.values(students);
+        for (let i = 0; i < allStuds.length; i++) {
+            let s = allStuds[i];
+            if ((s.name && s.name.toLowerCase().includes(q)) || String(s.id).includes(q) || (s.phone && s.phone.includes(q))) {
+                found.push(s);
+            }
+            if (found.length >= 5) break;
         }
         
-        const found = Object.values(students).filter(s => 
-            (s.name && s.name.toLowerCase().includes(q)) || String(s.id).includes(q) || (s.phone && s.phone.includes(q))
-        ).slice(0,5);
-        
-        $("searchMsg").style.display = "block";
-        $("searchMsg").innerHTML = found.map(s => 
-            `<div class="item" onclick="window.extOpen(${s.id})"><b>${s.name}</b> (#${s.id})</div>`
-        ).join("");
+        searchMsg.style.display = "block";
+        let html = "";
+        for (let i = 0; i < found.length; i++) {
+            let s = found[i];
+            html += `<div class="item" onclick="window.extOpen('${s.id}')"><b>${s.name}</b> (#${s.id})</div>`;
+        }
+        searchMsg.innerHTML = html;
     });
 
-    // Student Operations
-    on("addNewBtn", "click", () => {
-        const id = toInt($("newId").value);
-        if(!id || (students[String(id)] && students[String(id)].name)) {
-            return showToast("الكود مستخدم بالفعل", "err");
-        }
+    on("addNewBtn", "click", function() {
+        const id = $("newId") ? toInt($("newId").value) : 0;
+        if(!id) return;
+        if (students[String(id)] && students[String(id)].name) { return showToast("الكود مستخدم بالفعل", "err"); }
         
         students[String(id)] = makeEmptyStudent(id); 
         if(id > BASE_MAX_ID) extraIds.push(id);
-        
-        saveAll(); 
-        window.extOpen(id); 
-        showToast(t("msg_added"));
+        saveAll(); window.extOpen(id); showToast(t("msg_added"));
     });
 
-    on("saveStudentBtn", "click", () => {
+    on("saveStudentBtn", "click", function() {
         if(!currentId) return;
-        const s = students[currentId]; 
-        
-        s.name = $("stName").value; 
-        s.className = $("stClass").value; 
-        s.phone = $("stPhone").value;
-        
-        saveAll(); 
-        showToast(t("msg_saved"));
+        const s = students[currentId]; if (!s) return;
+        if ($("stName")) s.name = $("stName").value; 
+        if ($("stClass")) s.className = $("stClass").value; 
+        if ($("stPhone")) s.phone = $("stPhone").value;
+        saveAll(); showToast(t("msg_saved"));
     });
 
-    // ==== FIX 4: برمجة زراير (عادي - VIP - إنذار) ====
-    on("rankNormalBtn", "click", () => {
+    on("markTodayBtn", "click", function() { 
+        if(currentId) { addAttendance(currentId, nowDateStr()); updateStudentUI(currentId); renderReport(nowDateStr()); }
+    });
+
+    on("unmarkTodayBtn", "click", function() { 
+        if(currentId) { removeAttendance(currentId, nowDateStr()); updateStudentUI(currentId); renderReport(nowDateStr()); }
+    });
+
+    on("addPaymentBtn", "click", function() {
         if(!currentId) return;
-        students[currentId].rank = "normal";
-        saveAll(); updateStudentUI(currentId); showToast("تم التحديث");
-    });
-
-    on("rankVipBtn", "click", () => {
-        if(!currentId) return;
-        students[currentId].rank = "vip";
-        saveAll(); updateStudentUI(currentId); showToast("VIP ⭐");
-    });
-
-    on("rankWarnBtn", "click", () => {
-        if(!currentId) return;
-        students[currentId].rank = "warn";
-        saveAll(); updateStudentUI(currentId); showToast("إنذار ⚠️", "warning");
-    });
-
-    on("markTodayBtn", "click", () => { 
-        if(currentId) { 
-            addAttendance(currentId, nowDateStr()); 
-            updateStudentUI(currentId); 
-            renderReport(nowDateStr()); 
-        }
-    });
-
-    on("unmarkTodayBtn", "click", () => { 
-        if(currentId) { 
-            removeAttendance(currentId, nowDateStr());
-            updateStudentUI(currentId); 
-            renderReport(nowDateStr()); 
-        }
-    });
-
-    on("addPaymentBtn", "click", () => {
-        if(!currentId) return;
-        const v = toInt($("newPaymentInput").value); 
-        if(!v) return;
+        const payInp = $("newPaymentInput"); if (!payInp) return;
+        const v = toInt(payInp.value); if(!v) return;
         
-        const st = students[currentId]; 
-        st.paid += v;
+        const st = students[currentId]; st.paid += v;
+        const today = nowDateStr();
+        if (!revenueByDate[today]) revenueByDate[today] = 0;
+        revenueByDate[today] += v;
         
-        revenueByDate[nowDateStr()] = (revenueByDate[nowDateStr()] || 0) + v;
-        saveAll(); 
-        updateStudentUI(currentId);
+        saveAll(); updateStudentUI(currentId);
         
-        let req = groupFees[(st.className || "").trim()] || 0;
-        if(req > 0 && st.paid >= req) {
-            fireConfetti();
-        }
+        let sClass = st.className ? st.className.trim() : "";
+        let req = (sClass && groupFees[sClass] !== undefined) ? toInt(groupFees[sClass]) : 0;
         
-        playSound("money");
-        showToast(t("msg_deposit"));
-
-        // ==== FIX 5: رسالة واتس الإيداع للمستلم ====
+        if(req > 0 && st.paid >= req) fireConfetti();
+        playSound("money"); showToast(t("msg_deposit"));
+        
+        // ==== FIX: WhatsApp Msg After Payment ====
         if(st.phone) {
-            const msg = `مرحباً ${st.name}،\nتم إيداع مبلغ ${v} ج بنجاح ✅\nإجمالي المدفوع: ${st.paid} ج.\n\n-- إدارة السنتر --`;
-            setTimeout(() => { 
+            let msg = `مرحباً ${st.name}،\nتم إيداع مبلغ ${v} ج ✅\nإجمالي المدفوع: ${st.paid} ج.\n\n-- إدارة السنتر --`;
+            setTimeout(function() { 
                 window.open(`https://wa.me/20${st.phone}?text=${encodeURIComponent(msg)}`, '_blank'); 
             }, 1000);
         }
     });
 
-    on("correctPayBtn", "click", () => {
+    on("correctPayBtn", "click", function() {
         if(!currentId) return; 
-        const v = toInt(prompt(currentLang==='ar' ? "قيمة الخصم:" : "Deduct amount:")); 
-        if(!v) return;
-        
+        const v = toInt(prompt(currentLang==='ar' ? "قيمة الخصم:" : "Deduct amount:")); if(!v) return;
         students[currentId].paid = Math.max(0, students[currentId].paid - v);
-        revenueByDate[nowDateStr()] = Math.max(0, (revenueByDate[nowDateStr()] || 0) - v);
-        
-        saveAll(); 
-        showToast(t("msg_discount"), "warning"); 
-        updateStudentUI(currentId); 
-        renderReport(nowDateStr()); 
-        renderCharts();
+        const today = nowDateStr();
+        revenueByDate[today] = Math.max(0, (revenueByDate[today] || 0) - v);
+        saveAll(); showToast(t("msg_discount"), "warning"); updateStudentUI(currentId); renderReport(nowDateStr()); renderCharts();
     });
 
-    on("deleteStudentBtn", "click", () => {
+    on("deleteStudentBtn", "click", function() {
         if(!currentId) return;
-        
         if(!confirm(currentLang==='ar' ? "⚠️ متأكد من الحذف نهائياً؟" : "⚠️ Are you sure you want to delete?")) return;
-        
-        const targetId = currentId;
-        const st = students[targetId]; 
-        const backup = JSON.parse(JSON.stringify(st));
-        
+        const targetId = currentId; const st = students[targetId]; const backup = JSON.parse(JSON.stringify(st));
         let deducted = 0; 
-        if(st.paid > 0 && confirm(currentLang==='ar' ? 'خصم مدفوعاته من إيراد اليوم؟' : 'Deduct from revenue?')) {
-            deducted = st.paid;
-        }
+        if(st.paid > 0 && confirm(currentLang==='ar' ? 'خصم مدفوعاته من إيراد اليوم؟' : 'Deduct from revenue?')) deducted = st.paid;
         
-        revenueByDate[nowDateStr()] = (revenueByDate[nowDateStr()] || 0) - deducted;
+        const today = nowDateStr();
+        revenueByDate[today] = (revenueByDate[today] || 0) - deducted;
         deletedStudents[targetId] = backup; 
-        
         students[targetId] = makeEmptyStudent(targetId);
+        
         if(targetId > BASE_MAX_ID) { 
             delete students[targetId]; 
-            extraIds = extraIds.filter(x => x !== targetId); 
+            let newExtra = [];
+            for(let i=0; i<extraIds.length; i++) { if (extraIds[i] !== targetId) newExtra.push(extraIds[i]); }
+            extraIds = newExtra;
         }
+        saveAll(); updateStudentUI(null); window.switchTab('Home');
         
-        saveAll(); 
-        updateStudentUI(null); 
-        window.switchTab('Home');
-        
-        showUndoToast(t("msg_deleted"), () => {
-            students[targetId] = backup; 
-            delete deletedStudents[targetId];
+        showUndoToast(t("msg_deleted"), function() {
+            students[targetId] = backup; delete deletedStudents[targetId];
             revenueByDate[nowDateStr()] = (revenueByDate[nowDateStr()] || 0) + deducted;
-            saveAll(); 
-            window.extOpen(targetId); 
-            renderReport(nowDateStr()); 
-            renderCharts();
-            showToast(t("msg_undo"));
+            saveAll(); window.extOpen(targetId); renderReport(nowDateStr()); renderCharts(); showToast(t("msg_undo"));
         });
     });
 
-    on("addNoteBtn", "click", () => {
+    on("addNoteBtn", "click", function() {
         if(!currentId) return; 
-        const txt = $("newNoteInp").value.trim(); 
-        if(!txt) return;
+        const noteInp = $("newNoteInp"); if (!noteInp) return;
+        const txt = noteInp.value.trim(); if(!txt) return;
         
-        const now = new Date(); 
-        const stamp = `[${now.toISOString().split('T')[0]}]`;
-        students[currentId].notes = `${stamp} : ${txt}\n${students[currentId].notes || ""}`;
+        const now = new Date(); const stamp = `[${now.toISOString().split('T')[0]}]`;
+        let oldNotes = students[currentId].notes ? students[currentId].notes : "";
+        students[currentId].notes = `${stamp} : ${txt}\n${oldNotes}`;
         
-        saveAll(); 
-        updateStudentUI(currentId); 
-        showToast(t("msg_saved"));
+        saveAll(); updateStudentUI(currentId); showToast(t("msg_saved"));
     });
 
-    on("waBtn", "click", () => { 
-        const ph = $("stPhone").value; 
-        if(ph) window.open(`https://wa.me/20${ph}`, '_blank'); 
+    on("waBtn", "click", function() { 
+        const phInp = $("stPhone");
+        if (phInp && phInp.value) window.open(`https://wa.me/20${phInp.value}`, '_blank'); 
     });
 
     // Settings & Config
-    on("saveExpenseBtn", "click", () => {
+    on("saveExpenseBtn", "click", function() {
+        if (!$("expenseAmtInp") || !$("expenseReasonInp")) return;
         const a = toInt($("expenseAmtInp").value);
         const r = $("expenseReasonInp").value.trim();
-        
-        if(!a || !r) return showToast("يرجى ملء كافة البيانات", "err");
+        if(!a || !r) { showToast("يرجى ملء كافة البيانات", "err"); return; }
         
         const today = nowDateStr(); 
         if(!expensesByDate[today]) expensesByDate[today] = [];
+        expensesByDate[today].push({amount:a, reason:r}); saveAll();
         
-        expensesByDate[today].push({amount:a, reason:r}); 
-        saveAll();
-        
-        $("expenseAmtInp").value = ""; 
-        $("expenseReasonInp").value = ""; 
-        
-        showToast(t("msg_exp_saved")); 
-        renderReport(today);
+        $("expenseAmtInp").value = ""; $("expenseReasonInp").value = ""; 
+        showToast(t("msg_exp_saved")); renderReport(today);
     });
 
-    on("openGroupFeesBtn", "click", () => {
-        askAdminPass(() => {
+    on("openGroupFeesBtn", "click", function() {
+        askAdminPass(function() {
             const groups = new Set(); 
-            Object.values(students).forEach(s => { 
-                if(s.className) groups.add(s.className.trim()); 
-            });
-            
+            const allStuds = Object.values(students);
+            for (let i = 0; i < allStuds.length; i++) {
+                if(allStuds[i].className) groups.add(allStuds[i].className.trim()); 
+            }
             if(groups.size === 0) groups.add("عام");
             
             let h = ""; 
-            groups.forEach(g => {
-                h += `
-                <div class="group-fee-row">
-                    <label>📘 ${g}</label>
-                    <div><input type="number" class="inp g-fee-inp" data-group="${g}" value="${groupFees[g]||0}"> ج</div>
-                </div>`;
+            groups.forEach(function(g) {
+                let val = groupFees[g] ? groupFees[g] : 0;
+                h += `<div class="group-fee-row"><label>📘 ${g}</label><div><input type="number" class="inp g-fee-inp" data-group="${g}" value="${val}"> ج</div></div>`;
             });
-            
-            $("groupFeesList").innerHTML = h; 
-            $("groupFeesModal").classList.remove("hidden");
+            if ($("groupFeesList")) $("groupFeesList").innerHTML = h; 
+            if ($("groupFeesModal")) $("groupFeesModal").classList.remove("hidden");
         });
     });
 
-    on("saveGroupFeesBtn", "click", () => {
-        document.querySelectorAll(".g-fee-inp").forEach(i => {
-            groupFees[i.dataset.group] = toInt(i.value);
-        });
-        
+    // ==== FIX: إغلاق مودال المصاريف ====
+    on("closeGroupFeesModal", "click", function() {
+        if ($("groupFeesModal")) $("groupFeesModal").classList.add("hidden");
+    });
+
+    on("saveGroupFeesBtn", "click", function() {
+        const inputs = document.querySelectorAll(".g-fee-inp");
+        for (let i = 0; i < inputs.length; i++) {
+            let groupName = inputs[i].getAttribute("data-group");
+            groupFees[groupName] = toInt(inputs[i].value);
+        }
         saveAll(); 
-        $("groupFeesModal").classList.add("hidden"); 
+        if ($("groupFeesModal")) $("groupFeesModal").classList.add("hidden"); 
         showToast(t("msg_saved"));
-        
         if(currentId) updateStudentUI(currentId);
     });
 
-    on("changeLangBtn", "click", () => { 
+    on("changeLangBtn", "click", function() { 
         currentLang = (currentLang === "ar" ? "en" : "ar"); 
-        localStorage.setItem(K_LANG, currentLang); 
-        applyLanguage(); 
+        localStorage.setItem(K_LANG, currentLang); applyLanguage(); 
     });
 
-    on("themeSelector", "change", (e) => {
-        applyTheme(e.target.value);
-    });
+    on("themeSelector", "change", function(e) { applyTheme(e.target.value); });
 
-    // Background Management
     if($("bgInput")) {
-        $("bgInput").addEventListener("change", (e) => {
-            const file = e.target.files[0]; 
-            if(!file) return; 
-            
+        $("bgInput").addEventListener("change", function(e) {
+            const file = e.target.files[0]; if(!file) return; 
             const reader = new FileReader();
-            reader.onload = (event) => {
+            reader.onload = function(event) {
                 const imgData = event.target.result;
                 document.body.style.backgroundImage = `url('${imgData}')`;
                 document.body.style.backgroundSize = "cover";
@@ -1241,7 +1184,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     if($("removeBgBtn")) {
-        $("removeBgBtn").addEventListener("click", () => {
+        $("removeBgBtn").addEventListener("click", function() {
             document.body.style.backgroundImage = "none";
             localStorage.removeItem(K_BG_IMAGE);
             showToast("تم إزالة الخلفية 🗑️");
@@ -1249,91 +1192,91 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Reports & WhatsApp
-    on("reportBtn", "click", () => {
-        renderReport($("reportDate").value);
+    on("reportBtn", "click", function() {
+        if ($("reportDate")) renderReport($("reportDate").value);
     });
 
-    on("copyReportBtn", "click", () => {
-        const d = $("reportDate").value || nowDateStr();
-        const ids = attByDate[d] || []; 
-        const rev = revenueByDate[d] || 0;
-        const expArr = expensesByDate[d] || [];
-        const totalExp = expArr.reduce((sum, ex) => sum + ex.amount, 0);
+    on("copyReportBtn", "click", function() {
+        let d = nowDateStr();
+        if ($("reportDate") && $("reportDate").value) d = $("reportDate").value;
+        
+        let ids = attByDate[d] || [];
+        let rev = revenueByDate[d] || 0;
+        let expArr = expensesByDate[d] || [];
+        
+        let totalExp = 0;
+        for (let i = 0; i < expArr.length; i++) totalExp += expArr[i].amount;
 
         let txt = `📊 *${t("report_title")}: ${prettyDate(d)}*\n\n`;
         
         let groups = {};
-        ids.forEach(id => { 
-            let c = (students[id] && students[id].className) ? students[id].className.trim() : "عام"; 
+        for (let i = 0; i < ids.length; i++) {
+            let id = ids[i];
+            const st = students[id];
+            let c = (st && st.className) ? st.className.trim() : "عام";
             if(!groups[c]) groups[c] = 0; 
             groups[c]++; 
-        });
-        
-        for(let g in groups) { 
-            txt += `📘 ${g}: ${groups[g]} طالب\n`; 
         }
         
-        // ==== FIX 6: تعديل جملة الحضور للمدير ====
+        for(let g in groups) { txt += `📘 ${g}: ${groups[g]} طالب\n`; }
+        
+        // ==== FIX: تعديل جملة الحضور للمدير ====
         txt += `\n👥 إجمالي الحضور اليوم: ${ids.length}`;
         txt += `\n💰 ${t("badge_rev")} ${rev} ج`;
         
         if(expArr.length > 0) {
             txt += `\n\n🔻 *${t("wa_exp")}:*`;
-            expArr.forEach(ex => { 
+            for (let i = 0; i < expArr.length; i++) {
+                let ex = expArr[i];
                 txt += `\n- ${ex.amount} ج (${ex.reason})`; 
-            });
+            }
             txt += `\n\n💵 *${t("wa_net")}: ${rev - totalExp} ج*`;
         }
         
         txt += `\n\n-- إدارة السنتر --`;
-        
-        navigator.clipboard.writeText(txt).then(() => {
-            showToast(t("msg_copied"));
-        });
+        navigator.clipboard.writeText(txt).then(function() { showToast(t("msg_copied")); });
     });
 
     // Excel Logic
-    on("exportExcelBtn", "click", () => {
-        if (typeof XLSX === "undefined") {
-            return showToast("برجاء التأكد من اتصال الإنترنت لمكتبة Excel", "err");
-        }
+    on("exportExcelBtn", "click", function() {
+        if (typeof XLSX === "undefined") { return showToast("برجاء التأكد من اتصال الإنترنت لمكتبة Excel", "err"); }
         
-        const filled = Object.values(students).filter(s => s.name).sort((a,b) => a.id - b.id);
+        let filled = [];
+        const allStuds = Object.values(students);
+        for (let i = 0; i < allStuds.length; i++) { if (allStuds[i].name) filled.push(allStuds[i]); }
+        filled.sort(function(a, b) { return a.id - b.id; });
+        
         const wsData = [["ID", "Name", "Class", "Phone", "Paid", "Rank", "Attendance"]];
-        
-        filled.forEach(s => {
-            wsData.push([s.id, s.name, s.className, s.phone, s.paid, s.rank, (s.attendanceDates||[]).join(",")]);
-        });
+        for (let i = 0; i < filled.length; i++) {
+            let s = filled[i];
+            let history = s.attendanceDates ? s.attendanceDates.join(",") : "";
+            wsData.push([s.id, s.name, s.className, s.phone, s.paid, s.rank, history]);
+        }
         
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsData), "Students");
         XLSX.writeFile(wb, `VPRO_Data_${nowDateStr()}.xlsx`);
-        
         localStorage.setItem(K_LAST_BACKUP, nowDateStr()); 
-        if($("btnTabAdmin")) $("btnTabAdmin").classList.remove("needs-backup");
         
+        if($("btnTabAdmin")) $("btnTabAdmin").classList.remove("needs-backup");
         showToast(t("msg_saved"));
     });
 
-    on("importExcelBtnFake", "click", () => $("importExcelInput").click());
+    on("importExcelBtnFake", "click", function() { if ($("importExcelInput")) $("importExcelInput").click(); });
     
-    on("importExcelInput", "change", async (e) => {
-        const f = e.target.files[0]; 
-        if(!f) return; 
-        
+    on("importExcelInput", "change", async function(e) {
+        const f = e.target.files[0]; if(!f) return; 
         const wb = XLSX.read(await f.arrayBuffer(), {type:"array"});
         const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
         
-        if(!confirm(currentLang==='ar' ? 'تحذير: سيتم مسح البيانات الحالية واستبدالها!' : 'Warning: Overwrite current data?')) {
-            return;
-        }
+        let warnMsg = currentLang==='ar' ? 'تحذير: سيتم مسح البيانات الحالية واستبدالها!' : 'Warning: Overwrite current data?';
+        if(!confirm(warnMsg)) return;
         
         students = {}; attByDate = {}; revenueByDate = {}; expensesByDate = {};
-        for (let i = BASE_MIN_ID; i <= BASE_MAX_ID; i++) {
-            students[String(i)] = makeEmptyStudent(i);
-        }
+        for (let i = BASE_MIN_ID; i <= BASE_MAX_ID; i++) { students[String(i)] = makeEmptyStudent(i); }
         
-        rows.forEach(row => {
+        for (let i = 0; i < rows.length; i++) {
+            let row = rows[i];
             const id = toInt(row["ID"] || row["كود"]);
             if(id) {
                 let st = makeEmptyStudent(id);
@@ -1345,180 +1288,136 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 let h = row["History"] || row["سجل الحضور"] || "";
                 if(h) {
-                    st.attendanceDates = h.split(",").map(d => d.trim());
-                    st.attendanceDates.forEach(d => { 
+                    st.attendanceDates = h.split(",").map(function(d) { return d.trim(); });
+                    for (let j = 0; j < st.attendanceDates.length; j++) {
+                        let d = st.attendanceDates[j];
                         if(!attByDate[d]) attByDate[d] = []; 
                         attByDate[d].push(String(id)); 
-                    });
+                    }
                 }
                 students[String(id)] = st;
             }
-        });
-        saveAll(); 
-        showToast(t("msg_saved")); 
-        setTimeout(() => location.reload(), 1000);
+        }
+        saveAll(); showToast(t("msg_saved")); 
+        setTimeout(function() { location.reload(); }, 1000);
     });
 
     // Modals & Bins
-    on("openBinBtn", "click", () => { 
-        renderBinList(); 
-        $("recycleBinModal").classList.remove("hidden"); 
-    });
-    
-    on("closeBinBtn", "click", () => {
-        $("recycleBinModal").classList.add("hidden");
-    });
-    
-    on("emptyBinBtn", "click", () => { 
-        if(confirm(currentLang==='ar' ? "حذف السلة نهائياً؟" : "Empty completely?")) { 
-            deletedStudents = {}; 
-            saveAll(); 
-            renderBinList(); 
-        }
+    on("openBinBtn", "click", function() { renderBinList(); if ($("recycleBinModal")) $("recycleBinModal").classList.remove("hidden"); });
+    on("closeBinBtn", "click", function() { if ($("recycleBinModal")) $("recycleBinModal").classList.add("hidden"); });
+    on("emptyBinBtn", "click", function() { 
+        let confMsg = currentLang==='ar' ? "حذف السلة نهائياً؟" : "Empty completely?";
+        if(confirm(confMsg)) { deletedStudents = {}; saveAll(); renderBinList(); }
     });
 
-    window.restoreSt = (id) => { 
-        const st = deletedStudents[String(id)]; 
-        if(!st) return;
-        students[String(id)] = st; 
-        delete deletedStudents[String(id)]; 
-        saveAll(); 
-        renderBinList(); 
-        showToast(t("msg_saved")); 
-        window.extOpen(id); 
+    window.restoreSt = function(idStr) {
+        const id = String(idStr); const st = deletedStudents[id]; if(!st) return;
+        students[id] = st; delete deletedStudents[id]; saveAll(); renderBinList(); showToast("تم الاسترجاع ✅"); window.extOpen(id); 
     };
 
-    on("openAllStudentsBtn", "click", () => { 
-        renderSimpleTable(); 
-        $("allStudentsModal").classList.remove("hidden"); 
-    });
-    
-    on("closeModalBtn", "click", () => {
-        $("allStudentsModal").classList.add("hidden");
-    });
+    on("openAllStudentsBtn", "click", function() { renderSimpleTable(); if ($("allStudentsModal")) $("allStudentsModal").classList.remove("hidden"); });
+    on("closeModalBtn", "click", function() { if ($("allStudentsModal")) $("allStudentsModal").classList.add("hidden"); });
 
-    on("todayCountTopCard", "click", () => {
-        const today = nowDateStr(); 
-        const ids = attByDate[today] || [];
-        
+    on("todayCountTopCard", "click", function() {
+        const today = nowDateStr(); let ids = attByDate[today] || [];
         if(ids.length === 0) { 
-            showToast(currentLang==='ar' ? "لا يوجد حضور" : "No attendance", "warning"); 
-            return; 
+            let warnMsg = currentLang==='ar' ? "لا يوجد حضور" : "No attendance";
+            showToast(warnMsg, "warning"); return; 
         }
         
         let groups = {};
-        ids.forEach(id => { 
-            const st = students[id]; 
+        for (let i = 0; i < ids.length; i++) {
+            let id = ids[i]; const st = students[id]; 
             if(st) { 
                 let c = st.className ? st.className.trim() : "عام"; 
                 if(!groups[c]) groups[c] = []; 
                 groups[c].push(st); 
             } 
-        });
+        }
         
         let html = "";
         for(let g in groups) { 
-            html += `
-            <div style="background:#f8f9fa; border-radius:10px; padding:15px; margin-bottom:15px; border-right: 5px solid var(--primary);">
-                <h4 style="color:var(--primary); margin-top:0; margin-bottom:10px; border-bottom:1px solid #ddd; padding-bottom:5px;">📘 ${g} (${groups[g].length})</h4>
-                <div style="display:flex; flex-wrap:wrap; gap:8px;">
-                    ${groups[g].map(s => `
-                        <div class="badge" style="background:#fff; color:#333; border:1px solid #ccc; padding:8px 12px; border-radius:8px; cursor:pointer; font-size:13px;" onclick="$('todayModal').classList.add('hidden'); window.extOpen('${s.id}')">
-                            #${s.id} - ${s.name || 'بدون اسم'}
-                        </div>`
-                    ).join("")}
-                </div>
-            </div>`; 
+            let gColor = getTagColor(g);
+            let groupHtml = `<div style="background:#f8f9fa; border-radius:10px; padding:15px; margin-bottom:15px; border-right: 5px solid ${gColor};">`;
+            groupHtml += `<h4 style="color:${gColor}; margin-top:0; margin-bottom:10px; border-bottom:1px solid #ddd; padding-bottom:5px;">📘 ${g} (${groups[g].length})</h4>`;
+            groupHtml += `<div style="display:flex; flex-wrap:wrap; gap:8px;">`;
+            
+            for (let j = 0; j < groups[g].length; j++) {
+                let s = groups[g][j];
+                let sName = s.name || 'بدون اسم';
+                groupHtml += `<div class="badge" style="background:#fff; color:#333; border:1px solid ${gColor}; padding:8px 12px; border-radius:8px; cursor:pointer; font-size:13px;" onclick="document.getElementById('todayModal').classList.add('hidden'); window.extOpen('${s.id}')">#${s.id} - ${sName}</div>`;
+            }
+            groupHtml += `</div></div>`;
+            html += groupHtml;
         }
-        $("todayModalBody").innerHTML = html; 
-        $("todayModal").classList.remove("hidden");
+        
+        if ($("todayModalBody")) $("todayModalBody").innerHTML = html; 
+        if ($("todayModal")) $("todayModal").classList.remove("hidden");
     });
-
-    on("closeTodayModal", "click", () => {
-        $("todayModal").classList.add("hidden");
-    });
+    
+    on("closeTodayModal", "click", function() { if ($("todayModal")) $("todayModal").classList.add("hidden"); });
 
     // Reset Functions
-    on("resetTermBtn", "click", () => {
-        askAdminPass(() => {
-            if(confirm(currentLang==='ar' ? "تصفير فلوس وغياب الترم بالكامل؟" : "Reset all fees and attendance?")) {
-                for(let k in students) { 
-                    students[k].paid = 0; 
-                    students[k].attendanceDates = []; 
-                }
-                attByDate = {}; 
-                revenueByDate = {}; 
-                expensesByDate = {}; 
-                saveAll(); 
-                location.reload();
+    on("resetTermBtn", "click", function() {
+        askAdminPass(function() {
+            let msg = currentLang==='ar' ? "تصفير فلوس وغياب الترم بالكامل للجميع؟" : "Reset all fees and attendance?";
+            if(confirm(msg)) {
+                for(let k in students) { students[k].paid = 0; students[k].attendanceDates = []; }
+                attByDate = {}; revenueByDate = {}; expensesByDate = {}; saveAll(); location.reload();
             }
         });
     });
 
-    on("resetBtn", "click", () => {
-        askAdminPass(() => {
-            if(confirm(currentLang==='ar' ? "مسح شامل وإعادة ضبط المصنع للسيستم بالكامل؟" : "Factory Reset the whole system?")) {
-                localStorage.clear(); 
-                location.reload();
-            }
+    on("resetBtn", "click", function() {
+        askAdminPass(function() {
+            let msg = currentLang==='ar' ? "مسح شامل وإعادة ضبط المصنع للسيستم بالكامل؟" : "Factory Reset the whole system?";
+            if(confirm(msg)) { localStorage.clear(); location.reload(); }
         });
     });
 
-    // Global Listeners
+    // Filters and Bulk actions
     if($("filterClass")) $("filterClass").addEventListener("change", renderList);
     if($("filterStatus")) $("filterStatus").addEventListener("change", renderList);
     if($("filterAttend")) $("filterAttend").addEventListener("change", renderList);
     if($("tableSearchInp")) $("tableSearchInp").addEventListener("input", renderList);
     
-    on("prevPageBtn", "click", () => { 
-        if(currentPage > 1) { 
-            currentPage--; 
-            renderPage(); 
-        }
-    });
-    on("nextPageBtn", "click", () => { 
-        currentPage++; 
-        renderPage(); 
-    });
+    on("prevPageBtn", "click", function() { if(currentPage > 1) { currentPage--; renderPage(); } });
+    on("nextPageBtn", "click", function() { currentPage++; renderPage(); });
 
-    document.addEventListener("change", (e) => {
-        if(e.target.classList.contains("stCheckbox")) handleBulk();
+    document.addEventListener("change", function(e) {
+        if(e.target.classList.contains("stCheckbox")) { handleBulk(); }
         if(e.target.id === "selectAllCheckbox") { 
-            document.querySelectorAll(".stCheckbox").forEach(c => c.checked = e.target.checked); 
+            const boxes = document.querySelectorAll(".stCheckbox");
+            for (let i = 0; i < boxes.length; i++) { boxes[i].checked = e.target.checked; }
             handleBulk(); 
         }
     });
 
-    on("bulkAttendBtn", "click", () => { 
-        let count = 0; 
-        document.querySelectorAll(".stCheckbox:checked").forEach(b => { 
-            if(addAttendance(b.dataset.id, nowDateStr()).ok) count++; 
-        }); 
-        showToast(t("msg_att_ok")); 
-        renderList(); 
-        handleBulk(); 
+    on("bulkAttendBtn", "click", function() { 
+        let count = 0; const checkedBoxes = document.querySelectorAll(".stCheckbox:checked");
+        for (let i = 0; i < checkedBoxes.length; i++) {
+            let res = addAttendance(checkedBoxes[i].getAttribute("data-id"), nowDateStr());
+            if (res.ok) count++;
+        }
+        showToast(t("msg_att_ok")); renderList(); handleBulk(); 
     });
 
-    on("bulkAbsentBtn", "click", () => { 
-        document.querySelectorAll(".stCheckbox:checked").forEach(b => {
-            removeAttendance(b.dataset.id, nowDateStr());
-        }); 
-        showToast(t("msg_att_warn"), "warning"); 
-        renderList(); 
-        handleBulk();
+    on("bulkAbsentBtn", "click", function() { 
+        const checkedBoxes = document.querySelectorAll(".stCheckbox:checked");
+        for (let i = 0; i < checkedBoxes.length; i++) { removeAttendance(checkedBoxes[i].getAttribute("data-id"), nowDateStr()); }
+        showToast(t("msg_att_warn"), "warning"); renderList(); handleBulk();
     });
 
     // ==========================================
-    // 12. INITIALIZATION (START ENGINE)
+    // 14. INITIALIZATION (START ENGINE)
     // ==========================================
-    
     function checkDailyBackup() {
         const last = localStorage.getItem(K_LAST_BACKUP);
         if(last !== nowDateStr()) {
-            const adminTab = $("btnTabAdmin");
-            if(adminTab) adminTab.classList.add("needs-backup");
-            setTimeout(() => {
-                showToast(currentLang==='ar' ? '⚠️ تذكير: لم تقم بتصدير نسخة Excel اليوم!' : '⚠️ Backup reminder!', 'warning');
+            if($("btnTabAdmin")) $("btnTabAdmin").classList.add("needs-backup");
+            setTimeout(function() {
+                let msg = currentLang==='ar' ? '⚠️ تذكير: لم تقم بتصدير نسخة Excel اليوم!' : '⚠️ Backup reminder!';
+                showToast(msg, 'warning');
             }, 3000);
         }
     }
@@ -1533,18 +1432,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Tab Routing
-    on("btnTabHome", "click", () => window.switchTab('Home'));
-    on("btnTabStudents", "click", () => { window.switchTab('Students'); renderList(); });
-    on("btnTabRevenue", "click", () => { window.switchTab('Revenue'); renderCharts(); updateFinanceSummary(); });
-    on("btnTabAdmin", "click", () => window.switchTab('Admin'));
+    // Tabs Listeners
+    on("btnTabHome", "click", function() { window.switchTab('Home'); });
+    on("btnTabStudents", "click", function() { window.switchTab('Students'); renderList(); });
+    on("btnTabRevenue", "click", function() { window.switchTab('Revenue'); renderCharts(); updateFinanceSummary(); });
+    on("btnTabAdmin", "click", function() { window.switchTab('Admin'); });
 
-    // Execute Startup Sequence
+    // Startup Sequence
     loadAll(); 
     ensureBase500(); 
     checkAuth(); 
     applyLanguage(); 
     checkDailyBackup();
     setTimeout(checkQR, 500);
-
 });
