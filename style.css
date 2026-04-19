@@ -733,7 +733,7 @@ body.flash-green::after {
     background: rgba(0,0,0,0.4); z-index: 1; transition: width 0s linear;
 }
 .btn.danger.holding::before { 
-    width: 100%; transition: width 2s linear; /* مدة الضغطة ثانيتين */
+    width: 100%; transition: width 1s linear; /* مدة الضغطة ثانيتين */
 }
 
 /* 4. Login Page 3D & Shine Overhaul (تطوير صفحة الدخول) */
