@@ -675,3 +675,25 @@ body.theme-dark .bottom-nav, body.theme-glass.dark-glass .bottom-nav {
     color: var(--text-muted);
     text-align: left;
 }
+/* =========================================
+   النقطة الحمراء للتنبيه (بتنور وتطفي)
+========================================= */
+.needs-backup { position: relative; }
+.needs-backup::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    right: 5px;
+    width: 12px;
+    height: 12px;
+    background-color: #ff3b30;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 8px rgba(255, 59, 48, 0.8);
+    animation: blinkRed 1.5s infinite;
+}
+@keyframes blinkRed { 
+    0% { opacity: 1; transform: scale(1); } 
+    50% { opacity: 0.5; transform: scale(1.2); } 
+    100% { opacity: 1; transform: scale(1); } 
+}
