@@ -1507,7 +1507,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 revenueByDate[nowDateStr()] = (revenueByDate[nowDateStr()] || 0) + deducted;
                 saveAll(); window.extOpen(targetId); renderReport(nowDateStr()); renderCharts(); showToast(t("msg_undo"));
             });
-        }, 2000); // ثانيتين ضغط متواصل
+        }, 1000); // ثانيتين ضغط متواصل
     }
 
     function cancelDeleteHold() {
