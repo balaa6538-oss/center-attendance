@@ -1378,7 +1378,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Excel Logic
     on("exportExcelBtn", "click", function() {
-        if (typeof XLSX === "undefined") { return showToast("برجاء التأكد من اتصال الإنترنت لمكتبة Excel", "err"); }
+        if (typeof XLSX === "undefined") { return showToast("⚠️ مكتبة الإكسيل غير موجودة، تأكد من وجود ملف xlsx.full.min.js في فولدر assets", "err"); }
         
         let filled = [];
         const allStuds = Object.values(students);
