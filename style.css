@@ -697,3 +697,69 @@ body.theme-dark .bottom-nav, body.theme-glass.dark-glass .bottom-nav {
     50% { opacity: 0.5; transform: scale(1.2); } 
     100% { opacity: 1; transform: scale(1); } 
 }
+/* =========================================
+   UX/UI PREMIUM UPDATES (V-PRO MAX)
+========================================= */
+
+/* 1. Error Shake Animation (الاهتزاز عند الخطأ) */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); border-color: var(--danger); }
+    50% { transform: translateX(8px); border-color: var(--danger); }
+    75% { transform: translateX(-8px); border-color: var(--danger); }
+}
+.error-shake { 
+    animation: shake 0.4s ease-in-out !important; 
+    border-color: var(--danger) !important; 
+    box-shadow: 0 0 8px rgba(207, 34, 46, 0.4) !important;
+}
+
+/* 2. Edge Flash (وميض الحواف الأخضر للنجاح) */
+body::after {
+    content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    box-shadow: inset 0 0 0 0 rgba(46, 164, 79, 0);
+    pointer-events: none; z-index: 99999; transition: box-shadow 0.5s ease-out;
+}
+body.flash-green::after { 
+    box-shadow: inset 0 0 25px 8px rgba(46, 164, 79, 0.8); 
+    transition: none; 
+}
+
+/* 3. Hold to Delete Animation (الامتلاء عند الضغط المطول) */
+.btn.danger { position: relative; overflow: hidden; user-select: none; -webkit-user-select: none; touch-action: none; }
+.btn.danger span { position: relative; z-index: 2; pointer-events: none; }
+.btn.danger::before {
+    content: ""; position: absolute; top: 0; left: 0; width: 0%; height: 100%;
+    background: rgba(0,0,0,0.4); z-index: 1; transition: width 0s linear;
+}
+.btn.danger.holding::before { 
+    width: 100%; transition: width 2s linear; /* مدة الضغطة ثانيتين */
+}
+
+/* 4. Login Page 3D & Shine Overhaul (تطوير صفحة الدخول) */
+#loginBox {
+    background: linear-gradient(-45deg, #ffffff, #f0f2f5, #e2e8f0, #ffffff);
+    background-size: 400% 400%;
+    animation: loginGradientBG 10s ease infinite;
+    border-top: 5px solid var(--primary);
+}
+@keyframes loginGradientBG { 
+    0% {background-position: 0% 50%;} 50% {background-position: 100% 50%;} 100% {background-position: 0% 50%;} 
+}
+
+#loginBtn {
+    background: linear-gradient(145deg, #2ea44f, #228b40) !important;
+    box-shadow: 0 6px 0 #18632c, 0 10px 20px rgba(0,0,0,0.2) !important;
+    position: relative; overflow: hidden; transition: all 0.1s;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+#loginBtn:active { 
+    transform: translateY(6px) !important; 
+    box-shadow: 0 0 0 #18632c, 0 4px 6px rgba(0,0,0,0.2) !important; 
+}
+#loginBtn::after {
+    content: ""; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+    background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
+    transform: skewX(-25deg); animation: shineBtn 3s infinite;
+}
+@keyframes shineBtn { 0% { left: -100%; } 20% { left: 200%; } 100% { left: 200%; } }
