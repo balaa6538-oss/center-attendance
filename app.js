@@ -1449,44 +1449,92 @@ on("quickAttendId", "keypress", function(e) {
 on("importExcelInput", "change", async function(e) {
         const f = e.target.files[0]; if(!f) return; 
         const wb = XLSX.read(await f.arrayBuffer(), {type:"array"});
-        const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]); // بيقرأ أول شيت (بيانات الطلاب)
         
         let warnMsg = currentLang==='ar' ? 'تحذير: سيتم مسح البيانات الحالية واستبدالها!' : 'Warning: Overwrite current data?';
         if(!confirm(warnMsg)) return;
         
-        students = {}; attByDate = {}; revenueByDate = {}; expensesByDate = {};
+        // تصفير كل حاجة قبل ما نستقبل الداتا الجديدة
+        students = {}; attByDate = {}; revenueByDate = {}; expensesByDate = {}; syllabusData = [];
         for (let i = BASE_MIN_ID; i <= BASE_MAX_ID; i++) { students[String(i)] = makeEmptyStudent(i); }
         
-        for (let i = 0; i < rows.length; i++) {
-            let row = rows[i];
-            // هنا بنخليه يقرأ العناوين الجديدة العربي اللي إحنا عملناها في التصدير
-            const id = toInt(row["كود الطالب"] || row["ID"] || row["كود"]);
-            if(id) {
-                let st = makeEmptyStudent(id);
-                st.name = row["اسم الطالب"] || row["Name"] || row["الاسم"] || ""; 
-                st.className = row["الباقة / المجموعة"] || row["Class"] || row["المجموعة"] || "";
-                st.phone = String(row["رقم الموبايل"] || row["Phone"] || ""); 
-                st.paid = toInt(row["إجمالي المدفوع"] || row["Paid"] || row["المدفوع"]);
-                
-                let rankAr = row["التصنيف"] || row["Rank"] || "";
-                st.rank = rankAr.includes("VIP") ? "vip" : (rankAr.includes("إنذار") ? "warn" : "normal");
-                
-                let n = row["الملاحظات"] || "";
-                st.notes = n ? n.replace(/ - /g, "\n") : ""; // نرجع الملاحظات لسطور زي ما كانت
-                
-                let h = row["سجل الحضور"] || row["History"] || "";
-                if(h) {
-                    // يقدر يقرأ التواريخ سواء مفصولة بـ ( | ) أو ( , )
-                    st.attendanceDates = h.split(/\||,/).map(function(d) { return d.trim(); }).filter(d => d);
-                    for (let j = 0; j < st.attendanceDates.length; j++) {
-                        let d = st.attendanceDates[j];
-                        if(!attByDate[d]) attByDate[d] = []; 
-                        attByDate[d].push(String(id)); 
+        // 1. استيراد بيانات الطلاب (الصفحة الأولى)
+        if(wb.SheetNames.includes("بيانات الطلاب") || wb.SheetNames[0]) {
+            const sheetName = wb.SheetNames.includes("بيانات الطلاب") ? "بيانات الطلاب" : wb.SheetNames[0];
+            const rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName]);
+            for (let i = 0; i < rows.length; i++) {
+                let row = rows[i];
+                const id = toInt(row["كود الطالب"] || row["ID"] || row["كود"]);
+                if(id) {
+                    let st = makeEmptyStudent(id);
+                    st.name = row["اسم الطالب"] || row["Name"] || row["الاسم"] || ""; 
+                    st.className = row["الباقة / المجموعة"] || row["Class"] || row["المجموعة"] || "";
+                    st.phone = String(row["رقم الموبايل"] || row["Phone"] || ""); 
+                    st.paid = toInt(row["إجمالي المدفوع"] || row["Paid"] || row["المدفوع"]);
+                    
+                    let rankAr = row["التصنيف"] || row["Rank"] || "";
+                    st.rank = rankAr.includes("VIP") ? "vip" : (rankAr.includes("إنذار") ? "warn" : "normal");
+                    
+                    let n = row["الملاحظات"] || "";
+                    st.notes = n ? n.replace(/ - /g, "\n") : "";
+                    
+                    let h = row["سجل الحضور"] || row["History"] || "";
+                    if(h) {
+                        st.attendanceDates = h.split(/\||,/).map(function(d) { return d.trim(); }).filter(d => d);
+                        for (let j = 0; j < st.attendanceDates.length; j++) {
+                            let d = st.attendanceDates[j];
+                            if(!attByDate[d]) attByDate[d] = []; 
+                            attByDate[d].push(String(id)); 
+                        }
                     }
+                    students[String(id)] = st;
                 }
-                students[String(id)] = st;
             }
         }
+
+        // 2. استيراد الماليات (الصفحة التانية)
+        if(wb.SheetNames.includes("الماليات")) {
+            const finRows = XLSX.utils.sheet_to_json(wb.Sheets["الماليات"]);
+            for(let i=0; i<finRows.length; i++) {
+                let row = finRows[i];
+                let pDate = row["التاريخ"]; 
+                if(pDate) {
+                    let d = pDate.split("-").reverse().join("-"); // تحويل التاريخ لشكله الأصلي
+                    let type = row["النوع"] || "";
+                    let amt = toInt(row["المبلغ"]);
+                    let reason = row["البيان / السبب"] || "";
+
+                    if(type.includes("إيرادات")) {
+                        revenueByDate[d] = (revenueByDate[d] || 0) + amt;
+                    } else if (type.includes("مصروفات")) {
+                        if(!expensesByDate[d]) expensesByDate[d] = [];
+                        expensesByDate[d].push({ amount: amt, reason: reason });
+                    }
+                }
+            }
+        }
+
+        // 3. استيراد المنهج (الصفحة التالتة)
+        if (wb.SheetNames.includes("خريطة المنهج")) {
+            const syllRows = XLSX.utils.sheet_to_json(wb.Sheets["خريطة المنهج"]);
+            for(let i=0; i<syllRows.length; i++) {
+                let row = syllRows[i];
+                let name = row["اسم الدرس / الشابتر"];
+                if(name) {
+                    let statusAr = row["الحالة"] || "";
+                    let status = "not_started";
+                    if(statusAr.includes("جاري")) status = "in_progress";
+                    if(statusAr.includes("تم")) status = "completed";
+                    
+                    syllabusData.push({
+                        name: name,
+                        status: status,
+                        notes: row["ملاحظات الحصة"] || "",
+                        date: row["تاريخ التحديث"] || nowDateStr()
+                    });
+                }
+            }
+        }
+
         saveAll(); showToast(t("msg_saved")); 
         setTimeout(function() { location.reload(); }, 1000);
     });
