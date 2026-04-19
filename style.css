@@ -763,3 +763,23 @@ body.flash-green::after {
     transform: skewX(-25deg); animation: shineBtn 3s infinite;
 }
 @keyframes shineBtn { 0% { left: -100%; } 20% { left: 200%; } 100% { left: 200%; } }
+/* خلفية شاشة الدخول المتحركة (تختفي لما تدخل السيستم) */
+body:has(#loginBox:not(.hidden)) {
+    background: linear-gradient(-45deg, #2f6bff, #1e50cf, #2ea44f, #18632c);
+    background-size: 400% 400%;
+    animation: fullPageBG 10s ease infinite;
+}
+
+@keyframes fullPageBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* تظبيط مربع الدخول عشان يبان شيك ومزجج فوق الخلفية */
+#loginBox {
+    background: rgba(255, 255, 255, 0.9) !important;
+    backdrop-filter: blur(10px);
+    border: none !important;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.3) !important;
+}
