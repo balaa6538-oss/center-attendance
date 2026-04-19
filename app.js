@@ -1,11 +1,12 @@
 /* =============================================================================
-   Center System V-PRO MAX (THE ULTIMATE SHIELD EDITION - SURGICAL FIX)
+   Center System V-PRO MAX (THE ULTIMATE SHIELD EDITION - PREMIUM UX)
    -----------------------------------------------------------------------------
    - 100% Full Translation Dictionary (Arabic / English)
    - Smart Consecutive Attendance (Group-based Streak)
    - Advanced Financial Module (Expenses, Daily/Monthly Net Profit)
    - Dynamic Group Fee Management (Package Builder)
    - Syllabus Map Module (Course Timeline & Tracker)
+   - Premium UX: Error Shake, Edge Flash, Hold-To-Delete
    ============================================================================= */
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -38,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const K_NOTEBOOK     = "ca_notebook_v1";
     const K_GROUP_FEES   = "ca_group_fees_v1";
     const K_EXPENSES     = "ca_expenses_v1";
-    const K_SYLLABUS     = "ca_syllabus_v1"; // مفتاح حفظ المنهج الجديد
+    const K_SYLLABUS     = "ca_syllabus_v1"; // مفتاح حفظ المنهج
 
     // ==========================================
     // 2. GLOBAL SYSTEM STATE
@@ -50,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let revenueByDate    = {}; 
     let groupFees        = {}; 
     let expensesByDate   = {};
-    let syllabusData     = []; // بيانات المنهج
+    let syllabusData     = []; 
     
     let currentId        = null;
     let currentUserRole  = "admin";
@@ -102,7 +103,6 @@ document.addEventListener('DOMContentLoaded', function() {
         "btn_save_st": { ar: "حفظ البيانات 💾", en: "Save Data 💾" },
         "btn_mark_present": { ar: "✅ حضور", en: "✅ Present" },
         "btn_mark_absent": { ar: "✖ غياب", en: "✖ Absent" },
-        "btn_delete": { ar: "🗑️ حذف", en: "🗑️ Delete" },
         "lbl_history": { ar: "سجل التواريخ", en: "Attendance History" },
         "adv_search_title": { ar: "قائمة البحث المتقدم", en: "Advanced Search" },
         "flt_all_classes": { ar: "كل المجموعات", en: "All Groups" },
@@ -185,7 +185,7 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     // ==========================================
-    // 4. CORE UTILITY FUNCTIONS
+    // 4. CORE UTILITY FUNCTIONS & PREMIUM UX
     // ==========================================
     function $(id) { return document.getElementById(id); }
     
@@ -205,6 +205,22 @@ document.addEventListener('DOMContentLoaded', function() {
         let hash = 0;
         for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
         return colors[Math.abs(hash) % colors.length];
+    }
+
+    // -- Premium UX Functions --
+    function triggerShake(inputId) {
+        const el = $(inputId);
+        if(el) {
+            el.classList.remove("error-shake");
+            void el.offsetWidth; // Refresh DOM to restart animation
+            el.classList.add("error-shake");
+            setTimeout(() => el.classList.remove("error-shake"), 400);
+        }
+    }
+
+    function triggerEdgeFlash() {
+        document.body.classList.add("flash-green");
+        setTimeout(() => document.body.classList.remove("flash-green"), 500);
     }
 
     function showToast(msg, type = "success") {
@@ -320,7 +336,7 @@ document.addEventListener('DOMContentLoaded', function() {
             localStorage.setItem(K_GROUP_FEES, JSON.stringify(groupFees)); 
             localStorage.setItem(K_EXPENSES, JSON.stringify(expensesByDate));
             localStorage.setItem(K_DELETED, JSON.stringify(deletedStudents));
-            localStorage.setItem(K_SYLLABUS, JSON.stringify(syllabusData)); // حفظ المنهج
+            localStorage.setItem(K_SYLLABUS, JSON.stringify(syllabusData));
             updateTopStats(); updateFinanceSummary(); renderCharts();
         } catch(e) { 
             showToast("الذاكرة ممتلئة! يرجى حذف الخلفية لتوفير مساحة", "err"); 
@@ -376,7 +392,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if($("reportDate")) $("reportDate").value = nowDateStr();
         renderReport(nowDateStr());
         updateTopStats();
-        populatePackages(); // ملء الباقات في القوائم المنسدلة
+        populatePackages();
         window.switchTab('Home');
     }
 
@@ -475,7 +491,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return streak;
     }
 
-    // دالة لتعبئة الباقات في الـ Dropdown الخاص بكارت الطالب
     function populatePackages() {
         const select = $("stClass");
         if (!select) return;
@@ -589,6 +604,7 @@ document.addEventListener('DOMContentLoaded', function() {
             saveAll(); 
             updateLiveFeed(s);
             playSound("success");
+            triggerEdgeFlash(); // تشغيل الفلاش الأخضر للنجاح
             return { ok: true, msg: t("msg_att_ok") };
         }
         playSound("error");
@@ -687,7 +703,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (filterStatusEl) fStatus = filterStatusEl.value;
         if (filterAttendEl) fAttend = filterAttendEl.value;
         
-        // تحديث فلتر المجاميع بناءً على الباقات المتاحة بدلاً من الطلاب
         if(filterClassEl && filterClassEl.options.length <= 1) { 
             const classes = Object.keys(groupFees);
             if(classes.length === 0) classes.push("عام");
@@ -945,7 +960,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ==========================================
-    // 13. SYLLABUS MODULE (وحدة خريطة المنهج)
+    // 13. SYLLABUS MODULE
     // ==========================================
     function renderSyllabus() {
         const tl = $("syllabusTimeline");
@@ -955,16 +970,14 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // هنتأكد مين اللي فاتح (المدير ولا الأسستنت) عشان نرسم زرار الحذف على الأساس ده
         const isAdmin = (currentUserRole === "admin");
-        
         let html = "";
+        
         for (let i = 0; i < syllabusData.length; i++) {
             let s = syllabusData[i];
             let statusClass = "status-" + s.status;
             let statusIcon = s.status === "completed" ? "🟢 تم الانتهاء" : (s.status === "in_progress" ? "🟡 جاري الشرح" : "⚪ لم يبدأ");
             
-            // لو مدير، هنرسم الزرار، لو أسستنت مش هنرسمه خالص
             let deleteBtnHtml = isAdmin ? `<button class="btn danger smallBtn iconOnly" onclick="window.deleteSyllabus(${i})">🗑️</button>` : "";
             
             html += `
@@ -982,7 +995,6 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
         }
         tl.innerHTML = html;
-        // تم مسح السطر اللي كان بيعمل المشكلة من هنا
     }
 
     window.deleteSyllabus = function(index) {
@@ -1017,10 +1029,10 @@ document.addEventListener('DOMContentLoaded', function() {
         $("syllStatus").value = "not_started";
         $("syllNotes").value = "";
     });
+
     // ==========================================
     // 14. BINDINGS & EVENT LISTENERS
     // ==========================================
-    
     on("loginBtn", "click", function() {
         const u = $("user") ? $("user").value.trim() : "";
         const p = $("pass") ? $("pass").value.trim() : "";
@@ -1029,7 +1041,10 @@ document.addEventListener('DOMContentLoaded', function() {
             localStorage.setItem(K_AUTH, "1"); localStorage.setItem(K_ROLE, "admin"); checkAuth(); 
         } else if (u.toLowerCase() === ASST_USER.toLowerCase() && p === ASST_PASS) { 
             localStorage.setItem(K_AUTH, "1"); localStorage.setItem(K_ROLE, "assistant"); checkAuth(); 
-        } else { showToast(t("msg_err_pass"), "err"); }
+        } else { 
+            showToast(t("msg_err_pass"), "err"); 
+            triggerShake("loginBtn"); // إضافة اهتزاز لزرار الدخول
+        }
     });
 
     on("logoutBtn", "click", function() { localStorage.removeItem(K_AUTH); location.reload(); });
@@ -1039,7 +1054,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if ($("customPassInput") && $("customPassInput").value === ADMIN_PASS) { 
             if($("customPassModal")) $("customPassModal").classList.add("hidden"); 
             if(passSuccessCallback) passSuccessCallback(); 
-        } else { showToast(t("msg_err_pass"), "err"); }
+        } else { showToast(t("msg_err_pass"), "err"); triggerShake("customPassInput"); }
     });
 
     on("customPassCancel", "click", function() { if($("customPassModal")) $("customPassModal").classList.add("hidden"); });
@@ -1054,7 +1069,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const idInp = $("quickAttendId");
         if (!idInp) return;
         const id = toInt(idInp.value); 
-        if(!id || !students[String(id)]) { showToast("الطالب غير مسجل", "err"); return; }
+        if(!id || !students[String(id)]) { 
+            showToast("الطالب غير مسجل", "err"); 
+            triggerShake("quickAttendId"); // الاهتزاز عند الخطأ
+            return; 
+        }
         
         const res = addAttendance(id, nowDateStr());
         showToast(res.msg, res.ok ? "success" : "warning");
@@ -1063,7 +1082,13 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     on("openBtn", "click", function() {
-        if ($("openId")) window.extOpen(toInt($("openId").value));
+        let openVal = toInt($("openId").value);
+        if ($("openId") && openVal && students[String(openVal)]) {
+            window.extOpen(openVal);
+        } else {
+            showToast("الطالب غير موجود", "err");
+            triggerShake("openId"); // الاهتزاز عند الخطأ
+        }
     });
 
     on("searchAny", "input", function(e) {
@@ -1094,7 +1119,7 @@ document.addEventListener('DOMContentLoaded', function() {
     on("addNewBtn", "click", function() {
         const id = $("newId") ? toInt($("newId").value) : 0;
         if(!id) return;
-        if (students[String(id)] && students[String(id)].name) { return showToast("الكود مستخدم بالفعل", "err"); }
+        if (students[String(id)] && students[String(id)].name) { triggerShake("newId"); return showToast("الكود مستخدم بالفعل", "err"); }
         
         students[String(id)] = makeEmptyStudent(id); 
         if(id > BASE_MAX_ID) extraIds.push(id);
@@ -1172,33 +1197,6 @@ document.addEventListener('DOMContentLoaded', function() {
         saveAll(); showToast(t("msg_discount"), "warning"); updateStudentUI(currentId); renderReport(nowDateStr()); renderCharts();
     });
 
-    on("deleteStudentBtn", "click", function() {
-        if(!currentId) return;
-        if(!confirm(currentLang==='ar' ? "⚠️ متأكد من الحذف نهائياً؟" : "⚠️ Are you sure you want to delete?")) return;
-        const targetId = currentId; const st = students[targetId]; const backup = JSON.parse(JSON.stringify(st));
-        let deducted = 0; 
-        if(st.paid > 0 && confirm(currentLang==='ar' ? 'خصم مدفوعاته من إيراد اليوم؟' : 'Deduct from revenue?')) deducted = st.paid;
-        
-        const today = nowDateStr();
-        revenueByDate[today] = (revenueByDate[today] || 0) - deducted;
-        deletedStudents[targetId] = backup; 
-        students[targetId] = makeEmptyStudent(targetId);
-        
-        if(targetId > BASE_MAX_ID) { 
-            delete students[targetId]; 
-            let newExtra = [];
-            for(let i=0; i<extraIds.length; i++) { if (extraIds[i] !== targetId) newExtra.push(extraIds[i]); }
-            extraIds = newExtra;
-        }
-        saveAll(); updateStudentUI(null); window.switchTab('Home');
-        
-        showUndoToast(t("msg_deleted"), function() {
-            students[targetId] = backup; delete deletedStudents[targetId];
-            revenueByDate[nowDateStr()] = (revenueByDate[nowDateStr()] || 0) + deducted;
-            saveAll(); window.extOpen(targetId); renderReport(nowDateStr()); renderCharts(); showToast(t("msg_undo"));
-        });
-    });
-
     on("addNoteBtn", "click", function() {
         if(!currentId) return; 
         const noteInp = $("newNoteInp"); if (!noteInp) return;
@@ -1230,7 +1228,6 @@ document.addEventListener('DOMContentLoaded', function() {
         showToast(t("msg_exp_saved")); renderReport(today);
     });
 
-    // وحدة صانع الباقات الجديدة
     window.renderGroupFeesModal = function() {
         let h = `
         <div style="display:flex; gap:10px; margin-bottom:15px; background:#eef2f5; padding:10px; border-radius:8px;">
@@ -1252,7 +1249,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         if ($("groupFeesList")) $("groupFeesList").innerHTML = h;
 
-        // ربط زر إضافة باقة جديدة
         if($("addNewPkgBtn")) {
             $("addNewPkgBtn").onclick = function() {
                 let n = $("newPkgName").value.trim();
@@ -1264,7 +1260,6 @@ document.addEventListener('DOMContentLoaded', function() {
             };
         }
 
-        // ربط أزرار حذف الباقات
         document.querySelectorAll(".delete-pkg-btn").forEach(btn => {
             btn.onclick = function() {
                 let g = this.getAttribute("data-group");
@@ -1294,7 +1289,7 @@ document.addEventListener('DOMContentLoaded', function() {
             groupFees[groupName] = toInt(inputs[i].value);
         }
         saveAll(); 
-        populatePackages(); // تحديث القوائم المنسدلة
+        populatePackages(); 
         if ($("groupFeesModal")) $("groupFeesModal").classList.add("hidden"); 
         showToast(t("msg_saved"));
         if(currentId) updateStudentUI(currentId);
@@ -1331,7 +1326,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Reports & WhatsApp
     on("reportBtn", "click", function() {
         if ($("reportDate")) renderReport($("reportDate").value);
     });
@@ -1376,11 +1370,9 @@ document.addEventListener('DOMContentLoaded', function() {
         navigator.clipboard.writeText(txt).then(function() { showToast(t("msg_copied")); });
     });
 
-// ==========================================
-    // 16. EXCEL LOGIC (تصدير واستيراد)
     // ==========================================
-
-    // 1. تصدير الإكسيل (النسخة الاحترافية الشاملة - أوفلاين)
+    // 16. EXCEL LOGIC (تصدير واستيراد - النسخة الاحترافية متعددة الصفحات)
+    // ==========================================
     on("exportExcelBtn", "click", function() {
         if (typeof XLSX === "undefined") { return showToast("⚠️ مكتبة الإكسيل غير موجودة، تأكد من وجود ملف xlsx.full.min.js في فولدر assets", "err"); }
         
@@ -1397,7 +1389,7 @@ document.addEventListener('DOMContentLoaded', function() {
             let s = filled[i];
             let history = s.attendanceDates ? s.attendanceDates.join(" | ") : "";
             let rankAr = s.rank === 'vip' ? 'VIP ⭐' : (s.rank === 'warn' ? 'إنذار ⚠️' : 'عادي 🟢');
-            let cleanNotes = s.notes ? s.notes.replace(/\n/g, " - ") : ""; // تظبيط شكل الملاحظات عشان متكسرش الإكسيل
+            let cleanNotes = s.notes ? s.notes.replace(/\n/g, " - ") : ""; 
             
             stData.push([s.id, s.name, s.className || "عام", s.phone, s.paid, rankAr, history, cleanNotes]);
         }
@@ -1416,7 +1408,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const finData = [["التاريخ", "النوع", "المبلغ", "البيان / السبب"]];
         
         let allDates = new Set([...Object.keys(revenueByDate), ...Object.keys(expensesByDate)]);
-        let sortedDates = Array.from(allDates).sort((a,b) => new Date(a) - new Date(b)); // ترتيب من القديم للجديد
+        let sortedDates = Array.from(allDates).sort((a,b) => new Date(a) - new Date(b)); 
         
         for(let i=0; i<sortedDates.length; i++) {
             let d = sortedDates[i];
@@ -1431,7 +1423,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(finData), "الماليات");
 
-        // --- استخراج وحفظ الملف ---
         XLSX.writeFile(wb, `VPRO_Backup_${nowDateStr()}.xlsx`);
         localStorage.setItem(K_LAST_BACKUP, nowDateStr()); 
         
@@ -1439,7 +1430,6 @@ document.addEventListener('DOMContentLoaded', function() {
         showToast("تم تصدير نسخة احتياطية شاملة ✅");
     });
 
-    // 2. استيراد الإكسيل (كما هو بدون تغيير لضمان عمله)
     on("importExcelBtnFake", "click", function() { if ($("importExcelInput")) $("importExcelInput").click(); });
     
     on("importExcelInput", "change", async function(e) {
@@ -1479,6 +1469,60 @@ document.addEventListener('DOMContentLoaded', function() {
         saveAll(); showToast(t("msg_saved")); 
         setTimeout(function() { location.reload(); }, 1000);
     });
+
+    // ==========================================
+    // 17. PREMIUM HOLD-TO-DELETE LOGIC (الضغط المطول)
+    // ==========================================
+    let deleteTimer;
+    const delBtn = $("deleteStudentBtn");
+    
+    if(delBtn) delBtn.innerHTML = `<span>🗑️ حذف</span>`; 
+
+    function startDeleteHold(e) {
+        if(!currentId) return;
+        delBtn.classList.add("holding");
+        
+        deleteTimer = setTimeout(() => {
+            delBtn.classList.remove("holding");
+            
+            const targetId = currentId; const st = students[targetId]; const backup = JSON.parse(JSON.stringify(st));
+            let deducted = 0; 
+            if(st.paid > 0 && confirm(currentLang==='ar' ? 'خصم مدفوعاته من إيراد اليوم؟' : 'Deduct from revenue?')) deducted = st.paid;
+            
+            const today = nowDateStr();
+            revenueByDate[today] = (revenueByDate[today] || 0) - deducted;
+            deletedStudents[targetId] = backup; 
+            students[targetId] = makeEmptyStudent(targetId);
+            
+            if(targetId > BASE_MAX_ID) { 
+                delete students[targetId]; 
+                let newExtra = [];
+                for(let i=0; i<extraIds.length; i++) { if (extraIds[i] !== targetId) newExtra.push(extraIds[i]); }
+                extraIds = newExtra;
+            }
+            saveAll(); updateStudentUI(null); window.switchTab('Home');
+            
+            showUndoToast(t("msg_deleted"), function() {
+                students[targetId] = backup; delete deletedStudents[targetId];
+                revenueByDate[nowDateStr()] = (revenueByDate[nowDateStr()] || 0) + deducted;
+                saveAll(); window.extOpen(targetId); renderReport(nowDateStr()); renderCharts(); showToast(t("msg_undo"));
+            });
+        }, 2000); // ثانيتين ضغط متواصل
+    }
+
+    function cancelDeleteHold() {
+        clearTimeout(deleteTimer);
+        if(delBtn) delBtn.classList.remove("holding");
+    }
+
+    if(delBtn) {
+        delBtn.addEventListener("mousedown", startDeleteHold);
+        delBtn.addEventListener("mouseup", cancelDeleteHold);
+        delBtn.addEventListener("mouseleave", cancelDeleteHold);
+        delBtn.addEventListener("touchstart", startDeleteHold, {passive: true});
+        delBtn.addEventListener("touchend", cancelDeleteHold);
+        delBtn.addEventListener("touchcancel", cancelDeleteHold);
+    }
 
     // Modals & Bins
     on("openBinBtn", "click", function() { renderBinList(); if ($("recycleBinModal")) $("recycleBinModal").classList.remove("hidden"); });
@@ -1581,7 +1625,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // ==========================================
-    // 15. INITIALIZATION (START ENGINE)
+    // 18. INITIALIZATION (START ENGINE)
     // ==========================================
     function checkDailyBackup() {
         const last = localStorage.getItem(K_LAST_BACKUP);
