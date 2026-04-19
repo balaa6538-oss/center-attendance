@@ -66,6 +66,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // 3. THE COMPREHENSIVE DICTIONARY
     // ==========================================
     const dict = {
+       "nav_syllabus": { ar: "المنهج", en: "Syllabus" },
        "tbl_remain": { ar: "المتبقي", en: "Remaining" },
         "modal_rev_today": { ar: "💰 تفاصيل إيراد اليوم", en: "💰 Today's Revenue Details" },
         "syll_update_title": { ar: "🗺️ تحديث خريطة المنهج (للمدير)", en: "🗺️ Update Syllabus (Admin)" },
