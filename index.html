@@ -219,11 +219,17 @@
     <section id="secRevenue" class="tab-section hidden adminOnly">
       
       <h2 data-i18n="fin_summary_title">📊 الملخص المالي</h2>
-      <div class="finance-grid">
+     <div class="finance-grid">
           <div class="finance-card green-border">
               <h4 data-i18n="fin_today_net">صافي ربح اليوم</h4>
               <div class="amount" style="color: var(--success);"><span id="todayNetProfit">0</span> ج</div>
           </div>
+          
+          <div class="finance-card" style="border-right: 5px solid var(--danger);">
+              <h4 data-i18n="fin_month_exp" style="color: var(--danger);">صافي مصروفات الشهر</h4>
+              <div class="amount" style="color: var(--danger);"><span id="monthTotalExp">0</span> ج</div>
+          </div>
+
           <div class="finance-card">
               <h4 data-i18n="fin_month_net">صافي ربح الشهر الحالي</h4>
               <div class="amount"><span id="monthNetProfit">0</span> ج</div>
