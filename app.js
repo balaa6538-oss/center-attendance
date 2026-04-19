@@ -66,6 +66,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // 3. THE COMPREHENSIVE DICTIONARY
     // ==========================================
     const dict = {
+       "tbl_remain": { ar: "المتبقي", en: "Remaining" },
+        "modal_rev_today": { ar: "💰 تفاصيل إيراد اليوم", en: "💰 Today's Revenue Details" },
+        "syll_update_title": { ar: "🗺️ تحديث خريطة المنهج (للمدير)", en: "🗺️ Update Syllabus (Admin)" },
+        "syll_name_lbl": { ar: "اسم الشابتر / الدرس", en: "Chapter / Lesson Name" },
+        "syll_status_lbl": { ar: "الحالة", en: "Status" },
+        "syll_notes_lbl": { ar: "ملاحظات الحصة الأخيرة (للأسستنت والطلاب)", en: "Latest Session Notes" },
+        "syll_map_title": { ar: "📍 خريطة سير المنهج", en: "📍 Syllabus Map" },
+        "txt_no_rev": { ar: "لم يتم تسجيل أي إيرادات اليوم.", en: "No revenue recorded today." },
         "login_title": { ar: "دخول لوحة السنتر", en: "Center Login" },
         "login_desc": { ar: "الدخول للمسؤول فقط", en: "Admin Access Only" },
         "login_btn": { ar: "دخول", en: "Login" },
@@ -782,15 +790,16 @@ document.addEventListener('DOMContentLoaded', function() {
             let attendTxt = isAttended ? "✅" : "➖";
             let rankIcon = s.rank === 'vip' ? ' ⭐' : (s.rank === 'warn' ? ' ⚠️' : '');
             let gColor = getTagColor(sClass);
-
+let remainAmt = req > 0 ? (req - (s.paid || 0)) : 0;
+            if (remainAmt < 0) remainAmt = 0;
             tr.innerHTML = `
                 <td><input type="checkbox" class="stCheckbox" data-id="${s.id}"></td>
                 <td>${s.id}</td>
                 <td><b>${s.name}</b>${rankIcon}</td>
                 <td><span class="badge" style="background:${gColor}; border-color:${gColor}; color:#fff;">${s.className || 'عام'}</span></td>
                 <td>${s.paid} ج ${pBar}</td>
+                <td>${remainAmt} ج</td>
                 <td>${attendTxt}</td>`;
-            
             tr.onclick = function(e) { 
                 if(e.target.type !== "checkbox") window.extOpen(s.id); 
             };
@@ -1064,7 +1073,9 @@ document.addEventListener('DOMContentLoaded', function() {
         isRevHidden = !isRevHidden;
         updateTopStats();
     });
-
+on("quickAttendId", "keypress", function(e) {
+        if (e.key === "Enter") { e.preventDefault(); $("quickAttendBtn").click(); }
+    });
     on("quickAttendBtn", "click", function() {
         const idInp = $("quickAttendId");
         if (!idInp) return;
@@ -1167,6 +1178,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const v = toInt(payInp.value); if(!v) return;
         
         const st = students[currentId]; st.paid += v;
+       if (!st.payments) st.payments = [];
+        st.payments.push({ date: nowDateStr(), amount: v });
         const today = nowDateStr();
         if (!revenueByDate[today]) revenueByDate[today] = 0;
         revenueByDate[today] += v;
@@ -1432,10 +1445,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     on("importExcelBtnFake", "click", function() { if ($("importExcelInput")) $("importExcelInput").click(); });
     
-    on("importExcelInput", "change", async function(e) {
+on("importExcelInput", "change", async function(e) {
         const f = e.target.files[0]; if(!f) return; 
         const wb = XLSX.read(await f.arrayBuffer(), {type:"array"});
-        const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+        const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]); // بيقرأ أول شيت (بيانات الطلاب)
         
         let warnMsg = currentLang==='ar' ? 'تحذير: سيتم مسح البيانات الحالية واستبدالها!' : 'Warning: Overwrite current data?';
         if(!confirm(warnMsg)) return;
@@ -1445,18 +1458,25 @@ document.addEventListener('DOMContentLoaded', function() {
         
         for (let i = 0; i < rows.length; i++) {
             let row = rows[i];
-            const id = toInt(row["ID"] || row["كود"]);
+            // هنا بنخليه يقرأ العناوين الجديدة العربي اللي إحنا عملناها في التصدير
+            const id = toInt(row["كود الطالب"] || row["ID"] || row["كود"]);
             if(id) {
                 let st = makeEmptyStudent(id);
-                st.name = row["Name"] || row["الاسم"] || ""; 
-                st.className = row["Class"] || row["المجموعة"] || "";
-                st.phone = String(row["Phone"] || row["رقم الموبايل"] || ""); 
-                st.paid = toInt(row["Paid"] || row["المدفوع"]);
-                st.rank = row["Rank"] || row["التصنيف"] || "normal";
+                st.name = row["اسم الطالب"] || row["Name"] || row["الاسم"] || ""; 
+                st.className = row["الباقة / المجموعة"] || row["Class"] || row["المجموعة"] || "";
+                st.phone = String(row["رقم الموبايل"] || row["Phone"] || ""); 
+                st.paid = toInt(row["إجمالي المدفوع"] || row["Paid"] || row["المدفوع"]);
                 
-                let h = row["History"] || row["سجل الحضور"] || "";
+                let rankAr = row["التصنيف"] || row["Rank"] || "";
+                st.rank = rankAr.includes("VIP") ? "vip" : (rankAr.includes("إنذار") ? "warn" : "normal");
+                
+                let n = row["الملاحظات"] || "";
+                st.notes = n ? n.replace(/ - /g, "\n") : ""; // نرجع الملاحظات لسطور زي ما كانت
+                
+                let h = row["سجل الحضور"] || row["History"] || "";
                 if(h) {
-                    st.attendanceDates = h.split(",").map(function(d) { return d.trim(); });
+                    // يقدر يقرأ التواريخ سواء مفصولة بـ ( | ) أو ( , )
+                    st.attendanceDates = h.split(/\||,/).map(function(d) { return d.trim(); }).filter(d => d);
                     for (let j = 0; j < st.attendanceDates.length; j++) {
                         let d = st.attendanceDates[j];
                         if(!attByDate[d]) attByDate[d] = []; 
@@ -1662,4 +1682,42 @@ document.addEventListener('DOMContentLoaded', function() {
     applyLanguage(); 
     checkDailyBackup();
     setTimeout(checkQR, 500);
+   on("todayRevenue", "click", function(e) {
+        if(isRevHidden) return; // لو مخفي ميفتحش
+        const today = nowDateStr();
+        let html = "";
+        let count = 0;
+        
+        const allStuds = Object.values(students);
+        for(let i=0; i<allStuds.length; i++) {
+            let s = allStuds[i];
+            if(s.payments && s.payments.length > 0) {
+                for(let j=0; j<s.payments.length; j++) {
+                    if(s.payments[j].date === today) {
+                        let sClass = s.className ? s.className.trim() : "عام";
+                        let req = (sClass && groupFees[sClass] !== undefined) ? toInt(groupFees[sClass]) : 0;
+                        let remain = req > 0 ? (req - s.paid) : 0;
+                        if(remain < 0) remain = 0;
+                        
+                        html += `
+                        <div class="item flexBetween" style="margin-bottom:8px; cursor:pointer;" onclick="document.getElementById('revenueModal').classList.add('hidden'); window.extOpen('${s.id}')">
+                            <div>
+                                <b>${s.name}</b> (#${s.id}) <span class="badge" style="background:#eee; color:#333;">${sClass}</span>
+                            </div>
+                            <div style="text-align:left;">
+                                <span style="color:var(--success); font-weight:bold;">+ ${s.payments[j].amount} ج</span><br>
+                                <span style="font-size:11px; color:#666;">المتبقي: ${remain} ج</span>
+                            </div>
+                        </div>`;
+                        count++;
+                    }
+                }
+            }
+        }
+        
+        if(count === 0) html = `<div class="mutedCenter">${t("txt_no_rev")}</div>`;
+        
+        if($("revenueModalBody")) $("revenueModalBody").innerHTML = html;
+        if($("revenueModal")) $("revenueModal").classList.remove("hidden");
+    });
 });
