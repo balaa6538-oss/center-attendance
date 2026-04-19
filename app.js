@@ -1376,31 +1376,70 @@ document.addEventListener('DOMContentLoaded', function() {
         navigator.clipboard.writeText(txt).then(function() { showToast(t("msg_copied")); });
     });
 
-    // Excel Logic
+// ==========================================
+    // 16. EXCEL LOGIC (تصدير واستيراد)
+    // ==========================================
+
+    // 1. تصدير الإكسيل (النسخة الاحترافية الشاملة - أوفلاين)
     on("exportExcelBtn", "click", function() {
         if (typeof XLSX === "undefined") { return showToast("⚠️ مكتبة الإكسيل غير موجودة، تأكد من وجود ملف xlsx.full.min.js في فولدر assets", "err"); }
         
+        const wb = XLSX.utils.book_new();
+
+        // --- الشيت الأول: بيانات الطلاب ---
         let filled = [];
         const allStuds = Object.values(students);
         for (let i = 0; i < allStuds.length; i++) { if (allStuds[i].name) filled.push(allStuds[i]); }
         filled.sort(function(a, b) { return a.id - b.id; });
         
-        const wsData = [["ID", "Name", "Class", "Phone", "Paid", "Rank", "Attendance"]];
+        const stData = [["كود الطالب", "اسم الطالب", "الباقة / المجموعة", "رقم الموبايل", "إجمالي المدفوع", "التصنيف", "سجل الحضور", "الملاحظات"]];
         for (let i = 0; i < filled.length; i++) {
             let s = filled[i];
-            let history = s.attendanceDates ? s.attendanceDates.join(",") : "";
-            wsData.push([s.id, s.name, s.className, s.phone, s.paid, s.rank, history]);
+            let history = s.attendanceDates ? s.attendanceDates.join(" | ") : "";
+            let rankAr = s.rank === 'vip' ? 'VIP ⭐' : (s.rank === 'warn' ? 'إنذار ⚠️' : 'عادي 🟢');
+            let cleanNotes = s.notes ? s.notes.replace(/\n/g, " - ") : ""; // تظبيط شكل الملاحظات عشان متكسرش الإكسيل
+            
+            stData.push([s.id, s.name, s.className || "عام", s.phone, s.paid, rankAr, history, cleanNotes]);
         }
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(stData), "بيانات الطلاب");
+
+        // --- الشيت الثاني: خريطة المنهج ---
+        const syllData = [["اسم الدرس / الشابتر", "الحالة", "ملاحظات الحصة", "تاريخ التحديث"]];
+        for(let i=0; i < syllabusData.length; i++) {
+            let s = syllabusData[i];
+            let statusAr = s.status === "completed" ? "تم الانتهاء" : (s.status === "in_progress" ? "جاري الشرح" : "لم يبدأ");
+            syllData.push([s.name, statusAr, s.notes || "", s.date]);
+        }
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(syllData), "خريطة المنهج");
+
+        // --- الشيت الثالث: الماليات والمصروفات ---
+        const finData = [["التاريخ", "النوع", "المبلغ", "البيان / السبب"]];
         
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsData), "Students");
-        XLSX.writeFile(wb, `VPRO_Data_${nowDateStr()}.xlsx`);
+        let allDates = new Set([...Object.keys(revenueByDate), ...Object.keys(expensesByDate)]);
+        let sortedDates = Array.from(allDates).sort((a,b) => new Date(a) - new Date(b)); // ترتيب من القديم للجديد
+        
+        for(let i=0; i<sortedDates.length; i++) {
+            let d = sortedDates[i];
+            if(revenueByDate[d]) {
+                finData.push([prettyDate(d), "إيرادات 💰", revenueByDate[d], "إيراد مدفوعات الطلاب"]);
+            }
+            if(expensesByDate[d] && expensesByDate[d].length > 0) {
+                for(let j=0; j<expensesByDate[d].length; j++) {
+                    finData.push([prettyDate(d), "مصروفات 🔻", expensesByDate[d][j].amount, expensesByDate[d][j].reason]);
+                }
+            }
+        }
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(finData), "الماليات");
+
+        // --- استخراج وحفظ الملف ---
+        XLSX.writeFile(wb, `VPRO_Backup_${nowDateStr()}.xlsx`);
         localStorage.setItem(K_LAST_BACKUP, nowDateStr()); 
         
         if($("btnTabAdmin")) $("btnTabAdmin").classList.remove("needs-backup");
-        showToast(t("msg_saved"));
+        showToast("تم تصدير نسخة احتياطية شاملة ✅");
     });
 
+    // 2. استيراد الإكسيل (كما هو بدون تغيير لضمان عمله)
     on("importExcelBtnFake", "click", function() { if ($("importExcelInput")) $("importExcelInput").click(); });
     
     on("importExcelInput", "change", async function(e) {
