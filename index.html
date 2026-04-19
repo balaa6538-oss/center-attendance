@@ -7,7 +7,7 @@
   
   <link rel="stylesheet" href="style.css?v=PRO_FINAL">
   
-  <script src="assets/xlsx.full.min.js"></script>
+  <script src="./assets/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -109,7 +109,7 @@
         <label class="lbl" data-i18n="lbl_name">الاسم</label>
         <input id="stName" class="inp">
         
-        <label class="lbl" data-i18n="lbl_class">الصف / المجموعة / الباقة</label>
+        <label class="lbl" data-i18n="lbl_class">الصف / الباقة</label>
         <select id="stClass" class="inp">
             <option value="">-- اختر الباقة / المجموعة --</option>
             <option value="عام">عام</option>
@@ -198,7 +198,7 @@
                 <th><input type="checkbox" id="selectAllCheckbox"></th>
                 <th>ID</th>
                 <th data-i18n="tbl_name">الاسم</th>
-                <th data-i18n="tbl_class">المجموعة</th>
+                <th data-i18n="tbl_class">الباقة</th>
                 <th data-i18n="tbl_paid">المدفوع</th>
                 <th data-i18n="tbl_today">حضور اليوم</th> 
               </tr>
@@ -267,7 +267,7 @@
 
     <section id="secSyllabus" class="tab-section hidden">
       <div class="card glassCard adminOnly" style="margin-bottom: 20px;">
-        <h2 style="color:var(--primary);">🗺️ تحديث خريطة المنهج </h2>
+        <h2 style="color:var(--primary);">🗺️ تحديث خريطة المنهج (للمدير)</h2>
         <div class="grid2" style="margin-bottom: 0;">
           <div>
             <label class="lbl">اسم الشابتر / الدرس</label>
@@ -338,7 +338,7 @@
             <div class="settings-card">
                 <h3 data-i18n="set_fin_title">💰 إعدادات مالية</h3>
                 <div style="display:flex; flex-direction:column; gap:10px;">
-                    <button class="btn warning w100" id="openGroupFeesBtn" style="padding:12px; font-weight:bold; color:#000;" data-i18n="btn_group_fees">⚙️ إدارة مصاريف المجموعات</button>
+                    <button class="btn warning w100" id="openGroupFeesBtn" style="padding:12px; font-weight:bold; color:#000;" data-i18n="btn_group_fees">⚙️ إدارة الباقات والمصاريف</button>
                 </div>
             </div>
 
@@ -354,7 +354,7 @@
     </section>
 
     <nav class="bottom-nav">
-        <button id="btnTabAdmin" class="nav-item adminOnly">
+        <button id="btnTabAdmin" class="nav-item adminOnly needs-backup">
             <span class="nav-icon">⚙️</span>
             <span class="nav-text" data-i18n="nav_settings">الإعدادات</span>
         </button>
