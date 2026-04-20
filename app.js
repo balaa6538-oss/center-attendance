@@ -949,7 +949,7 @@ let remainAmt = req > 0 ? (req - (s.paid || 0)) : 0;
         showToast("تم الاسترجاع ✅"); window.extOpen(id); 
     };
 
-    // ==========================================
+   // ==========================================
     // 12. SYSTEM THEME & LANGUAGE APPLY
     // ==========================================
     function applyTheme(theme) {
@@ -981,8 +981,10 @@ let remainAmt = req > 0 ? (req - (s.paid || 0)) : 0;
         if(document.querySelector('.bottom-nav')) {
             document.querySelector('.bottom-nav').style.flexDirection = currentLang === "ar" ? "row" : "row-reverse";
         }
+        
+        // السطر الجديد لتحديث كلمات جوجل درايف فوراً مع تغيير اللغة
+        if (typeof updateDriveUI === "function") updateDriveUI();
     }
-
     // ==========================================
     // 13. SYLLABUS MODULE
     // ==========================================
@@ -1716,7 +1718,7 @@ on("importExcelInput", "change", async function(e) {
     let tokenClient;
     let accessToken = localStorage.getItem("drive_token");
 
-    function updateDriveUI() {
+  function updateDriveUI() {
         const btn = $("driveLoginBtn"); const syncBtn = $("syncNowBtn");
         const statusTxt = $("driveStatusText"); const lastSyncTxt = $("lastSyncText");
         
@@ -1726,6 +1728,7 @@ on("importExcelInput", "change", async function(e) {
             if(statusTxt) { statusTxt.innerHTML = t("drive_online"); statusTxt.style.color = "var(--success)"; }
         } else {
             if(statusTxt) { statusTxt.innerHTML = t("drive_offline"); statusTxt.style.color = "#666"; }
+            if(btn) { btn.innerHTML = t("btn_drive_login"); btn.style.background = "#4285F4"; }
         }
 
         let lastTime = localStorage.getItem("last_cloud_sync_time");
