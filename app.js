@@ -66,6 +66,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // 3. THE COMPREHENSIVE DICTIONARY
     // ==========================================
     const dict = {
+       "fin_month_exp": { ar: "صافي مصروفات الشهر", en: "Monthly Expenses" },
        "nav_syllabus": { ar: "المنهج", en: "Syllabus" },
        "tbl_remain": { ar: "المتبقي", en: "Remaining" },
         "modal_rev_today": { ar: "💰 تفاصيل إيراد اليوم", en: "💰 Today's Revenue Details" },
@@ -652,6 +653,7 @@ document.addEventListener('DOMContentLoaded', function() {
             } 
         }
         if($("monthNetProfit")) $("monthNetProfit").textContent = (mRev - mExp);
+       if($("monthTotalExp")) $("monthTotalExp").textContent = mExp;
     }
 
     function renderCharts() {
