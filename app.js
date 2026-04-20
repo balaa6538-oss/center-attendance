@@ -11,6 +11,19 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log("V-PRO MAX Engine: Initializing System...");
+   // 1. تهيئة الدخول
+initDriveAuth();
+
+// 2. التحقق من المزامنة التلقائية (كل 24 ساعة)
+const lastCloudSync = localStorage.getItem("last_cloud_sync");
+if (lastCloudSync !== nowDateStr()) {
+    setTimeout(() => {
+        if(accessToken) {
+            backupToDrive();
+            localStorage.setItem("last_cloud_sync", nowDateStr());
+        }
+    }, 5000); // يبدأ المزامنة بصمت بعد 5 ثواني من فتح البرنامج
+}
 
     // ==========================================
     // 1. CONFIGURATION & AUTHENTICATION
@@ -1772,3 +1785,118 @@ on("importExcelInput", "change", async function(e) {
         if($("revenueModal")) $("revenueModal").classList.remove("hidden");
     });
 });
+// --- Google Drive API Config ---
+const CLIENT_ID = '783299132334-7sk1ffet8bdmj86f179gbttjt5fqosao.apps.googleusercontent.com';
+const SCOPES = 'https://www.googleapis.com/auth/drive.file'; // الوصول فقط للملفات التي ينشئها البرنامج
+let tokenClient;
+let accessToken = null;
+const BACKUP_FILE_NAME = 'vpro_backup.json';
+// تهيئة مكتبة جوجل عند تحميل الصفحة
+function initDriveAuth() {
+    tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID,
+        scope: SCOPES,
+        callback: (response) => {
+            if (response.access_token) {
+                accessToken = response.access_token;
+                localStorage.setItem("drive_token", accessToken);
+                updateDriveUI(true);
+                gapi.load('client', () => gapi.client.load('drive', 'v3'));
+                showToast("متصل بجوجل درايف ✅");
+            }
+        },
+    });
+}
+
+function updateDriveUI(isConnected) {
+    const btn = $("driveLoginBtn");
+    const syncBtn = $("syncNowBtn");
+    if (isConnected) {
+        btn.innerHTML = "متصل بالدرايف ✅";
+        btn.style.background = "#2ea44f";
+        if(syncBtn) syncBtn.classList.remove("hidden");
+    }
+}
+
+on("driveLoginBtn", "click", () => {
+    tokenClient.requestAccessToken({ prompt: 'consent' });
+});
+async function backupToDrive() {
+    if (!accessToken) return;
+    
+    // تجميع كل بيانات الـ localStorage التي تبدأ بـ ca_
+    let backupData = {};
+    for (let i = 0; i < localStorage.length; i++) {
+        let key = localStorage.key(i);
+        if (key.startsWith("ca_")) backupData[key] = localStorage.getItem(key);
+    }
+
+    const fileContent = JSON.stringify(backupData);
+    const metadata = { name: BACKUP_FILE_NAME, mimeType: 'application/json' };
+
+    try {
+        // البحث عن الملف إذا كان موجوداً مسبقاً
+        const response = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${BACKUP_FILE_NAME}' and trashed=false`, {
+            headers: { 'Authorization': `Bearer ${accessToken}` }
+        });
+        const data = await response.json();
+        
+        let url = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
+        let method = 'POST';
+
+        if (data.files && data.files.length > 0) {
+            // تحديث الملف الموجود
+            const fileId = data.files[0].id;
+            url = `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart`;
+            method = 'PATCH';
+        }
+
+        const boundary = 'foo_bar_baz';
+        const body = `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(metadata)}\r\n` +
+                     `--${boundary}\r\nContent-Type: application/json\r\n\r\n${fileContent}\r\n--${boundary}--`;
+
+        await fetch(url, {
+            method: method,
+            headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': `multipart/related; boundary=${boundary}` },
+            body: body
+        });
+        
+        showToast("تمت المزامنة السحابية بنجاح ☁️");
+    } catch (err) {
+        console.error("Sync Error:", err);
+    }
+}
+
+async function restoreFromDrive() {
+    if (!accessToken) return showToast("يرجى الاتصال بالدرايف أولاً", "err");
+    
+    if (!confirm("⚠️ هل أنت متأكد؟ سيتم استبدال كل البيانات الحالية بالنسخة الاحتياطية من السحاب!")) return;
+
+    try {
+        const response = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${BACKUP_FILE_NAME}'&fields=files(id)`, {
+            headers: { 'Authorization': `Bearer ${accessToken}` }
+        });
+        const data = await response.json();
+
+        if (data.files && data.files.length > 0) {
+            const fileId = data.files[0].id;
+            const fileRes = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+                headers: { 'Authorization': `Bearer ${accessToken}` }
+            });
+            const backupData = await fileRes.json();
+
+            // استعادة البيانات
+            for (let key in backupData) {
+                localStorage.setItem(key, backupData[key]);
+            }
+            showToast("تم استرجاع البيانات بنجاح! سيتم إعادة تحميل الصفحة...");
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showToast("لم يتم العثور على نسخة احتياطية في الدرايف", "err");
+        }
+    } catch (err) {
+        showToast("فشل في استرجاع البيانات", "err");
+    }
+}
+
+on("syncNowBtn", "click", backupToDrive);
