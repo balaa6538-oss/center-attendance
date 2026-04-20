@@ -315,16 +315,18 @@
             <textarea id="centerNotebook" style="width:100%; height:120px; background:#f9f9f9; padding:10px; border-radius:8px; border:2px dashed var(--primary); resize:none;" placeholder="اكتب ملاحظاتك..." data-i18n-placeholder="note_plc_main"></textarea>
         </div>
 
-        <div class="settings-grid">
-            <div class="settings-card success-card">
-                <h3 data-i18n="set_data_title">💾 البيانات والنسخ الاحتياطي</h3>
-                <div style="display:flex; flex-direction:column; gap:10px;">
-                    <button class="btn success w100" id="exportExcelBtn" style="padding:12px; font-weight:bold;" data-i18n="btn_export_ex">📥 تصدير البيانات (Excel)</button>
-                    <button class="btn info w100" id="importExcelBtnFake" style="padding:12px;" data-i18n="btn_import_ex">📤 استيراد بيانات (Excel)</button>
-                    <input type="file" id="importExcelInput" accept=".xlsx, .xls" hidden>
-                    <button class="btn danger w100" id="openBinBtn" style="padding:12px;" data-i18n="btn_recycle">🗑️ سلة المحذوفات</button>
-                </div>
+       <div class="settings-card success-card">
+            <h3 data-i18n="set_data_title">💾 البيانات والنسخ الاحتياطي</h3>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                <button class="btn success w100" id="exportExcelBtn" style="padding:12px; font-weight:bold;" data-i18n="btn_export_ex">📥 تصدير البيانات (Excel)</button>
+                <button class="btn info w100" id="importExcelBtnFake" style="padding:12px;" data-i18n="btn_import_ex">📤 استيراد بيانات (Excel)</button>
+                <input type="file" id="importExcelInput" accept=".xlsx, .xls" hidden>
+                
+                <button class="btn warning w100" onclick="restoreFromDrive()" style="padding:12px; font-weight:bold;">استرجاع النسخة الاحتياطية من السحاب 🔄</button>
+                
+                <button class="btn danger w100" id="openBinBtn" style="padding:12px;" data-i18n="btn_recycle">🗑️ سلة المحذوفات</button>
             </div>
+        </div>
 
             <div class="settings-card">
                 <h3 data-i18n="set_ui_title">🎨 المظهر والتخصيص</h3>
