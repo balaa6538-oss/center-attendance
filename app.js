@@ -1718,7 +1718,7 @@ on("importExcelInput", "change", async function(e) {
     let tokenClient;
     let accessToken = localStorage.getItem("drive_token");
 
-  function updateDriveUI() {
+ function updateDriveUI() {
         const btn = $("driveLoginBtn"); const syncBtn = $("syncNowBtn");
         const statusTxt = $("driveStatusText"); const lastSyncTxt = $("lastSyncText");
         
