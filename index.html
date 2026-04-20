@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="https://apis.google.com/js/api.js"></script>
+  <script src="https://apis.google.com/js/api.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Center System V-PRO</title>
@@ -47,11 +47,10 @@
           </span>
         </div>
       </div>
-        <div class="topActions">
+      <div class="topActions">
         <button id="logoutBtn" class="btn danger" style="padding: 12px 25px; font-size: 1.1em; font-weight: 800;" data-i18n="btn_logout">خروج 🚪</button>
       </div>
-
-    <section id="secHome" class="tab-section">
+    </div> <section id="secHome" class="tab-section">
       <div class="grid2">
         <div class="card glassCard">
           <h2 data-i18n="quick_title">سريع (QR)</h2>
@@ -218,9 +217,8 @@
     </section>
 
     <section id="secRevenue" class="tab-section hidden adminOnly">
-      
       <h2 data-i18n="fin_summary_title">📊 الملخص المالي</h2>
-     <div class="finance-grid">
+      <div class="finance-grid">
           <div class="finance-card green-border">
               <h4 data-i18n="fin_today_net">صافي ربح اليوم</h4>
               <div class="amount" style="color: var(--success);"><span id="todayNetProfit">0</span> ج</div>
@@ -270,7 +268,6 @@
           <h2 data-i18n="chart_title">📈 لوحة أرباح الأسبوع</h2>
           <div class="chart-container" id="weeklyChartBox"></div>
       </div>
-
     </section>
 
     <section id="secSyllabus" class="tab-section hidden">
@@ -367,6 +364,7 @@
         </div>
       </div>
     </section>
+
     <nav class="bottom-nav">
         <button id="btnTabAdmin" class="nav-item adminOnly needs-backup">
             <span class="nav-icon">⚙️</span>
@@ -389,9 +387,7 @@
             <span class="nav-text" data-i18n="nav_students">الطلاب</span>
         </button>
     </nav>
-  </div>
-
-  <div id="customPassModal" class="modal hidden" style="z-index: 9999;">
+  </div> <div id="customPassModal" class="modal hidden" style="z-index: 9999;">
     <div class="modalContent" style="max-width: 350px; text-align:center;">
         <div style="font-size: 3em; margin-bottom: 10px;">🔒</div>
         <h3 style="color: var(--primary); margin-top:0;" data-i18n="pass_req_title">مطلوب صلاحية الإدارة</h3>
@@ -451,7 +447,8 @@
         <button id="saveGroupFeesBtn" class="btn success w100" style="margin-top:10px; padding:12px; font-weight:bold;" data-i18n="btn_save_changes">حفظ التعديلات 💾</button>
     </div>
   </div>
-<div id="revenueModal" class="modal hidden">
+
+  <div id="revenueModal" class="modal hidden">
     <div class="modalContent" style="max-width: 600px;">
         <div class="flexBetween" style="border-bottom: 2px solid #eee; padding-bottom: 10px;">
             <h3 style="color: var(--success);" data-i18n="modal_rev_today">💰 تفاصيل إيراد اليوم</h3>
@@ -460,6 +457,7 @@
         <div id="revenueModalBody" style="max-height: 60vh; overflow-y: auto; padding: 15px 0;"></div>
     </div>
   </div>
+
   <script src="app.js?v=PRO_FINAL_FIX"></script>
 </body>
 </html>
