@@ -11,19 +11,6 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log("V-PRO MAX Engine: Initializing System...");
-   // 1. تهيئة الدخول
-initDriveAuth();
-
-// 2. التحقق من المزامنة التلقائية (كل 24 ساعة)
-const lastCloudSync = localStorage.getItem("last_cloud_sync");
-if (lastCloudSync !== nowDateStr()) {
-    setTimeout(() => {
-        if(accessToken) {
-            backupToDrive();
-            localStorage.setItem("last_cloud_sync", nowDateStr());
-        }
-    }, 5000); // يبدأ المزامنة بصمت بعد 5 ثواني من فتح البرنامج
-}
 
     // ==========================================
     // 1. CONFIGURATION & AUTHENTICATION
