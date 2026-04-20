@@ -66,6 +66,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // 3. THE COMPREHENSIVE DICTIONARY
     // ==========================================
     const dict = {
+       "drive_offline": { ar: "⚪ غير متصل", en: "⚪ Offline" },
+        "drive_online": { ar: "🟢 متصل بالسحابة", en: "🟢 Cloud Connected" },
+        "btn_drive_login": { ar: "ربط بجوجل درايف ☁️", en: "Connect Google Drive ☁️" },
+        "btn_drive_connected": { ar: "متصل بالدرايف ✅", en: "Drive Connected ✅" },
+        "btn_drive_restore": { ar: "استرجاع من السحاب 🔄", en: "Restore from Cloud 🔄" },
+        "msg_sync_wait": { ar: "جاري حفظ نسخة احتياطية للسحابة... ⏳", en: "Saving backup to cloud... ⏳" },
+        "msg_sync_done": { ar: "تم الحفظ بنجاح على الدرايف ✅", en: "Saved to Drive successfully ✅" },
+        "msg_sync_auto": { ar: "تم تحديث النسخة الاحتياطية تلقائياً ☁️", en: "Auto-backup updated on cloud ☁️" },
+        "lbl_last_sync": { ar: "آخر مزامنة: ", en: "Last Sync: " },
        "fin_month_exp": { ar: "صافي مصروفات الشهر", en: "Monthly Expenses" },
        "nav_syllabus": { ar: "المنهج", en: "Syllabus" },
        "tbl_remain": { ar: "المتبقي", en: "Remaining" },
@@ -1712,23 +1721,23 @@ on("importExcelInput", "change", async function(e) {
         const statusTxt = $("driveStatusText"); const lastSyncTxt = $("lastSyncText");
         
         if(accessToken) {
-            if(btn) { btn.innerHTML = "متصل بالدرايف ✅"; btn.style.background = "#2ea44f"; }
+            if(btn) { btn.innerHTML = t("btn_drive_connected"); btn.style.background = "#2ea44f"; }
             if(syncBtn) syncBtn.classList.remove("hidden");
-            if(statusTxt) { statusTxt.innerHTML = "🟢 متصل بالسحابة"; statusTxt.style.color = "var(--success)"; }
+            if(statusTxt) { statusTxt.innerHTML = t("drive_online"); statusTxt.style.color = "var(--success)"; }
         } else {
-            if(statusTxt) { statusTxt.innerHTML = "⚪ غير متصل"; statusTxt.style.color = "#666"; }
+            if(statusTxt) { statusTxt.innerHTML = t("drive_offline"); statusTxt.style.color = "#666"; }
         }
 
         let lastTime = localStorage.getItem("last_cloud_sync_time");
         if(lastTime && lastSyncTxt) {
-            lastSyncTxt.innerHTML = "آخر مزامنة: " + lastTime;
+            lastSyncTxt.innerHTML = t("lbl_last_sync") + lastTime;
         }
     }
     updateDriveUI();
 
     on("driveLoginBtn", "click", function() {
         if (typeof google === 'undefined') {
-            return showToast("جاري تحميل مكتبات جوجل، جرب مرة تانية كمان ثانية...", "warning");
+            return showToast(currentLang === 'ar' ? "جاري تحميل مكتبات جوجل، جرب مرة تانية كمان ثانية..." : "Loading Google libraries...", "warning");
         }
         if (!tokenClient) {
             tokenClient = google.accounts.oauth2.initTokenClient({
@@ -1738,7 +1747,7 @@ on("importExcelInput", "change", async function(e) {
                     if (response.access_token) {
                         accessToken = response.access_token;
                         localStorage.setItem("drive_token", accessToken);
-                        updateDriveUI(); showToast("متصل بجوجل درايف ✅");
+                        updateDriveUI(); showToast(t("btn_drive_connected"), "success");
                     }
                 },
             });
@@ -1750,7 +1759,7 @@ on("importExcelInput", "change", async function(e) {
     async function backupToDrive(isManual = false) {
         if (!accessToken) return;
         
-        if (isManual) showToast("جاري حفظ نسخة احتياطية للسحابة... ⏳", "warning");
+        if (isManual) showToast(t("msg_sync_wait"), "warning");
 
         let backupData = {};
         for (let i = 0; i < localStorage.length; i++) {
@@ -1785,13 +1794,13 @@ on("importExcelInput", "change", async function(e) {
             updateDriveUI();
 
             if (isManual) {
-                showToast("تم الحفظ بنجاح على الدرايف ✅", "success");
+                showToast(t("msg_sync_done"), "success");
             } else {
-                showToast("تم تحديث النسخة الاحتياطية تلقائياً على السحاب ☁️", "success");
+                showToast(t("msg_sync_auto"), "success");
             }
         } catch (err) { 
             console.error("Sync Error", err); 
-            if (isManual) showToast("فشل الرفع، تأكد من الاتصال بالنت", "err");
+            if (isManual) showToast(currentLang === 'ar' ? "فشل الرفع، تأكد من الاتصال بالنت" : "Upload failed, check connection", "err");
         }
     }
 
@@ -1801,8 +1810,8 @@ on("importExcelInput", "change", async function(e) {
     });
 
     on("restoreDriveBtn", "click", async function() {
-        if (!accessToken) return showToast("يرجى الربط بالدرايف أولاً ☁️", "err");
-        if (!confirm("⚠️ تحذير شديد: سيتم مسح كل البيانات الحالية واستبدالها بنسخة السحابة! متأكد؟")) return;
+        if (!accessToken) return showToast(currentLang === 'ar' ? "يرجى الربط بالدرايف أولاً ☁️" : "Please connect to Drive first ☁️", "err");
+        if (!confirm(currentLang === 'ar' ? "⚠️ تحذير شديد: سيتم مسح كل البيانات الحالية واستبدالها بنسخة السحابة! متأكد؟" : "⚠️ WARNING: Current data will be replaced by cloud backup. Sure?")) return;
 
         try {
             const response = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${BACKUP_FILE_NAME}'&fields=files(id)`, { headers: { 'Authorization': `Bearer ${accessToken}` } });
@@ -1812,11 +1821,12 @@ on("importExcelInput", "change", async function(e) {
                 const fileRes = await fetch(`https://www.googleapis.com/drive/v3/files/${data.files[0].id}?alt=media`, { headers: { 'Authorization': `Bearer ${accessToken}` } });
                 const backupData = await fileRes.json();
                 for (let key in backupData) { localStorage.setItem(key, backupData[key]); }
-                showToast("تم استرجاع البيانات بنجاح! سيتم عمل ريستارت...");
+                showToast(currentLang === 'ar' ? "تم استرجاع البيانات بنجاح! سيتم إعادة التحميل..." : "Data restored successfully! Restarting...");
                 setTimeout(() => location.reload(), 1500);
-            } else { showToast("لم يتم العثور على نسخة احتياطية في الدرايف", "err"); }
-        } catch (err) { showToast("فشل الاسترجاع، تأكد من الاتصال بالنت", "err"); }
+            } else { showToast(currentLang === 'ar' ? "لم يتم العثور على نسخة احتياطية في الدرايف" : "No backup found in Drive", "err"); }
+        } catch (err) { showToast(currentLang === 'ar' ? "فشل الاسترجاع، تأكد من الاتصال بالنت" : "Restore failed, check connection", "err"); }
     });
+
     // ==========================================
     // 18. INITIALIZATION (START ENGINE)
     // ==========================================
@@ -1895,10 +1905,10 @@ on("importExcelInput", "change", async function(e) {
     checkDailyBackup();
     setTimeout(checkQR, 500);
 
-  // مزامنة صامتة عند فتح البرنامج في يوم جديد
+    // مزامنة صامتة عند فتح البرنامج في يوم جديد
     if (localStorage.getItem("last_cloud_sync_date") !== nowDateStr()) {
         setTimeout(() => { 
             if (accessToken) backupToDrive(false); 
         }, 8000);
     }
-}); // القفلة النهائية للسيستم
+});
