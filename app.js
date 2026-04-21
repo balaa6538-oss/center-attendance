@@ -997,7 +997,8 @@ let remainAmt = req > 0 ? (req - (s.paid || 0)) : 0;
         const tl = $("syllabusTimeline");
         if (!tl) return;
         if (syllabusData.length === 0) {
-            tl.innerHTML = `<div class="mutedCenter">لا توجد بيانات في خريطة المنهج حتى الآن. 📭</div>`;
+            let emptyMsg = currentLang === 'ar' ? "لا توجد بيانات في خريطة المنهج حتى الآن. 📭" : "No syllabus data available yet. 📭";
+            tl.innerHTML = `<div class="mutedCenter">${emptyMsg}</div>`;
             return;
         }
 
@@ -1007,10 +1008,16 @@ let remainAmt = req > 0 ? (req - (s.paid || 0)) : 0;
         for (let i = 0; i < syllabusData.length; i++) {
             let s = syllabusData[i];
             let statusClass = "status-" + s.status;
-            let statusIcon = s.status === "completed" ? "🟢 تم الانتهاء" : (s.status === "in_progress" ? "🟡 جاري الشرح" : "⚪ لم يبدأ");
+            
+            // ترجمة حالات الدرس
+            let statusIcon = "";
+            if (s.status === "completed") statusIcon = currentLang === 'ar' ? "🟢 تم الانتهاء" : "🟢 Completed";
+            else if (s.status === "in_progress") statusIcon = currentLang === 'ar' ? "🟡 جاري الشرح" : "🟡 In Progress";
+            else statusIcon = currentLang === 'ar' ? "⚪ لم يبدأ" : "⚪ Not Started";
             
             let deleteBtnHtml = isAdmin ? `<button class="btn danger smallBtn iconOnly" onclick="window.deleteSyllabus(${i})">🗑️</button>` : "";
-            
+            let dateLbl = currentLang === 'ar' ? "أخر تحديث:" : "Last Update:";
+
             html += `
             <div class="syll-card ${statusClass}">
                 <div class="syll-header">
@@ -1021,7 +1028,7 @@ let remainAmt = req > 0 ? (req - (s.paid || 0)) : 0;
                     </div>
                 </div>
                 ${s.notes ? `<div class="syll-notes">📝 ${s.notes}</div>` : ''}
-                <div class="syll-date">📅 أخر تحديث: ${prettyDate(s.date)}</div>
+                <div class="syll-date">📅 ${dateLbl} ${prettyDate(s.date)}</div>
             </div>
             `;
         }
@@ -1029,7 +1036,8 @@ let remainAmt = req > 0 ? (req - (s.paid || 0)) : 0;
     }
 
     window.deleteSyllabus = function(index) {
-        if(confirm("⚠️ متأكد من حذف هذا الدرس من المنهج؟")) {
+        let confirmMsg = currentLang === 'ar' ? "⚠️ متأكد من حذف هذا الدرس من المنهج؟" : "⚠️ Are you sure you want to delete this lesson?";
+        if(confirm(confirmMsg)) {
             syllabusData.splice(index, 1);
             saveAll();
             renderSyllabus();
@@ -1041,7 +1049,10 @@ let remainAmt = req > 0 ? (req - (s.paid || 0)) : 0;
         let status = $("syllStatus").value;
         let notes = $("syllNotes").value.trim();
         
-        if(!name) return showToast("يرجى كتابة اسم الشابتر / الدرس أولاً!", "err");
+        if(!name) {
+            let errMsg = currentLang === 'ar' ? "يرجى كتابة اسم الشابتر / الدرس أولاً!" : "Please enter the chapter/lesson name first!";
+            return showToast(errMsg, "err");
+        }
 
         let existing = syllabusData.find(x => x.name === name);
         if(existing) {
@@ -1054,13 +1065,14 @@ let remainAmt = req > 0 ? (req - (s.paid || 0)) : 0;
         
         saveAll();
         renderSyllabus();
-        showToast("تم تحديث خريطة المنهج ✅");
+        
+        let successMsg = currentLang === 'ar' ? "تم تحديث خريطة المنهج ✅" : "Syllabus updated successfully ✅";
+        showToast(successMsg, "success");
         
         $("syllName").value = "";
         $("syllStatus").value = "not_started";
         $("syllNotes").value = "";
     });
-
     // ==========================================
     // 14. BINDINGS & EVENT LISTENERS
     // ==========================================
