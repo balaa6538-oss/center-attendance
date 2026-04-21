@@ -537,13 +537,3 @@ body:has(#loginBox:not(.hidden)) {
     background-size: 400% 400%; animation: fullPageBG 12s ease infinite;
 }
 @keyframes fullPageBG { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
-/* تظبيط مقاسات زراير الحضور والغياب عشان ميلزقوش في بعض */
-#bulkActionBar {
-    display: flex;
-    gap: 12px; /* مسافة ثابتة ومريحة بين الزراير */
-    width: 100%;
-}
-
-#bulkActionBar .btn {
-    flex: 1; /* الأمر ده بيخلي كل زرار ياخد نفس المساحة بالظبط وميكشّو أبداً */
-}
