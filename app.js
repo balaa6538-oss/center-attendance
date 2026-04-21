@@ -953,8 +953,7 @@ let remainAmt = req > 0 ? (req - (s.paid || 0)) : 0;
         students[id] = st; delete deletedStudents[id]; saveAll(); renderBinList(); 
         showToast("تم الاسترجاع ✅"); window.extOpen(id); 
     };
-
-   // ==========================================
+// ==========================================
     // 12. SYSTEM THEME & LANGUAGE APPLY
     // ==========================================
     function applyTheme(theme) {
@@ -989,6 +988,20 @@ let remainAmt = req > 0 ? (req - (s.paid || 0)) : 0;
         
         // السطر الجديد لتحديث كلمات جوجل درايف فوراً مع تغيير اللغة
         if (typeof updateDriveUI === "function") updateDriveUI();
+
+        // 🚀 السطور الجديدة لترجمة شاشة إدخال المنهج
+        if($("saveSyllabusBtn")) $("saveSyllabusBtn").innerText = currentLang === 'ar' ? "حفظ وتحديث المنهج" : "Save & Update Syllabus";
+        if($("syllName")) $("syllName").placeholder = currentLang === 'ar' ? "اسم الشابتر / الدرس..." : "Chapter / Lesson Name...";
+        if($("syllNotes")) $("syllNotes").placeholder = currentLang === 'ar' ? "ملاحظات (مثال: خلصنا لحد صفحة ٢٠)..." : "Notes (e.g., Finished until page 20)...";
+        
+        if($("syllStatus")) {
+            for(let i=0; i<$("syllStatus").options.length; i++) {
+                let opt = $("syllStatus").options[i];
+                if(opt.value === "not_started") opt.text = currentLang === 'ar' ? "⚪ لم يبدأ" : "⚪ Not Started";
+                if(opt.value === "in_progress") opt.text = currentLang === 'ar' ? "🟡 جاري الشرح" : "🟡 In Progress";
+                if(opt.value === "completed")   opt.text = currentLang === 'ar' ? "🟢 تم الانتهاء" : "🟢 Completed";
+            }
+        }
     }
     // ==========================================
     // 13. SYLLABUS MODULE
