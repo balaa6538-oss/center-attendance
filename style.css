@@ -360,7 +360,13 @@ body.theme-dark .bottom-nav, body.theme-glass.dark-glass .bottom-nav { backgroun
 .nav-icon { font-size: 1.5em; transition: transform 0.3s ease; }
 .nav-text { font-size: 0.8em; font-weight: 700; font-family: var(--font-main); transition: color 0.3s ease; }
 
-.nav-item.active { transform: translateY(-4px); position: relative; }
+.nav-item.active { 
+    transform: translateY(-4px); 
+    position: relative; 
+    background: rgba(47, 107, 255, 0.1); /* النور الأزرق الخفيف */
+    border-radius: 12px;
+    padding: 6px 0;
+}
 .nav-item.active .nav-text { color: var(--primary); }
 .nav-item.active .nav-icon { transform: scale(1.15); } 
 
