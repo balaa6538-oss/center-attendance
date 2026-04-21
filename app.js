@@ -1406,7 +1406,8 @@ on("quickAttendId", "keypress", function(e) {
             txt += `\n\n💵 *${t("wa_net")}: ${rev - totalExp} ج*`;
         }
         
-       txt = `إعداد الشيفت: أ/ ${currentManager}\n\n` + txt;
+     let shiftStr = currentLang === 'ar' ? `إعداد الشيفت: أ/ ${currentManager}` : `Shift Prepared by: ${currentManager}`;
+        txt = `${shiftStr}\n\n` + txt;
         navigator.clipboard.writeText(txt).then(function() { showToast(t("msg_copied")); });
     });
 
