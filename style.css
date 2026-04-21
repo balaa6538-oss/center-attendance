@@ -185,8 +185,8 @@ body.theme-glass .topbar { backdrop-filter: blur(16px); }
     color: var(--primary);
 }
 
-.statItem.clickable { cursor: pointer; }
-.statItem.clickable:hover { 
+.statItem { cursor: pointer; }
+.statItem:hover { 
     background: rgba(47, 107, 255, 0.12); 
     transform: translateY(-2px); 
     box-shadow: 0 4px 10px rgba(47, 107, 255, 0.15); 
@@ -470,12 +470,15 @@ body.theme-dark .bottom-nav, body.theme-glass.dark-glass .bottom-nav { backgroun
    Pulsing Elements & Premium Effects
 ========================================= */
 
-span[data-i18n="drive_online"]::before {
-    content: ''; display: inline-block; width: 10px; height: 10px;
-    background-color: var(--success); border-radius: 50%; margin-left: 8px;
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); animation: pulseGreen 2s infinite;
+/* النبض الحقيقي لنقطة الاتصال بالسحابة */
+.pulse-active {
+    animation: textPulse 2s infinite;
 }
-@keyframes pulseGreen {
+@keyframes textPulse {
+    0% { opacity: 1; text-shadow: 0 0 0 rgba(16, 185, 129, 0); }
+    50% { opacity: 0.6; text-shadow: 0 0 12px rgba(16, 185, 129, 0.9); }
+    100% { opacity: 1; text-shadow: 0 0 0 rgba(16, 185, 129, 0); }
+}
     0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
     70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
     100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
