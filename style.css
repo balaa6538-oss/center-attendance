@@ -365,7 +365,7 @@ body.theme-dark .bottom-nav, body.theme-glass.dark-glass .bottom-nav { backgroun
     position: relative; 
     background: rgba(47, 107, 255, 0.1); /* النور الأزرق الخفيف */
     border-radius: 12px;
-    padding: 6px 0;
+    padding: 8px 15px; /* شكل الكبسولة المريحة للعين */
 }
 .nav-item.active .nav-text { color: var(--primary); }
 .nav-item.active .nav-icon { transform: scale(1.15); } 
@@ -374,7 +374,6 @@ body.theme-dark .bottom-nav, body.theme-glass.dark-glass .bottom-nav { backgroun
     content: ""; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
     width: 20px; height: 4px; background: var(--primary); border-radius: 10px;
 }
-
 /* Toasts */
 #toastContainer { position: fixed; top: 25px; right: 25px; z-index: 99999; display: flex; flex-direction: column; gap: 12px; pointer-events: none; }
 .toast {
