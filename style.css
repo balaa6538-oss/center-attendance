@@ -41,14 +41,14 @@
   
   --primary: #2f6bff;
   --primary-hover: #1e50cf;
-  --success: #10b981; /* درجة نجاح أهدى وأفخم */
-  --danger: #ef4444; /* درجة أحمر ناعمة */
+  --success: #10b981; 
+  --danger: #ef4444; 
   --warning: #f59e0b;
   
   --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
   --shadow-md: 0 8px 16px rgba(47,107,255,0.08);
   --shadow-hover: 0 12px 24px rgba(47,107,255,0.15);
-  --radius: 16px; /* حواف أنعم */
+  --radius: 16px; 
 }
 
 /* --- THEMES --- */
@@ -131,7 +131,7 @@ body::before {
   background: var(--card-bg);
   border: 1px solid var(--border-color);
   border-radius: var(--radius);
-  padding: 25px; /* زيادة المساحة (Whitespace) */
+  padding: 25px; 
   box-shadow: var(--shadow-md);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   position: relative;
@@ -146,7 +146,7 @@ body.theme-glass .glassCard {
   border-top: 1px solid rgba(255,255,255,0.5); border-left: 1px solid rgba(255,255,255,0.5);
 }
 
-/* 4. Top Bar & Gradient Stats */
+/* 4. Top Bar & Stats */
 .topbar {
   background: var(--card-bg);
   padding: 15px 25px; border-radius: var(--radius);
@@ -157,8 +157,8 @@ body.theme-glass .glassCard {
 }
 body.theme-glass .topbar { backdrop-filter: blur(16px); }
 
+/* تعديل هنا لإظهار الإيموجي بوضوح */
 .brand { 
- .brand { 
   font-weight: 800; font-size: 1.4em; 
   color: var(--primary); 
   display: flex; flex-direction: column; 
@@ -178,11 +178,13 @@ body.theme-glass .topbar { backdrop-filter: blur(16px); }
   display: inline-flex; align-items: center; gap: 6px;
   transition: all 0.3s ease;
 }
+
+/* تعديل هنا لإظهار الإيموجي بوضوح */
 .statItem b { 
-   .statItem b { 
     font-family: 'Cairo', sans-serif; font-size: 1.1em;
     color: var(--primary);
 }
+
 .statItem.clickable { cursor: pointer; }
 .statItem.clickable:hover { 
     background: rgba(47, 107, 255, 0.12); 
@@ -207,7 +209,7 @@ body.theme-glass .topbar { backdrop-filter: blur(16px); }
 .inp:focus { 
     border-color: var(--primary); 
     background: var(--card-bg);
-    box-shadow: 0 0 0 4px rgba(47, 107, 255, 0.15); /* Focus Glow */
+    box-shadow: 0 0 0 4px rgba(47, 107, 255, 0.15); 
 }
 
 .btn {
@@ -217,7 +219,7 @@ body.theme-glass .topbar { backdrop-filter: blur(16px); }
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); transform: scale(1);
 }
 .btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
-.btn:active { transform: scale(0.96); box-shadow: none; } /* Ripple/Press Effect */
+.btn:active { transform: scale(0.96); box-shadow: none; } 
 .full-btn { width: 100%; margin-top: 15px; }
 
 label.btn { display: flex; width: 100%; text-align: center; }
@@ -272,12 +274,12 @@ table { width: 100%; border-collapse: collapse; }
 th { 
     text-align: start; padding: 16px; color: var(--text-muted); 
     background: var(--card-bg); font-weight: bold;
-    position: sticky; top: 0; z-index: 10; /* Sticky Header */
+    position: sticky; top: 0; z-index: 10; 
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 td { padding: 16px; border-bottom: 1px solid var(--border-color); vertical-align: middle; transition: background 0.2s; }
 tr:last-child td { border-bottom: none; }
-tr:hover td { background: rgba(47, 107, 255, 0.03); } /* Row Highlight */
+tr:hover td { background: rgba(47, 107, 255, 0.03); }
 
 .pagination {
     display: flex; justify-content: center; align-items: center; gap: 15px;
@@ -349,6 +351,7 @@ tr:hover td { background: rgba(47, 107, 255, 0.03); } /* Row Highlight */
 body.theme-glass .bottom-nav { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); }
 body.theme-dark .bottom-nav, body.theme-glass.dark-glass .bottom-nav { background: var(--card-bg); }
 
+/* التعديل هنا لشريط التنقل عشان الكلام ميختفيش */
 .nav-item {
     background: transparent; border: none; display: flex; flex-direction: column;
     align-items: center; gap: 4px; color: var(--text-muted); cursor: pointer;
@@ -357,16 +360,15 @@ body.theme-dark .bottom-nav, body.theme-glass.dark-glass .bottom-nav { backgroun
 .nav-icon { font-size: 1.5em; transition: transform 0.3s ease; }
 .nav-text { font-size: 0.8em; font-weight: 700; font-family: var(--font-main); transition: color 0.3s ease; }
 
-/* حركة خفيفة من غير ما النص أو الإيموجي يختفي */
 .nav-item.active { transform: translateY(-4px); position: relative; }
 .nav-item.active .nav-text { color: var(--primary); }
 .nav-item.active .nav-icon { transform: scale(1.15); } 
 
-/* الشرطة الزرقاء اللي تحت الزرار النشط */
 .nav-item.active::after {
     content: ""; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
     width: 20px; height: 4px; background: var(--primary); border-radius: 10px;
 }
+
 /* Toasts */
 #toastContainer { position: fixed; top: 25px; right: 25px; z-index: 99999; display: flex; flex-direction: column; gap: 12px; pointer-events: none; }
 .toast {
@@ -463,7 +465,6 @@ body.theme-dark .bottom-nav, body.theme-glass.dark-glass .bottom-nav { backgroun
    Pulsing Elements & Premium Effects
 ========================================= */
 
-/* نقطة الاتصال الخضراء بتنبض بهدوء */
 span[data-i18n="drive_online"]::before {
     content: ''; display: inline-block; width: 10px; height: 10px;
     background-color: var(--success); border-radius: 50%; margin-left: 8px;
