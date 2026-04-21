@@ -158,9 +158,9 @@ body.theme-glass .glassCard {
 body.theme-glass .topbar { backdrop-filter: blur(16px); }
 
 .brand { 
+ .brand { 
   font-weight: 800; font-size: 1.4em; 
-  background: linear-gradient(45deg, var(--primary), #8a2be2); /* Premium Gradient */
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  color: var(--primary); 
   display: flex; flex-direction: column; 
 }
 
@@ -179,9 +179,9 @@ body.theme-glass .topbar { backdrop-filter: blur(16px); }
   transition: all 0.3s ease;
 }
 .statItem b { 
+   .statItem b { 
     font-family: 'Cairo', sans-serif; font-size: 1.1em;
-    background: linear-gradient(45deg, var(--primary), #1e50cf);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    color: var(--primary);
 }
 .statItem.clickable { cursor: pointer; }
 .statItem.clickable:hover { 
@@ -351,21 +351,22 @@ body.theme-dark .bottom-nav, body.theme-glass.dark-glass .bottom-nav { backgroun
 
 .nav-item {
     background: transparent; border: none; display: flex; flex-direction: column;
-    align-items: center; gap: 6px; color: var(--text-muted); cursor: pointer;
-    transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); width: 25%; 
+    align-items: center; gap: 4px; color: var(--text-muted); cursor: pointer;
+    transition: transform 0.3s ease; width: 25%; overflow: visible;
 }
-.nav-icon { font-size: 1.6em; transition: 0.3s; }
-.nav-text { font-size: 0.8em; font-weight: 700; font-family: var(--font-main); }
+.nav-icon { font-size: 1.5em; transition: transform 0.3s ease; }
+.nav-text { font-size: 0.8em; font-weight: 700; font-family: var(--font-main); transition: color 0.3s ease; }
 
-.nav-item.active { color: var(--primary); transform: translateY(-6px); position: relative; }
-.nav-item.active .nav-icon { transform: scale(1.2); filter: drop-shadow(0 4px 6px rgba(47, 107, 255, 0.4)); }
+/* حركة خفيفة من غير ما النص أو الإيموجي يختفي */
+.nav-item.active { transform: translateY(-4px); position: relative; }
+.nav-item.active .nav-text { color: var(--primary); }
+.nav-item.active .nav-icon { transform: scale(1.15); } 
+
+/* الشرطة الزرقاء اللي تحت الزرار النشط */
 .nav-item.active::after {
-    content: ""; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%);
-    width: 24px; height: 4px; background: var(--primary); border-radius: 10px;
-    animation: slideIn 0.3s ease-out;
+    content: ""; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
+    width: 20px; height: 4px; background: var(--primary); border-radius: 10px;
 }
-@keyframes slideIn { from { width: 0; opacity: 0; } to { width: 24px; opacity: 1; } }
-
 /* Toasts */
 #toastContainer { position: fixed; top: 25px; right: 25px; z-index: 99999; display: flex; flex-direction: column; gap: 12px; pointer-events: none; }
 .toast {
