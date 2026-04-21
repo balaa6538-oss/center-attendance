@@ -45,6 +45,9 @@
             <b id="todayRevenue" class="blurTarget">0 ج</b>
             <span id="toggleRevBtn" style="cursor:pointer; font-size:1.2em; margin-right:5px;">👁️</span>
           </span>
+          <span class="statItem clickable" id="openShiftManagerBtn" style="color: var(--primary);">
+            <span data-i18n="shift_manager">مسئول الشيفت:</span> <b id="currentShiftManagerName">....</b>
+          </span>
         </div>
       </div>
       <div class="topActions">
@@ -466,7 +469,19 @@
         <div id="revenueModalBody" style="max-height: 60vh; overflow-y: auto; padding: 15px 0;"></div>
     </div>
   </div>
-
+<div id="shiftManagerModal" class="modal hidden">
+    <div class="modalContent" style="max-width: 400px;">
+        <div class="flexBetween" style="border-bottom: 2px solid #eee; padding-bottom: 10px;">
+            <h3 style="color: var(--primary);" data-i18n="modal_shift_title">👨‍💼 اختيار مسئول الشيفت</h3>
+            <button class="btn danger smallBtn" onclick="document.getElementById('shiftManagerModal').classList.add('hidden')">✖</button>
+        </div>
+        <div class="row" style="margin-top: 15px;">
+            <input type="text" id="newManagerInp" class="inp" placeholder="اسم المسئول الجديد..." data-i18n-placeholder="plc_new_manager">
+            <button id="addManagerBtn" class="btn success" data-i18n="btn_add_manager">إضافة</button>
+        </div>
+        <div id="managersList" style="margin-top: 15px; max-height: 200px; overflow-y: auto;"></div>
+    </div>
+  </div>
   <script src="app.js?v=PRO_FINAL_FIX"></script>
 </body>
 </html>
