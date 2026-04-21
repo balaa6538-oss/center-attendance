@@ -66,6 +66,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // 3. THE COMPREHENSIVE DICTIONARY
     // ==========================================
     const dict = {
+       "shift_manager": { ar: "مسئول الشيفت:", en: "Shift Manager:" },
+        "modal_shift_title": { ar: "👨‍💼 اختيار مسئول الشيفت", en: "👨‍💼 Select Shift Manager" },
+        "plc_new_manager": { ar: "اسم المسئول الجديد...", en: "New manager name..." },
+        "btn_add_manager": { ar: "إضافة", en: "Add" },
+        "err_no_manager": { ar: "يرجى اختيار اسم مسئول الشيفت أولاً", en: "Please select a shift manager first!" },
        "drive_offline": { ar: "⚪ غير متصل", en: "⚪ Offline" },
         "drive_online": { ar: "🟢 متصل بالسحابة", en: "🟢 Cloud Connected" },
         "btn_drive_login": { ar: "ربط بجوجل درايف ☁️", en: "Connect Google Drive ☁️" },
@@ -1209,8 +1214,12 @@ on("quickAttendId", "keypress", function(e) {
         if(req > 0 && st.paid >= req) fireConfetti();
         playSound("money"); showToast(t("msg_deposit"));
         
-        if(st.phone) {
-            let msg = `مرحباً ${st.name}،\nتم إيداع مبلغ ${v} ج ✅\nإجمالي المدفوع: ${st.paid} ج.\n\n-- إدارة السنتر --`;
+       if(st.phone) {
+            if(!currentManager) {
+                showToast(t("err_no_manager"), "err");
+                return; // يمنع فتح الواتساب
+            }
+            let msg = `مرحباً ${st.name}،\nتم إيداع مبلغ ${v} ج ✅\nإجمالي المدفوع: ${st.paid} ج.\n\nمع تحيات: أ/ ${currentManager}`;
             setTimeout(function() { 
                 window.open(`https://wa.me/20${st.phone}?text=${encodeURIComponent(msg)}`, '_blank'); 
             }, 1000);
@@ -1362,6 +1371,7 @@ on("quickAttendId", "keypress", function(e) {
 
     on("copyReportBtn", "click", function() {
         let d = nowDateStr();
+       if(!currentManager) { showToast(t("err_no_manager"), "err"); return; }
         if ($("reportDate") && $("reportDate").value) d = $("reportDate").value;
         
         let ids = attByDate[d] || [];
@@ -1396,7 +1406,7 @@ on("quickAttendId", "keypress", function(e) {
             txt += `\n\n💵 *${t("wa_net")}: ${rev - totalExp} ج*`;
         }
         
-        txt += `\n\n-- إدارة السنتر --`;
+       txt = `إعداد الشيفت: أ/ ${currentManager}\n\n` + txt;
         navigator.clipboard.writeText(txt).then(function() { showToast(t("msg_copied")); });
     });
 
@@ -1829,7 +1839,65 @@ on("importExcelInput", "change", async function(e) {
             } else { showToast(currentLang === 'ar' ? "لم يتم العثور على نسخة احتياطية في الدرايف" : "No backup found in Drive", "err"); }
         } catch (err) { showToast(currentLang === 'ar' ? "فشل الاسترجاع، تأكد من الاتصال بالنت" : "Restore failed, check connection", "err"); }
     });
+// ==========================================
+    // 17.8. SHIFT MANAGER LOGIC
+    // ==========================================
+    let shiftManagers = JSON.parse(localStorage.getItem("ca_shift_managers") || "[]");
+    let currentManager = localStorage.getItem("ca_current_manager") || "";
 
+    if($("currentShiftManagerName")) $("currentShiftManagerName").innerText = currentManager || "....";
+
+    window.renderManagersList = function() {
+        const list = $("managersList"); if(!list) return;
+        let html = "";
+        for(let i=0; i<shiftManagers.length; i++) {
+            let m = shiftManagers[i];
+            let isSelected = (m === currentManager);
+            html += `
+            <div class="item flexBetween" style="margin-bottom:8px; border: 1px solid ${isSelected ? 'var(--success)' : '#ddd'}; background: ${isSelected ? '#e8f5e9' : '#fff'};">
+                <div style="flex:1; cursor:pointer;" onclick="window.selectManager('${m}')">
+                    <b>أ/ ${m}</b> ${isSelected ? '✔️' : ''}
+                </div>
+                <button class="btn danger smallBtn iconOnly" onclick="window.deleteManager('${m}')">🗑️</button>
+            </div>`;
+        }
+        list.innerHTML = html || `<div class="mutedCenter">لا يوجد أسماء، أضف اسماً جديداً.</div>`;
+    };
+
+    on("openShiftManagerBtn", "click", function() {
+        window.renderManagersList();
+        if($("shiftManagerModal")) $("shiftManagerModal").classList.remove("hidden");
+    });
+
+    on("addManagerBtn", "click", function() {
+        let val = $("newManagerInp").value.trim();
+        if(val && !shiftManagers.includes(val)) {
+            shiftManagers.push(val);
+            localStorage.setItem("ca_shift_managers", JSON.stringify(shiftManagers));
+            $("newManagerInp").value = "";
+            window.renderManagersList();
+        }
+    });
+
+    window.selectManager = function(name) {
+        currentManager = name;
+        localStorage.setItem("ca_current_manager", currentManager);
+        if($("currentShiftManagerName")) $("currentShiftManagerName").innerText = currentManager;
+        window.renderManagersList();
+        setTimeout(() => { if($("shiftManagerModal")) $("shiftManagerModal").classList.add("hidden"); }, 300);
+    };
+
+    window.deleteManager = function(name) {
+        if(confirm(currentLang==='ar' ? `هل أنت متأكد من حذف (أ/ ${name})؟` : `Delete ${name}?`)) {
+            shiftManagers = shiftManagers.filter(m => m !== name);
+            localStorage.setItem("ca_shift_managers", JSON.stringify(shiftManagers));
+            if(currentManager === name) {
+                currentManager = ""; localStorage.removeItem("ca_current_manager");
+                if($("currentShiftManagerName")) $("currentShiftManagerName").innerText = "....";
+            }
+            window.renderManagersList();
+        }
+    };
     // ==========================================
     // 18. INITIALIZATION (START ENGINE)
     // ==========================================
