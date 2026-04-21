@@ -1729,16 +1729,38 @@ on("importExcelInput", "change", async function(e) {
     let tokenClient;
     let accessToken = localStorage.getItem("drive_token");
 
- function updateDriveUI() {
+function updateDriveUI() {
         const btn = $("driveLoginBtn"); const syncBtn = $("syncNowBtn");
         const statusTxt = $("driveStatusText"); const lastSyncTxt = $("lastSyncText");
         
+        // 1. التحقق من وجود إنترنت حقيقي في الجهاز
+        if (!navigator.onLine) {
+            if(statusTxt) { 
+                statusTxt.innerHTML = currentLang === 'ar' ? "🔴 لا يوجد اتصال بالإنترنت" : "🔴 No Internet Connection"; 
+                statusTxt.style.color = "var(--danger)"; 
+                statusTxt.classList.remove("pulse-active"); // وقف النبض
+            }
+            if(btn) { btn.innerHTML = currentLang === 'ar' ? "بانتظار عودة الإنترنت..." : "Waiting for network..."; btn.style.background = "#666"; }
+            if(syncBtn) syncBtn.classList.add("hidden");
+            return; // وقف الدالة هنا لحد ما النت يرجع
+        }
+
+        // 2. لو فيه نت، هل هو رابط بالدرايف؟
         if(accessToken) {
             if(btn) { btn.innerHTML = t("btn_drive_connected"); btn.style.background = "#2ea44f"; }
             if(syncBtn) syncBtn.classList.remove("hidden");
-            if(statusTxt) { statusTxt.innerHTML = t("drive_online"); statusTxt.style.color = "var(--success)"; }
+            if(statusTxt) { 
+                statusTxt.innerHTML = t("drive_online"); 
+                statusTxt.style.color = "var(--success)"; 
+                statusTxt.classList.add("pulse-active"); // شغل النبض (اللمبة تنور وتطفي)
+            }
         } else {
-            if(statusTxt) { statusTxt.innerHTML = t("drive_offline"); statusTxt.style.color = "#666"; }
+            // فيه نت بس لسه مربوطش
+            if(statusTxt) { 
+                statusTxt.innerHTML = t("drive_offline"); 
+                statusTxt.style.color = "#666"; 
+                statusTxt.classList.remove("pulse-active");
+            }
             if(btn) { btn.innerHTML = t("btn_drive_login"); btn.style.background = "#4285F4"; }
         }
 
@@ -1748,6 +1770,10 @@ on("importExcelInput", "change", async function(e) {
         }
     }
     updateDriveUI();
+
+    // أوامر عشان السيستم يراقب النت لايف (لو فصل أو اشتغل يغير اللمبة فوراً)
+    window.addEventListener('online', updateDriveUI);
+    window.addEventListener('offline', updateDriveUI);
 
     on("driveLoginBtn", "click", function() {
         if (typeof google === 'undefined') {
@@ -1804,7 +1830,6 @@ on("importExcelInput", "change", async function(e) {
             let timeString = now.toLocaleDateString('ar-EG') + " " + now.toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'});
             localStorage.setItem("last_cloud_sync_time", timeString);
             localStorage.setItem("last_cloud_sync_date", nowDateStr()); // لضمان عدم التكرار في نفس اليوم
-            
             updateDriveUI();
 
             if (isManual) {
