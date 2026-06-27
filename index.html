@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="style.css?v=PRO_FINAL">
   
   <script src="./assets/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 </head>
 <body>
 
@@ -377,6 +378,115 @@
       </div>
     </section>
 
+    <section id="secReports" class="tab-section hidden">
+      <div class="card glassCard" style="margin-bottom: 20px;">
+        <div class="flexBetween">
+          <h2 data-i18n="reports_main_title">📊 التقارير التحليلية والمالية</h2>
+          <button id="exportReportExcelBtn" class="btn success" style="font-size: 1.1em; padding: 12px 25px; font-weight: bold;" data-i18n="btn_export_colored">📥 تصدير التقرير (Excel ملون)</button>
+        </div>
+      </div>
+
+      <!-- 1. الملخص المالي التحليلي للترم -->
+      <h2 data-i18n="term_fin_summary">📈 الملخص المالي التحليلي للترم</h2>
+      <div class="finance-grid" style="margin-bottom: 30px;">
+          <div class="finance-card" style="border-right: 5px solid var(--primary);">
+              <h4 data-i18n="term_total_req" style="color: var(--primary); font-weight: bold;">إجمالي المطلوب (الكامل)</h4>
+              <div class="amount" style="color: var(--primary);"><span id="totalExpectedTerm">0</span> ج</div>
+          </div>
+          
+          <div class="finance-card green-border">
+              <h4 data-i18n="term_total_paid" style="color: var(--success); font-weight: bold;">إجمالي المحصل (الفعلي)</h4>
+              <div class="amount" style="color: var(--success);"><span id="totalPaidTerm">0</span> ج</div>
+          </div>
+
+          <div class="finance-card" style="border-right: 5px solid var(--danger);">
+              <h4 data-i18n="term_total_remain" style="color: var(--danger); font-weight: bold;">إجمالي المتبقي (المديونيات)</h4>
+              <div class="amount" style="color: var(--danger);"><span id="totalRemainingTerm">0</span> ج</div>
+          </div>
+      </div>
+
+      <!-- 2. قائمة الطلاب المديونين -->
+      <div class="card glassCard" style="margin-bottom: 30px;">
+        <div class="flexBetween" style="margin-bottom: 15px;">
+          <h2 style="color: var(--danger);" data-i18n="debtors_list_title">⚠️ قائمة الطلاب المديونين</h2>
+          <div class="statItem" style="border-color: var(--danger); color: var(--danger); background: rgba(239, 68, 68, 0.1);">
+            <span data-i18n="debtors_count_lbl">عدد المديونين:</span> <b id="debtorsCount" style="color: var(--danger);">0</b>
+          </div>
+        </div>
+        <p class="muted" style="margin-top: 0; margin-bottom: 15px;" data-i18n="debtors_desc">جدول ديناميكي يعرض الطلاب الذين عليهم مبالغ متبقية فقط من الباقات.</p>
+        <div class="tableWrap">
+          <table id="debtsTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th data-i18n="tbl_name">اسم الطالب</th>
+                <th data-i18n="tbl_class">الباقة</th>
+                <th data-i18n="tbl_remain_amount">المبلغ المتبقي عليه</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 3. تقرير التقييم الإداري (Evaluation Form) -->
+      <div class="card glassCard" style="margin-bottom: 30px;">
+        <h2 style="color: var(--primary); margin-bottom: 10px;" data-i18n="eval_form_title">📋 تقرير التقييم الإداري (Evaluation Form)</h2>
+        <p class="muted" style="margin-top: 0; margin-bottom: 20px;" data-i18n="eval_form_desc">نموذج مخصص لإدخال وحفظ بيانات التقييم الإداري للسنتر.</p>
+        
+        <div class="grid2">
+          <div>
+            <label class="lbl" data-i18n="eval_center_name">اسم السنتر:</label>
+            <input id="evalCenterName" class="inp" placeholder="مثال: سنتر القمة">
+          </div>
+          <div>
+            <label class="lbl" data-i18n="eval_manager">المسؤول:</label>
+            <input id="evalManager" class="inp" placeholder="اسم المسؤول عن السنتر">
+          </div>
+        </div>
+
+        <div class="grid2">
+          <div>
+            <label class="lbl" data-i18n="eval_packages">الباقات:</label>
+            <input id="evalPackages" class="inp" placeholder="أنواع الباقات المتاحة">
+          </div>
+          <div>
+            <label class="lbl" data-i18n="eval_students_count">عدد الطلبة:</label>
+            <input id="evalStudentsCount" type="number" class="inp" placeholder="إجمالي عدد الطلبة في السنتر">
+          </div>
+        </div>
+
+        <label class="lbl" data-i18n="eval_current_courses">الكورسات الحالية:</label>
+        <input id="evalCurrentCourses" class="inp" placeholder="الكورسات الحالية الشغالة في السنتر">
+
+        <label class="lbl" data-i18n="eval_collab_opps">فرص التعاون:</label>
+        <textarea id="evalCollabOpps" class="inp" rows="3" placeholder="فرص التعاون المشتركة..."></textarea>
+
+        <label class="lbl" data-i18n="eval_notes">ملاحظات:</label>
+        <textarea id="evalNotes" class="inp" rows="3" placeholder="أية ملاحظات إدارية عامة..."></textarea>
+
+        <label class="lbl" data-i18n="eval_followup_plan">خطة المتابعة:</label>
+        <textarea id="evalFollowupPlan" class="inp" rows="3" placeholder="خطة المتابعة والتطوير المقترحة..."></textarea>
+
+        <label class="lbl" data-i18n="eval_needs">احتياجات السنتر أو المقترحات التي تم مناقشتها:</label>
+        <textarea id="evalNeeds" class="inp" rows="3" placeholder="احتياجات السنتر والمقترحات..."></textarea>
+
+        <label class="lbl" data-i18n="eval_final_rate">التقييم النهائي:</label>
+        <select id="evalFinalRate" class="inp" style="margin-bottom: 20px;">
+          <option value="⭐⭐⭐⭐⭐ ممتاز">⭐⭐⭐⭐⭐ ممتاز</option>
+          <option value="⭐⭐⭐⭐ جيد جداً">⭐⭐⭐⭐ جيد جداً</option>
+          <option value="⭐⭐⭐ جيد">⭐⭐⭐ جيد</option>
+          <option value="⭐⭐ مقبول">⭐⭐ مقبول</option>
+          <option value="⭐ ضعيف">⭐ ضعيف</option>
+        </select>
+
+        <div class="row wrap" style="justify-content: space-between; border-top: 1px solid var(--border-color); padding-top: 20px;">
+          <button id="saveEvalBtn" class="btn primary" style="padding: 12px 30px; font-size: 1.1em;" data-i18n="btn_save_eval">حفظ التقييم الإداري 💾</button>
+          <button id="exportReportExcelBtnBottom" class="btn success" style="padding: 12px 30px; font-size: 1.1em;" data-i18n="btn_export_colored">📥 تصدير التقرير (Excel ملون)</button>
+        </div>
+      </div>
+    </section>
+
     <nav class="bottom-nav">
         <button id="btnTabAdmin" class="nav-item adminOnly needs-backup">
             <span class="nav-icon">⚙️</span>
@@ -385,6 +495,10 @@
         <button id="btnTabRevenue" class="nav-item adminOnly">
             <span class="nav-icon">📈</span>
             <span class="nav-text" data-i18n="nav_revenue">الماليات</span>
+        </button>
+        <button id="btnTabReports" class="nav-item">
+            <span class="nav-icon">📊</span>
+            <span class="nav-text" data-i18n="nav_reports">التقارير</span>
         </button>
         <button id="btnTabHome" class="nav-item active">
             <span class="nav-icon">🏠</span>

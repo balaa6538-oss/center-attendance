@@ -40,6 +40,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const K_GROUP_FEES   = "ca_group_fees_v1";
     const K_EXPENSES     = "ca_expenses_v1";
     const K_SYLLABUS     = "ca_syllabus_v1"; // مفتاح حفظ المنهج
+    const K_EVAL         = "ca_eval_form_v1";
 
     // ==========================================
     // 2. GLOBAL SYSTEM STATE
@@ -52,6 +53,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let groupFees        = {}; 
     let expensesByDate   = {};
     let syllabusData     = []; 
+    let evalData         = {};
     
     let currentId        = null;
     let currentUserRole  = "admin";
@@ -205,7 +207,31 @@ document.addEventListener('DOMContentLoaded', function() {
         "txt_paid_full": { ar: "✅ خالص (مكتمل)", en: "✅ Fully Paid" },
         "txt_free": { ar: "✅ بدون مصاريف", en: "✅ Free" },
         "wa_net": { ar: "💵 صافي الربح", en: "💵 Net Profit" },
-        "wa_exp": { ar: "🔻 المصروفات", en: "🔻 Expenses" }
+        "wa_exp": { ar: "🔻 المصروفات", en: "🔻 Expenses" },
+        "nav_reports": { ar: "التقارير", en: "Reports" },
+        "reports_main_title": { ar: "📊 التقارير التحليلية والمالية", en: "📊 Analytical & Financial Reports" },
+        "btn_export_colored": { ar: "📥 تصدير التقرير (Excel ملون)", en: "📥 Export Colored Report (Excel)" },
+        "term_fin_summary": { ar: "📈 الملخص المالي التحليلي للترم", en: "📈 Term Financial Summary" },
+        "term_total_req": { ar: "إجمالي المطلوب (الكامل)", en: "Total Expected (Full)" },
+        "term_total_paid": { ar: "إجمالي المحصل (الفعلي)", en: "Total Collected (Actual)" },
+        "term_total_remain": { ar: "إجمالي المتبقي (المديونيات)", en: "Total Remaining (Debts)" },
+        "debtors_list_title": { ar: "⚠️ قائمة الطلاب المديونين", en: "⚠️ Debtors Students List" },
+        "debtors_count_lbl": { ar: "عدد المديونين:", en: "Debtors Count:" },
+        "debtors_desc": { ar: "جدول ديناميكي يعرض الطلاب الذين عليهم مبالغ متبقية فقط من الباقات.", en: "Dynamic table displaying students with remaining package debts." },
+        "tbl_remain_amount": { ar: "المبلغ المتبقي عليه", en: "Remaining Debt" },
+        "eval_form_title": { ar: "📋 تقرير التقييم الإداري (Evaluation Form)", en: "📋 Administrative Evaluation Form" },
+        "eval_form_desc": { ar: "نموذج مخصص لإدخال وحفظ بيانات التقييم الإداري للسنتر.", en: "Custom form to enter and save center evaluation data." },
+        "eval_center_name": { ar: "اسم السنتر:", en: "Center Name:" },
+        "eval_manager": { ar: "المسؤول:", en: "Manager:" },
+        "eval_packages": { ar: "الباقات:", en: "Packages:" },
+        "eval_students_count": { ar: "عدد الطلبة:", en: "Students Count:" },
+        "eval_current_courses": { ar: "الكورسات الحالية:", en: "Current Courses:" },
+        "eval_collab_opps": { ar: "فرص التعاون:", en: "Collaboration Opportunities:" },
+        "eval_notes": { ar: "ملاحظات:", en: "Notes:" },
+        "eval_followup_plan": { ar: "خطة المتابعة:", en: "Follow-up Plan:" },
+        "eval_needs": { ar: "احتياجات السنتر أو المقترحات التي تم مناقشتها:", en: "Center Needs / Suggested Proposals:" },
+        "eval_final_rate": { ar: "التقييم النهائي:", en: "Final Evaluation:" },
+        "btn_save_eval": { ar: "حفظ التقييم الإداري 💾", en: "Save Evaluation 💾" }
     };
 
     // ==========================================
@@ -361,7 +387,9 @@ document.addEventListener('DOMContentLoaded', function() {
             localStorage.setItem(K_EXPENSES, JSON.stringify(expensesByDate));
             localStorage.setItem(K_DELETED, JSON.stringify(deletedStudents));
             localStorage.setItem(K_SYLLABUS, JSON.stringify(syllabusData));
+            localStorage.setItem(K_EVAL, JSON.stringify(evalData));
             updateTopStats(); updateFinanceSummary(); renderCharts();
+            if (typeof renderReportsPage === "function") renderReportsPage();
         } catch(e) { 
             showToast("الذاكرة ممتلئة! يرجى حذف الخلفية لتوفير مساحة", "err"); 
         }
@@ -376,7 +404,19 @@ document.addEventListener('DOMContentLoaded', function() {
             groupFees      = JSON.parse(localStorage.getItem(K_GROUP_FEES) || "{}");
             deletedStudents= JSON.parse(localStorage.getItem(K_DELETED) || "{}");
             syllabusData   = JSON.parse(localStorage.getItem(K_SYLLABUS) || "[]");
+            evalData       = JSON.parse(localStorage.getItem(K_EVAL) || "{}");
             
+            if($("evalCenterName")) $("evalCenterName").value = evalData.centerName || "";
+            if($("evalManager")) $("evalManager").value = evalData.manager || "";
+            if($("evalPackages")) $("evalPackages").value = evalData.packages || "";
+            if($("evalStudentsCount")) $("evalStudentsCount").value = evalData.studentsCount || "";
+            if($("evalCurrentCourses")) $("evalCurrentCourses").value = evalData.currentCourses || "";
+            if($("evalCollabOpps")) $("evalCollabOpps").value = evalData.collabOpps || "";
+            if($("evalNotes")) $("evalNotes").value = evalData.notes || "";
+            if($("evalFollowupPlan")) $("evalFollowupPlan").value = evalData.followupPlan || "";
+            if($("evalNeeds")) $("evalNeeds").value = evalData.needs || "";
+            if($("evalFinalRate")) $("evalFinalRate").value = evalData.finalRate || "⭐⭐⭐⭐⭐ ممتاز";
+
             applyTheme(localStorage.getItem(K_THEME) || "classic");
             
             const savedBg = localStorage.getItem(K_BG_IMAGE); 
@@ -1973,10 +2013,195 @@ function updateDriveUI() {
         }
     }
 
+    window.renderReportsPage = function() {
+        let totalExpected = 0;
+        let totalPaid = 0;
+        let totalRemaining = 0;
+        let debtors = [];
+
+        const allStuds = Object.values(students);
+        for (let i = 0; i < allStuds.length; i++) {
+            let s = allStuds[i];
+            if (s.name || s.paid > 0) {
+                let sClass = s.className ? s.className.trim() : "";
+                let req = (sClass && groupFees[sClass] !== undefined) ? toInt(groupFees[sClass]) : 0;
+                let p = s.paid || 0;
+                let remain = req > 0 ? (req - p) : 0;
+                if (remain < 0) remain = 0;
+
+                totalExpected += req;
+                totalPaid += p;
+                totalRemaining += remain;
+
+                if (remain > 0) {
+                    debtors.push({ id: s.id, name: s.name || "بدون اسم", className: sClass || "عام", remain: remain });
+                }
+            }
+        }
+
+        if ($("totalExpectedTerm")) $("totalExpectedTerm").textContent = totalExpected;
+        if ($("totalPaidTerm")) $("totalPaidTerm").textContent = totalPaid;
+        if ($("totalRemainingTerm")) $("totalRemainingTerm").textContent = totalRemaining;
+        if ($("debtorsCount")) $("debtorsCount").textContent = debtors.length;
+
+        const tb = $("debtsTable");
+        if (tb) {
+            const tbody = tb.querySelector("tbody");
+            if (tbody) {
+                tbody.innerHTML = "";
+                for (let i = 0; i < debtors.length; i++) {
+                    let d = debtors[i];
+                    let gColor = getTagColor(d.className);
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>${d.id}</td>
+                        <td><b>${d.name}</b></td>
+                        <td><span class="badge" style="background:${gColor}; border-color:${gColor}; color:#fff;">${d.className}</span></td>
+                        <td style="color:var(--danger); font-weight:bold;">${d.remain} ج</td>
+                    `;
+                    tr.style.cursor = "pointer";
+                    tr.onclick = function() { window.extOpen(d.id); };
+                    tbody.appendChild(tr);
+                }
+                if (debtors.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="4" class="mutedCenter">${currentLang === 'ar' ? "🎉 لا يوجد طلاب مديونين! الجميع خالص." : "🎉 No debtors found!"}</td></tr>`;
+                }
+            }
+        }
+    };
+
+    on("saveEvalBtn", "click", function() {
+        evalData = {
+            centerName: $("evalCenterName") ? $("evalCenterName").value.trim() : "",
+            manager: $("evalManager") ? $("evalManager").value.trim() : "",
+            packages: $("evalPackages") ? $("evalPackages").value.trim() : "",
+            studentsCount: $("evalStudentsCount") ? $("evalStudentsCount").value.trim() : "",
+            currentCourses: $("evalCurrentCourses") ? $("evalCurrentCourses").value.trim() : "",
+            collabOpps: $("evalCollabOpps") ? $("evalCollabOpps").value.trim() : "",
+            notes: $("evalNotes") ? $("evalNotes").value.trim() : "",
+            followupPlan: $("evalFollowupPlan") ? $("evalFollowupPlan").value.trim() : "",
+            needs: $("evalNeeds") ? $("evalNeeds").value.trim() : "",
+            finalRate: $("evalFinalRate") ? $("evalFinalRate").value : "⭐⭐⭐⭐⭐ ممتاز"
+        };
+        saveAll();
+        showToast(t("msg_saved"), "success");
+    });
+
+    function exportColoredReport() {
+        if (typeof XLSX === "undefined") {
+            return showToast("⚠️ مكتبة الإكسيل غير موجودة!", "err");
+        }
+        const wb = XLSX.utils.book_new();
+
+        // --- الشيت الأول: الملخص المالي التحليلي ---
+        let totalExpected = 0;
+        let totalPaid = 0;
+        let totalRemaining = 0;
+        let debtors = [];
+
+        const allStuds = Object.values(students);
+        for (let i = 0; i < allStuds.length; i++) {
+            let s = allStuds[i];
+            if (s.name || s.paid > 0) {
+                let sClass = s.className ? s.className.trim() : "";
+                let req = (sClass && groupFees[sClass] !== undefined) ? toInt(groupFees[sClass]) : 0;
+                let p = s.paid || 0;
+                let remain = req > 0 ? (req - p) : 0;
+                if (remain < 0) remain = 0;
+
+                totalExpected += req;
+                totalPaid += p;
+                totalRemaining += remain;
+
+                if (remain > 0) {
+                    debtors.push({ id: s.id, name: s.name || "بدون اسم", className: sClass || "عام", remain: remain });
+                }
+            }
+        }
+
+        const finSummaryRows = [
+            ["البند", "المبلغ (جنيه)"],
+            ["إجمالي المطلوب (الكامل)", totalExpected],
+            ["إجمالي المحصل (الفعلي)", totalPaid],
+            ["إجمالي المتبقي (المديونيات)", totalRemaining]
+        ];
+        const wsSummary = XLSX.utils.aoa_to_sheet(finSummaryRows);
+        wsSummary["!cols"] = [{ wch: 30 }, { wch: 20 }];
+        
+        // تنسيق الألوان للملخص المالي (متوافق مع xlsx-js-style)
+        if (wsSummary["A1"]) wsSummary["A1"].s = { fill: { fgColor: { rgb: "2B3648" } }, font: { color: { rgb: "FFFFFF" }, bold: true }, alignment: { horizontal: "center" } };
+        if (wsSummary["B1"]) wsSummary["B1"].s = { fill: { fgColor: { rgb: "2B3648" } }, font: { color: { rgb: "FFFFFF" }, bold: true }, alignment: { horizontal: "center" } };
+        
+        if (wsSummary["A2"]) wsSummary["A2"].s = { font: { bold: true }, alignment: { horizontal: "right" } };
+        if (wsSummary["B2"]) wsSummary["B2"].s = { font: { bold: true, color: { rgb: "2F6BFF" } }, alignment: { horizontal: "center" } };
+
+        if (wsSummary["A3"]) wsSummary["A3"].s = { font: { bold: true }, alignment: { horizontal: "right" } };
+        if (wsSummary["B3"]) wsSummary["B3"].s = { fill: { fgColor: { rgb: "D4EDDA" } }, font: { bold: true, color: { rgb: "155724" } }, alignment: { horizontal: "center" } };
+
+        if (wsSummary["A4"]) wsSummary["A4"].s = { font: { bold: true }, alignment: { horizontal: "right" } };
+        if (wsSummary["B4"]) wsSummary["B4"].s = { fill: { fgColor: { rgb: "F8D7DA" } }, font: { bold: true, color: { rgb: "721C24" } }, alignment: { horizontal: "center" } };
+
+        XLSX.utils.book_append_sheet(wb, wsSummary, "الملخص المالي");
+
+        // --- الشيت الثاني: قائمة الطلاب المديونين ---
+        const debtRows = [["كود الطالب", "اسم الطالب", "الباقة", "المبلغ المتبقي عليه"]];
+        for (let i = 0; i < debtors.length; i++) {
+            debtRows.push([debtors[i].id, debtors[i].name, debtors[i].className, debtors[i].remain]);
+        }
+        const wsDebts = XLSX.utils.aoa_to_sheet(debtRows);
+        wsDebts["!cols"] = [{ wch: 15 }, { wch: 30 }, { wch: 20 }, { wch: 25 }];
+        
+        // تنسيق عناوين قائمة المديونيات
+        const debtHeaders = ["A1", "B1", "C1", "D1"];
+        for (let h = 0; h < debtHeaders.length; h++) {
+            if (wsDebts[debtHeaders[h]]) wsDebts[debtHeaders[h]].s = { fill: { fgColor: { rgb: "721C24" } }, font: { color: { rgb: "FFFFFF" }, bold: true }, alignment: { horizontal: "center" } };
+        }
+        for (let r = 2; r <= debtRows.length; r++) {
+            if (wsDebts["A" + r]) wsDebts["A" + r].s = { alignment: { horizontal: "center" } };
+            if (wsDebts["B" + r]) wsDebts["B" + r].s = { font: { bold: true }, alignment: { horizontal: "right" } };
+            if (wsDebts["C" + r]) wsDebts["C" + r].s = { alignment: { horizontal: "center" } };
+            if (wsDebts["D" + r]) wsDebts["D" + r].s = { fill: { fgColor: { rgb: "F8D7DA" } }, font: { bold: true, color: { rgb: "721C24" } }, alignment: { horizontal: "center" } };
+        }
+        XLSX.utils.book_append_sheet(wb, wsDebts, "قائمة المديونيات");
+
+        // --- الشيت الثالث: تقرير التقييم الإداري ---
+        const evalRows = [
+            ["عنصر التقييم", "البيان / التفاصيل"],
+            ["اسم السنتر", evalData.centerName || ""],
+            ["المسؤول", evalData.manager || ""],
+            ["الباقات", evalData.packages || ""],
+            ["عدد الطلبة", evalData.studentsCount || ""],
+            ["الكورسات الحالية", evalData.currentCourses || ""],
+            ["فرص التعاون", evalData.collabOpps || ""],
+            ["ملاحظات", evalData.notes || ""],
+            ["خطة المتابعة", evalData.followupPlan || ""],
+            ["احتياجات السنتر أو المقترحات", evalData.needs || ""],
+            ["التقييم النهائي", evalData.finalRate || ""]
+        ];
+        const wsEval = XLSX.utils.aoa_to_sheet(evalRows);
+        wsEval["!cols"] = [{ wch: 30 }, { wch: 50 }];
+        
+        if (wsEval["A1"]) wsEval["A1"].s = { fill: { fgColor: { rgb: "1F2937" } }, font: { color: { rgb: "FFFFFF" }, bold: true }, alignment: { horizontal: "center" } };
+        if (wsEval["B1"]) wsEval["B1"].s = { fill: { fgColor: { rgb: "1F2937" } }, font: { color: { rgb: "FFFFFF" }, bold: true }, alignment: { horizontal: "center" } };
+        
+        for (let r = 2; r <= evalRows.length; r++) {
+            if (wsEval["A" + r]) wsEval["A" + r].s = { font: { bold: true }, alignment: { horizontal: "right" } };
+            if (wsEval["B" + r]) wsEval["B" + r].s = { alignment: { horizontal: "right", wrapText: true } };
+        }
+        XLSX.utils.book_append_sheet(wb, wsEval, "التقييم الإداري");
+
+        XLSX.writeFile(wb, `تقرير_السنتر_التحليلي_${nowDateStr()}.xlsx`);
+        showToast(currentLang === 'ar' ? "تم تصدير التقرير الملون بنجاح ✅" : "Colored Report Exported ✅", "success");
+    }
+
+    on("exportReportExcelBtn", "click", exportColoredReport);
+    on("exportReportExcelBtnBottom", "click", exportColoredReport);
+
     // Tabs Listeners
     on("btnTabHome", "click", function() { window.switchTab('Home'); });
     on("btnTabStudents", "click", function() { window.switchTab('Students'); renderList(); });
     on("btnTabRevenue", "click", function() { window.switchTab('Revenue'); renderCharts(); updateFinanceSummary(); });
+    on("btnTabReports", "click", function() { window.switchTab('Reports'); renderReportsPage(); });
     on("btnTabAdmin", "click", function() { window.switchTab('Admin'); });
     on("btnTabSyllabus", "click", function() { window.switchTab('Syllabus'); renderSyllabus(); });
 

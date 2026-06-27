@@ -355,7 +355,7 @@ body.theme-dark .bottom-nav, body.theme-glass.dark-glass .bottom-nav { backgroun
 .nav-item {
     background: transparent; border: none; display: flex; flex-direction: column;
     align-items: center; gap: 4px; color: var(--text-muted); cursor: pointer;
-    transition: transform 0.3s ease; width: 25%; overflow: visible;
+    transition: transform 0.3s ease; flex: 1; min-width: 0; overflow: visible;
 }
 .nav-icon { font-size: 1.5em; transition: transform 0.3s ease; }
 .nav-text { font-size: 0.8em; font-weight: 700; font-family: var(--font-main); transition: color 0.3s ease; }
