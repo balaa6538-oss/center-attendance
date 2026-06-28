@@ -273,6 +273,22 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(() => document.body.classList.remove("flash-green"), 500);
     }
 
+    function showFullscreenFeedback(isSuccess, isAlreadyPresent = false) {
+        let box = $("fullscreenFeedback");
+        let icon = $("feedbackIcon");
+        if(!box || !icon) return;
+        box.classList.remove("hidden");
+        void box.offsetWidth;
+        if (isSuccess) {
+            icon.innerHTML = "✅";
+        } else if (isAlreadyPresent) {
+            icon.innerHTML = "⚠️";
+        } else {
+            icon.innerHTML = "❌";
+        }
+        setTimeout(() => { box.classList.add("hidden"); }, 400);
+    }
+
     function showToast(msg, type = "success") {
         let container = $("toastContainer"); if(!container) return;
         const toast = document.createElement("div"); 
@@ -390,6 +406,16 @@ document.addEventListener('DOMContentLoaded', function() {
             localStorage.setItem(K_EVAL, JSON.stringify(evalData));
             updateTopStats(); updateFinanceSummary(); renderCharts();
             if (typeof renderReportsPage === "function") renderReportsPage();
+        } catch(e) { 
+            showToast("الذاكرة ممتلئة! يرجى حذف الخلفية لتوفير مساحة", "err"); 
+        }
+    }
+
+    function saveAttendanceOnly() {
+        try {
+            localStorage.setItem(K_STUDENTS, JSON.stringify(students));
+            localStorage.setItem(K_ATT_BY_DATE, JSON.stringify(attByDate));
+            updateTopStats();
         } catch(e) { 
             showToast("الذاكرة ممتلئة! يرجى حذف الخلفية لتوفير مساحة", "err"); 
         }
@@ -661,20 +687,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function addAttendance(id, d) {
         const s = students[String(id)];
-        if(!s) return { ok: false, msg: "Student not found" };
+        if(!s) {
+            showFullscreenFeedback(false, false);
+            return { ok: false, msg: "Student not found" };
+        }
         
         if(!s.attendanceDates.includes(d)) {
             s.attendanceDates.push(d); 
             if(!attByDate[d]) attByDate[d] = []; 
             attByDate[d].push(String(id)); 
             
-            saveAll(); 
+            saveAttendanceOnly(); 
             updateLiveFeed(s);
             playSound("success");
             triggerEdgeFlash(); // تشغيل الفلاش الأخضر للنجاح
+            showFullscreenFeedback(true, false);
             return { ok: true, msg: t("msg_att_ok") };
         }
         playSound("error");
+        showFullscreenFeedback(false, true);
         return { ok: false, msg: t("msg_att_warn") };
     }
 
@@ -682,7 +713,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const s = students[String(id)]; if(!s) return;
         s.attendanceDates = s.attendanceDates.filter(date => date !== d);
         if(attByDate[d]) attByDate[d] = attByDate[d].filter(x => x !== String(id));
-        saveAll();
+        saveAttendanceOnly();
     }
 
     // ==========================================
@@ -1175,6 +1206,7 @@ on("quickAttendId", "keypress", function(e) {
         if(!id || !students[String(id)]) { 
             showToast("الطالب غير مسجل", "err"); 
             triggerShake("quickAttendId"); // الاهتزاز عند الخطأ
+            showFullscreenFeedback(false, false);
             return; 
         }
         
@@ -1300,9 +1332,27 @@ on("quickAttendId", "keypress", function(e) {
     on("correctPayBtn", "click", function() {
         if(!currentId) return; 
         const v = toInt(prompt(currentLang==='ar' ? "قيمة الخصم:" : "Deduct amount:")); if(!v) return;
-        students[currentId].paid = Math.max(0, students[currentId].paid - v);
+        let st = students[currentId];
+        st.paid = Math.max(0, st.paid - v);
         const today = nowDateStr();
         revenueByDate[today] = Math.max(0, (revenueByDate[today] || 0) - v);
+        
+        if(st.payments && st.payments.length > 0) {
+            let remToDeduct = v;
+            for(let j = st.payments.length - 1; j >= 0; j--) {
+                if(st.payments[j].date === today) {
+                    if(st.payments[j].amount <= remToDeduct) {
+                        remToDeduct -= st.payments[j].amount;
+                        st.payments.splice(j, 1);
+                    } else {
+                        st.payments[j].amount -= remToDeduct;
+                        remToDeduct = 0;
+                        break;
+                    }
+                }
+            }
+        }
+        
         saveAll(); showToast(t("msg_discount"), "warning"); updateStudentUI(currentId); renderReport(nowDateStr()); renderCharts();
     });
 
@@ -2247,6 +2297,37 @@ function updateDriveUI() {
         
         if($("revenueModalBody")) $("revenueModalBody").innerHTML = html;
         if($("revenueModal")) $("revenueModal").classList.remove("hidden");
+    });
+
+    // === GLOBAL BARCODE SCANNER LISTENER ===
+    let barcodeBuffer = "";
+    let barcodeTimer = null;
+    document.addEventListener("keydown", function(e) {
+        const activeEl = document.activeElement;
+        if (activeEl && (activeEl.tagName === "INPUT" || activeEl.tagName === "TEXTAREA" || activeEl.tagName === "SELECT")) {
+            return;
+        }
+        if (e.key === "Enter") {
+            if (barcodeBuffer.length > 0) {
+                let scannedId = toInt(barcodeBuffer);
+                barcodeBuffer = "";
+                clearTimeout(barcodeTimer);
+                if (scannedId && students[String(scannedId)]) {
+                    window.switchTab('Home');
+                    let res = addAttendance(scannedId, nowDateStr());
+                    showToast(res.msg, res.ok ? "success" : "warning");
+                    updateStudentUI(scannedId);
+                    updateTopStats();
+                } else if (scannedId) {
+                    showToast("الطالب غير مسجل: " + scannedId, "err");
+                    showFullscreenFeedback(false, false);
+                }
+            }
+        } else if (!isNaN(e.key) && e.key.trim() !== "") {
+            barcodeBuffer += e.key;
+            clearTimeout(barcodeTimer);
+            barcodeTimer = setTimeout(() => { barcodeBuffer = ""; }, 100);
+        }
     });
 
     // === SIDEBAR & THEME TOGGLE LISTENERS ===
