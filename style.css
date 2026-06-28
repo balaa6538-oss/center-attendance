@@ -154,6 +154,7 @@ a { color: var(--primary); text-decoration: none; }
   font-weight: 800;
   background: var(--gradient);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   white-space: nowrap;
   transition: opacity 0.2s;
@@ -371,7 +372,7 @@ a { color: var(--primary); text-decoration: none; }
   gap: 20px;
   margin-bottom: 24px;
 }
-.bento-sm { /* default: single cell */ }
+.bento-sm { min-width: 0; /* default: single cell */ }
 .bento-full { grid-column: 1 / -1; }
 
 .grid2 {
@@ -623,6 +624,7 @@ tr:hover td { background: var(--bg-hover); }
   font-weight: 800;
   background: var(--gradient);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -867,6 +869,7 @@ tr:hover td { background: var(--bg-hover); }
   font-size: 1.6em;
   background: var(--gradient);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-bottom: 4px;
 }
@@ -942,10 +945,6 @@ tr:hover td { background: var(--bg-hover); }
 .toast-warning { border-color: var(--warning); }
 
 @keyframes slideInToast {
-  from { transform: translateX(120%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-[dir="ltr"] @keyframes slideInToast {
   from { transform: translateX(120%); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
 }
