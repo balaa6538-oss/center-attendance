@@ -106,7 +106,7 @@
             <span class="stat-pill adminOnly">
               <span data-i18n="stat_revenue">💰 إيراد:</span> 
               <b id="todayRevenue" class="blurTarget">0 ج</b>
-              <span id="toggleRevBtn" style="cursor:pointer; font-size:1.1em; margin-right:5px;">👁️</span>
+              <span id="toggleRevBtn" style="cursor:pointer; font-size:1.1em; margin-inline-start:5px;">👁️</span>
             </span>
             <span class="stat-pill clickable" id="openShiftManagerBtn">
               <span data-i18n="shift_manager">مسئول الشيفت:</span> <b id="currentShiftManagerName">....</b>
@@ -197,7 +197,7 @@
               <div class="paymentBox">
                 <div class="payRow">
                   <span class="payLabel" data-i18n="lbl_total_paid">💰 إجمالي المدفوع:</span>
-                  <input id="stTotalPaid" class="inp blurTarget" readonly style="font-weight:bold; color:var(--primary); width:120px; text-align:center;">
+                  <input id="stTotalPaid" class="inp blurTarget" readonly style="font-weight:bold; color:var(--primary); max-width:120px; flex:1; text-align:center;">
                   <button id="correctPayBtn" class="btn warning smallBtn adminOnly" data-i18n="btn_discount">خصم</button>
                 </div>
                 
@@ -225,7 +225,7 @@
                 <button id="saveStudentBtn" class="btn primary" data-i18n="btn_save_st">حفظ البيانات 💾</button>
                 <button id="markTodayBtn" class="btn success" data-i18n="btn_mark_present">✅ حضور</button>
                 <button id="unmarkTodayBtn" class="btn warning" data-i18n="btn_mark_absent">✖ غياب</button>
-                <button id="deleteStudentBtn" class="btn danger adminOnly" style="margin-right:auto;" data-i18n="btn_delete">🗑️ حذف</button>
+                <button id="deleteStudentBtn" class="btn danger adminOnly" style="margin-inline-start:auto;" data-i18n="btn_delete">🗑️ حذف</button>
               </div>
               
               <h3 style="margin-top: 20px; font-size: 0.9em; color: var(--text-secondary);" data-i18n="lbl_history">سجل التواريخ</h3>
@@ -399,7 +399,7 @@
                     <span id="lastSyncText" style="font-size: 11px; color: var(--text-secondary);"></span>
                   </div>
 
-                  <button class="btn w100" id="driveLoginBtn" style="padding:12px; background:#4285F4; color:#fff; font-weight:bold;" data-i18n="btn_drive_login">ربط بجوجل درايف ☁️</button>
+                  <button class="btn primary w100" id="driveLoginBtn" style="padding:12px; font-weight:bold;" data-i18n="btn_drive_login">ربط بجوجل درايف ☁️</button>
                   <div class="row" style="gap:5px;">
                     <button class="btn warning w100" id="restoreDriveBtn" style="padding:12px; font-weight:bold;" data-i18n="btn_drive_restore">استرجاع من السحاب 🔄</button>
                     <button class="btn success hidden" id="syncNowBtn" style="padding:12px; flex:0.3;" title="Manual Sync">⬆️</button>
@@ -433,7 +433,7 @@
               <div class="settings-card">
                 <h3 data-i18n="set_fin_title">💰 إعدادات مالية</h3>
                 <div style="display:flex; flex-direction:column; gap:10px;">
-                  <button class="btn warning w100" id="openGroupFeesBtn" style="padding:12px; font-weight:bold; color:#000;" data-i18n="btn_group_fees">⚙️ إدارة الباقات والمصاريف</button>
+                  <button class="btn warning w100" id="openGroupFeesBtn" style="padding:12px; font-weight:bold;" data-i18n="btn_group_fees">⚙️ إدارة الباقات والمصاريف</button>
                 </div>
               </div>
 
@@ -476,7 +476,7 @@
           <div class="card" style="margin-bottom: 30px;">
             <div class="flexBetween" style="margin-bottom: 15px;">
               <h2 style="color: var(--danger);" data-i18n="debtors_list_title">⚠️ قائمة الطلاب المديونين</h2>
-              <div class="stat-pill" style="border-color: var(--danger); color: var(--danger); background: rgba(239, 68, 68, 0.1);">
+              <div class="stat-pill" style="border-color: var(--danger); color: var(--danger); background: var(--bg-danger-subtle);">
                 <span data-i18n="debtors_count_lbl">عدد المديونين:</span> <b id="debtorsCount" style="color: var(--danger);">0</b>
               </div>
             </div>
