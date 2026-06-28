@@ -5,9 +5,15 @@
   <script src="https://apis.google.com/js/api.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Center System V-PRO</title>
+  <title>Studify - Premium SaaS</title>
   
-  <link rel="stylesheet" href="style.css?v=PRO_FINAL">
+  <!-- PWA Manifest & Icons -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <meta name="theme-color" content="#2563EB">
+
+  <link rel="stylesheet" href="style.css?v=STUDIFY_UI">
   
   <script src="./assets/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
@@ -346,9 +352,8 @@
                     <div>
                         <label data-i18n="lbl_theme">ثيم البرنامج:</label>
                         <select id="themeSelector" class="inp" style="width:100%; margin-top:5px;">
-                            <option value="classic" data-i18n="theme_cls">🔵 كلاسيك</option>
-                            <option value="dark" data-i18n="theme_dark">🌑 ليلي</option>
-                            <option value="glass" data-i18n="theme_glass">🧊 زجاجي</option>
+                            <option value="light" data-i18n="theme_light">☀️ الوضع الفاتح (Light Mode)</option>
+                            <option value="dark" data-i18n="theme_dark">🌙 الوضع الليلي (Dark Mode)</option>
                         </select>
                     </div>
                     <div style="display: flex; gap: 5px;">

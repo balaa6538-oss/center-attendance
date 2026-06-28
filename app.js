@@ -417,7 +417,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if($("evalNeeds")) $("evalNeeds").value = evalData.needs || "";
             if($("evalFinalRate")) $("evalFinalRate").value = evalData.finalRate || "⭐⭐⭐⭐⭐ ممتاز";
 
-            applyTheme(localStorage.getItem(K_THEME) || "classic");
+            applyTheme(localStorage.getItem(K_THEME) || "light");
             
             const savedBg = localStorage.getItem(K_BG_IMAGE); 
             if(savedBg) { 
@@ -997,9 +997,10 @@ let remainAmt = req > 0 ? (req - (s.paid || 0)) : 0;
     // 12. SYSTEM THEME & LANGUAGE APPLY
     // ==========================================
     function applyTheme(theme) {
+        if (theme !== "dark") theme = "light";
         document.body.className = ""; 
-        if(theme === "dark") document.body.classList.add("theme-dark"); 
-        else if(theme === "glass") document.body.classList.add("theme-glass");
+        document.documentElement.setAttribute("data-theme", theme);
+        if(theme === "dark") document.body.classList.add("theme-dark");
         localStorage.setItem(K_THEME, theme); 
         if($("themeSelector")) $("themeSelector").value = theme;
     }
