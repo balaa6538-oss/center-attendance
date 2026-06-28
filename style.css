@@ -187,9 +187,99 @@ a { color: var(--primary); text-decoration: none; }
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 16px;
   padding: 16px 12px;
   overflow-y: auto;
+}
+
+.nav-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 6px 14px;
+  margin-bottom: 6px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-family: var(--font);
+  font-size: 0.78em;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: color 0.2s ease, opacity 0.3s ease, height 0.3s ease;
+  text-align: start;
+}
+
+.nav-group-header:hover {
+  color: var(--text-primary);
+}
+
+.nav-group-header .nav-group-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-group-header .chevron-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Accordion Collapsed State */
+.nav-group.collapsed .chevron-icon {
+  transform: rotate(90deg);
+}
+
+[dir="ltr"] .nav-group.collapsed .chevron-icon {
+  transform: rotate(-90deg);
+}
+
+/* Silky Smooth Pure CSS Height Transition */
+.nav-group-items-wrapper {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-group.collapsed .nav-group-items-wrapper {
+  grid-template-rows: 0fr;
+  opacity: 0;
+}
+
+.nav-group-items {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Smart Handling for Collapsed Sidebar Shell (72px width) */
+.app-shell.sidebar-collapsed .sidebar-menu {
+  gap: 10px;
+}
+
+.app-shell.sidebar-collapsed .nav-group-header {
+  height: 0;
+  padding: 0;
+  margin: 0;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.app-shell.sidebar-collapsed .nav-group-items-wrapper {
+  grid-template-rows: 1fr !important;
+  opacity: 1 !important;
+  overflow: visible !important;
 }
 
 .sidebar .nav-item {

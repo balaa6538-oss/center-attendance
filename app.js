@@ -2355,6 +2355,23 @@ function updateDriveUI() {
         if(overlay) overlay.classList.remove("active");
     });
 
+    // === SIDEBAR ACCORDION LOGIC ===
+    window.toggleNavGroup = function(btn) {
+        const group = btn.closest('.nav-group');
+        if (group) {
+            group.classList.toggle('collapsed');
+        }
+    };
+
+    // Auto-expand the accordion group containing the active tab on initial load
+    const activeNavItem = document.querySelector('.sidebar-menu .nav-item.active');
+    if (activeNavItem) {
+        const activeGroup = activeNavItem.closest('.nav-group');
+        if (activeGroup) {
+            activeGroup.classList.remove('collapsed');
+        }
+    }
+
     // Startup Sequence
     loadAll(); 
     ensureBase500(); 

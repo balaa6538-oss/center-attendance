@@ -55,30 +55,71 @@
       </div>
 
       <nav class="sidebar-menu">
-        <button id="btnTabHome" class="nav-item active">
-          <span class="nav-icon">🏠</span>
-          <span class="nav-text" data-i18n="nav_home">الرئيسية</span>
-        </button>
-        <button id="btnTabStudents" class="nav-item">
-          <span class="nav-icon">👥</span>
-          <span class="nav-text" data-i18n="nav_students">الطلاب</span>
-        </button>
-        <button id="btnTabRevenue" class="nav-item adminOnly">
-          <span class="nav-icon">📈</span>
-          <span class="nav-text" data-i18n="nav_revenue">الماليات</span>
-        </button>
-        <button id="btnTabReports" class="nav-item">
-          <span class="nav-icon">📊</span>
-          <span class="nav-text" data-i18n="nav_reports">التقارير</span>
-        </button>
-        <button id="btnTabSyllabus" class="nav-item">
-          <span class="nav-icon">🗺️</span>
-          <span class="nav-text" data-i18n="nav_syllabus">المنهج</span>
-        </button>
-        <button id="btnTabAdmin" class="nav-item adminOnly needs-backup">
-          <span class="nav-icon">⚙️</span>
-          <span class="nav-text" data-i18n="nav_settings">الإعدادات</span>
-        </button>
+        <!-- 1. DAILY OPERATIONS -->
+        <div class="nav-group">
+          <button class="nav-group-header" onclick="toggleNavGroup(this)" type="button">
+            <span class="nav-group-title">الإدارة اليومية</span>
+            <svg class="chevron-icon" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+          <div class="nav-group-items-wrapper">
+            <div class="nav-group-items">
+              <button id="btnTabHome" class="nav-item active">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-text" data-i18n="nav_home">الرئيسية</span>
+              </button>
+              <button id="btnTabStudents" class="nav-item">
+                <span class="nav-icon">👥</span>
+                <span class="nav-text" data-i18n="nav_students">الطلاب</span>
+              </button>
+              <button id="btnTabSyllabus" class="nav-item">
+                <span class="nav-icon">🗺️</span>
+                <span class="nav-text" data-i18n="nav_syllabus">المنهج</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. FINANCE & ANALYTICS -->
+        <div class="nav-group">
+          <button class="nav-group-header" onclick="toggleNavGroup(this)" type="button">
+            <span class="nav-group-title">الحسابات والإحصائيات</span>
+            <svg class="chevron-icon" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+          <div class="nav-group-items-wrapper">
+            <div class="nav-group-items">
+              <button id="btnTabRevenue" class="nav-item adminOnly">
+                <span class="nav-icon">📈</span>
+                <span class="nav-text" data-i18n="nav_revenue">الماليات</span>
+              </button>
+              <button id="btnTabReports" class="nav-item">
+                <span class="nav-icon">📊</span>
+                <span class="nav-text" data-i18n="nav_reports">التقارير</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. SYSTEM -->
+        <div class="nav-group">
+          <button class="nav-group-header" onclick="toggleNavGroup(this)" type="button">
+            <span class="nav-group-title">إعدادات النظام</span>
+            <svg class="chevron-icon" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+          <div class="nav-group-items-wrapper">
+            <div class="nav-group-items">
+              <button id="btnTabAdmin" class="nav-item adminOnly needs-backup">
+                <span class="nav-icon">⚙️</span>
+                <span class="nav-text" data-i18n="nav_settings">الإعدادات</span>
+              </button>
+            </div>
+          </div>
+        </div>
       </nav>
 
       <div class="sidebar-footer">
