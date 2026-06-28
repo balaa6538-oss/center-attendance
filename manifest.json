@@ -1,11 +1,11 @@
 {
   "name": "Studify",
   "short_name": "Studify",
-  "description": "Premium SaaS application for student management and analytical reports.",
+  "description": "Premium SaaS student management and analytics platform.",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#F8FAFC",
-  "theme_color": "#2563EB",
+  "background_color": "#0B1120",
+  "theme_color": "#0B1120",
   "orientation": "portrait-primary",
   "icons": [
     {

@@ -417,7 +417,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if($("evalNeeds")) $("evalNeeds").value = evalData.needs || "";
             if($("evalFinalRate")) $("evalFinalRate").value = evalData.finalRate || "⭐⭐⭐⭐⭐ ممتاز";
 
-            applyTheme(localStorage.getItem(K_THEME) || "light");
+            applyTheme(localStorage.getItem(K_THEME) || "dark");
             
             const savedBg = localStorage.getItem(K_BG_IMAGE); 
             if(savedBg) { 
@@ -442,15 +442,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // 7. AUTHENTICATION & SECURITY
     // ==========================================
     function checkAuth() {
-        const nav = document.querySelector('.bottom-nav');
+        const sidebar = document.querySelector('.sidebar');
         if(localStorage.getItem(K_AUTH) === "1") {
             currentUserRole = localStorage.getItem(K_ROLE) || "admin";
             $("loginBox").classList.add("hidden"); $("appBox").classList.remove("hidden");
-            if(nav) nav.style.display = "flex"; // إظهار الشريط
+            if(sidebar) sidebar.style.display = "flex";
             showApp();
         } else {
             $("loginBox").classList.remove("hidden"); $("appBox").classList.add("hidden");
-            if(nav) nav.style.display = "none"; // إخفاء الشريط
+            if(sidebar) sidebar.style.display = "none";
         }
     }
 
@@ -1003,6 +1003,12 @@ let remainAmt = req > 0 ? (req - (s.paid || 0)) : 0;
         if(theme === "dark") document.body.classList.add("theme-dark");
         localStorage.setItem(K_THEME, theme); 
         if($("themeSelector")) $("themeSelector").value = theme;
+        // Update topbar theme toggle icon
+        var themeBtn = $("topbarThemeToggle");
+        if(themeBtn) themeBtn.textContent = theme === "dark" ? "☀️" : "🌙";
+        // Update PWA theme-color meta
+        var metaTheme = document.querySelector('meta[name="theme-color"]');
+        if(metaTheme) metaTheme.content = theme === "dark" ? "#0B1120" : "#F1F5F9";
     }
 
     function applyLanguage() {
@@ -1023,9 +1029,7 @@ let remainAmt = req > 0 ? (req - (s.paid || 0)) : 0;
             $("changeLangBtn").innerText = currentLang === "ar" ? "🌐 تغيير اللغة (Ar / En)" : "🌐 Switch Language";
         }
         
-        if(document.querySelector('.bottom-nav')) {
-            document.querySelector('.bottom-nav').style.flexDirection = currentLang === "ar" ? "row" : "row-reverse";
-        }
+        // Sidebar doesn't need flex-direction change for RTL (handled by CSS logical properties)
         
         // السطر الجديد لتحديث كلمات جوجل درايف فوراً مع تغيير اللغة
         if (typeof updateDriveUI === "function") updateDriveUI();
@@ -2243,6 +2247,31 @@ function updateDriveUI() {
         
         if($("revenueModalBody")) $("revenueModalBody").innerHTML = html;
         if($("revenueModal")) $("revenueModal").classList.remove("hidden");
+    });
+
+    // === SIDEBAR & THEME TOGGLE LISTENERS ===
+    on("topbarThemeToggle", "click", function() {
+        var current = localStorage.getItem(K_THEME) || "dark";
+        applyTheme(current === "dark" ? "light" : "dark");
+    });
+
+    on("sidebarCollapseBtn", "click", function() {
+        var shell = $("appBox");
+        if(shell) shell.classList.toggle("sidebar-collapsed");
+    });
+
+    on("mobileSidebarToggle", "click", function() {
+        var sidebar = $("sidebarNav");
+        var overlay = $("sidebarOverlay");
+        if(sidebar) sidebar.classList.toggle("mobile-open");
+        if(overlay) overlay.classList.toggle("active");
+    });
+
+    on("sidebarOverlay", "click", function() {
+        var sidebar = $("sidebarNav");
+        var overlay = $("sidebarOverlay");
+        if(sidebar) sidebar.classList.remove("mobile-open");
+        if(overlay) overlay.classList.remove("active");
     });
 
     // Startup Sequence
