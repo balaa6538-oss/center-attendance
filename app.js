@@ -618,13 +618,20 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateStudentUI(id) {
-        currentId = id; const st = students[id]; if (!st) return; 
+        currentId = id; const st = students[id]; 
+        if (!st) {
+            if ($("notesLockOverlay")) $("notesLockOverlay").style.display = "flex";
+            if ($("stNotesListContainer")) $("stNotesListContainer").innerHTML = '<div class="mutedCenter" style="font-size:0.85em;">لا توجد ملاحظات مسجلة لهذا الطالب</div>';
+            return; 
+        }
+        
+        if ($("notesLockOverlay")) $("notesLockOverlay").style.display = "none";
+        if (typeof renderStudentNotes === "function") renderStudentNotes(id);
         
         if($("studentIdPill")) $("studentIdPill").textContent = `ID: ${id}`;
         if($("stName")) $("stName").value = st.name || ""; 
         if($("stClass")) $("stClass").value = st.className || ""; 
         if($("stPhone")) $("stPhone").value = st.phone || ""; 
-        if($("stNotes")) $("stNotes").value = st.notes || ""; 
         
         const paid = st.paid || 0; 
         let stClassName = st.className ? st.className.trim() : "";
@@ -1405,7 +1412,6 @@ on("quickAttendId", "keypress", function(e) {
         if ($("stName")) s.name = $("stName").value; 
         if ($("stClass")) s.className = $("stClass").value; 
         if ($("stPhone")) s.phone = $("stPhone").value;
-        if ($("stNotes")) s.notes = $("stNotes").value;
         saveAll(); showToast(t("msg_saved")); updateStudentUI(currentId);
     });
 
@@ -1524,16 +1530,105 @@ on("quickAttendId", "keypress", function(e) {
         saveAll(); showToast(t("msg_discount"), "warning"); updateStudentUI(currentId); renderReport(nowDateStr()); renderCharts();
     });
 
+    window.renderStudentNotes = function(id) {
+        const container = $("stNotesListContainer"); if (!container) return;
+        const st = students[id]; if (!st) return;
+        
+        let notesStr = st.notes ? st.notes.trim() : "";
+        if (!notesStr) {
+            container.innerHTML = `<div class="mutedCenter" style="font-size:0.85em;">لا توجد ملاحظات مسجلة لهذا الطالب</div>`;
+            return;
+        }
+        
+        let lines = notesStr.split("\n").filter(l => l.trim() !== "");
+        if (lines.length === 0) {
+            container.innerHTML = `<div class="mutedCenter" style="font-size:0.85em;">لا توجد ملاحظات مسجلة لهذا الطالب</div>`;
+            return;
+        }
+        
+        let html = "";
+        for (let i = 0; i < lines.length; i++) {
+            let line = lines[i];
+            let datePart = "";
+            let textPart = line;
+            
+            let match = line.match(/^\[([^\]]+)\]\s*:\s*(.*)$/);
+            if (match) {
+                datePart = match[1];
+                textPart = match[2];
+            }
+            
+            html += `
+            <div class="note-card" style="display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px; background:var(--bg-surface); border:1px solid var(--border); border-radius:6px; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+                <div style="flex:1; line-height:1.4;">
+                    ${datePart ? `<span class="badge" style="background:#334155; color:#f8fafc; font-size:0.75em; margin-bottom:4px; display:inline-block;">📅 ${datePart}</span><br>` : ""}
+                    <span style="color:var(--text); font-size:0.9em;">${textPart}</span>
+                </div>
+                <div class="row" style="width:auto; gap:6px;">
+                    <button class="btn warning smallBtn iconOnly edit-note-btn" data-index="${i}" title="تعديل الملحوظة">✏️</button>
+                    <button class="btn danger smallBtn iconOnly delete-note-btn" data-index="${i}" title="مسح الملحوظة">🗑️</button>
+                </div>
+            </div>`;
+        }
+        
+        container.innerHTML = html;
+        
+        container.querySelectorAll(".edit-note-btn").forEach(btn => {
+            btn.onclick = function() {
+                let idx = toInt(this.getAttribute("data-index"));
+                let allLines = (students[currentId].notes || "").split("\n").filter(l => l.trim() !== "");
+                let currentLine = allLines[idx];
+                
+                let existingDate = "";
+                let editableText = currentLine;
+                let match = currentLine.match(/^\[([^\]]+)\]\s*:\s*(.*)$/);
+                if (match) {
+                    existingDate = match[1];
+                    editableText = match[2];
+                }
+                
+                let newText = prompt("✏️ تعديل نص الملحوظة:", editableText);
+                if (newText !== null) {
+                    if (newText.trim() === "") {
+                        if (confirm("⚠️ النص فارغ، هل تريد مسح الملحوظة؟")) {
+                            allLines.splice(idx, 1);
+                        }
+                    } else {
+                        allLines[idx] = existingDate ? `[${existingDate}] : ${newText.trim()}` : newText.trim();
+                    }
+                    students[currentId].notes = allLines.join("\n");
+                    saveAll();
+                    renderStudentNotes(currentId);
+                    showToast("تم تعديل الملحوظة بنجاح ✏️", "success");
+                }
+            };
+        });
+        
+        container.querySelectorAll(".delete-note-btn").forEach(btn => {
+            btn.onclick = function() {
+                let idx = toInt(this.getAttribute("data-index"));
+                if (confirm("⚠️ متأكد من مسح هذه الملحوظة نهائياً؟")) {
+                    let allLines = (students[currentId].notes || "").split("\n").filter(l => l.trim() !== "");
+                    allLines.splice(idx, 1);
+                    students[currentId].notes = allLines.join("\n");
+                    saveAll();
+                    renderStudentNotes(currentId);
+                    showToast("تم مسح الملحوظة 🗑️", "warning");
+                }
+            };
+        });
+    };
+
     on("addNoteBtn", "click", function() {
         if(!currentId) return; 
         const noteInp = $("newNoteInp"); if (!noteInp) return;
         const txt = noteInp.value.trim(); if(!txt) return;
         
         const now = new Date(); const stamp = `[${now.toISOString().split('T')[0]}]`;
-        let oldNotes = $("stNotes") ? $("stNotes").value : (students[currentId].notes ? students[currentId].notes : "");
+        let oldNotes = students[currentId].notes ? students[currentId].notes : "";
         students[currentId].notes = `${stamp} : ${txt}\n${oldNotes}`;
         
-        saveAll(); updateStudentUI(currentId); showToast(t("msg_saved"));
+        saveAll(); renderStudentNotes(currentId); showToast(t("msg_saved"));
         noteInp.value = "";
     });
 
