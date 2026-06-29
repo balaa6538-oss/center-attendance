@@ -346,7 +346,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 position: fixed;
                 top: 50%;
                 left: 50%;
-                transform: translate(-50%, -50%) scale(0);
+                transform: translate(-50%, -50%);
                 background: linear-gradient(135deg, #1e3a8a, #2563eb);
                 color: #ffffff;
                 padding: 30px 50px;
@@ -355,16 +355,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 border: 3px solid #fbbf24;
                 z-index: 9999999;
                 text-align: center;
-                animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, fadeOutToast 0.6s ease-in 3.5s forwards;
+                animation: popInOut 4.2s ease-in-out forwards;
             }
-            @keyframes popIn {
-                0% { transform: translate(-50%, -50%) scale(0); }
-                80% { transform: translate(-50%, -50%) scale(1.05); }
-                100% { transform: translate(-50%, -50%) scale(1); }
-            }
-            @keyframes fadeOutToast {
-                0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-                100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            @keyframes popInOut {
+                0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+                10% { transform: translate(-50%, -50%) scale(1.05); opacity: 1; }
+                15% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+                85% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+                100% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
             }
             `;
             document.head.appendChild(style);
@@ -1518,6 +1516,12 @@ on("quickAttendId", "keypress", function(e) {
         if ($("stClass")) s.className = $("stClass").value; 
         if ($("stPhone")) s.phone = $("stPhone").value;
         saveAll(); showToast(t("msg_saved")); updateStudentUI(currentId);
+        
+        let sClass = s.className ? s.className.trim() : "";
+        let req = (sClass && groupFees[sClass] !== undefined) ? toInt(groupFees[sClass]) : 0;
+        if (req > 0 && s.paid >= req) {
+            fireConfetti();
+        }
     });
 
     on("showReceiptBtn", "click", function() {
@@ -1603,8 +1607,13 @@ on("quickAttendId", "keypress", function(e) {
         if (method === "instapay") methodName = "إنستاباي 📱";
         if (method === "wallet") methodName = "فودافون كاش/محفظة 🟢";
         
-        const st = students[currentId]; st.paid += v;
-       if (!st.payments) st.payments = [];
+        const st = students[currentId];
+        if ($("stName")) st.name = $("stName").value; 
+        if ($("stClass")) st.className = $("stClass").value; 
+        if ($("stPhone")) st.phone = $("stPhone").value;
+        
+        st.paid = (st.paid || 0) + v;
+        if (!st.payments) st.payments = [];
         st.payments.push({ date: nowDateStr(), amount: v, method: method });
         const today = nowDateStr();
         if (!revenueByDate[today]) revenueByDate[today] = 0;
