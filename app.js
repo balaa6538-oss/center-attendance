@@ -1013,7 +1013,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // ==========================================
     // 11. TABLE & SEARCH ENGINE
     // ==========================================
-    function renderList() {
+    function renderList(keepPage) {
         const filterClassEl = $("filterClass"), filterStatusEl = $("filterStatus"), filterAttendEl = $("filterAttend");
         let fClass = "all", fStatus = "all", fAttend = "all";
         
@@ -1073,7 +1073,12 @@ document.addEventListener('DOMContentLoaded', function() {
             currentFilteredList = searchedList;
         }
         
-        currentPage = 1; 
+        if (keepPage !== true) {
+            currentPage = 1; 
+        } else {
+            let totalPages = Math.ceil(currentFilteredList.length / ITEMS_PER_PAGE) || 1;
+            if (currentPage > totalPages) currentPage = totalPages;
+        }
         renderPage();
     }
 
@@ -1100,7 +1105,7 @@ document.addEventListener('DOMContentLoaded', function() {
             let attendTxt = isAttended ? "✅" : "➖";
             let rankIcon = s.rank === 'vip' ? ' ⭐' : (s.rank === 'warn' ? ' ⚠️' : '');
             let gColor = getTagColor(sClass);
-let remainAmt = req > 0 ? (req - (s.paid || 0)) : 0;
+            let remainAmt = req > 0 ? (req - (s.paid || 0)) : 0;
             if (remainAmt < 0) remainAmt = 0;
             tr.innerHTML = `
                 <td><input type="checkbox" class="stCheckbox" data-id="${s.id}"></td>
@@ -1126,29 +1131,49 @@ let remainAmt = req > 0 ? (req - (s.paid || 0)) : 0;
         if ($("nextPageBtn")) $("nextPageBtn").disabled = (end >= currentFilteredList.length);
     }
 
+    let simpleCurrentPage = 1;
+    const SIMPLE_ITEMS_PER_PAGE = 20;
+    let simpleFilteredStuds = [];
+
     function renderSimpleTable() {
         const tb = $("simpleStudentsTable"); if (!tb) return;
         const tbody = tb.querySelector("tbody"); if(!tbody) return; 
         
         tbody.innerHTML = "";
         
+        simpleFilteredStuds = [];
         const allStuds = Object.values(students);
         for (let i = 0; i < allStuds.length; i++) {
             let s = allStuds[i];
-            if (s.name || s.paid > 0) {
-                const tr = document.createElement("tr");
-                let rankIcon = s.rank === 'vip' ? ' ⭐' : (s.rank === 'warn' ? ' ⚠️' : '');
-                
-                tr.innerHTML = `<td>${s.id}</td><td><b>${s.name}</b>${rankIcon}</td><td>${s.className || 'عام'}</td>`;
-                tr.style.cursor = "pointer";
-                
-                tr.onclick = function() { 
-                    if($("allStudentsModal")) $("allStudentsModal").classList.add("hidden"); 
-                    window.extOpen(s.id); 
-                };
-                tbody.appendChild(tr);
-            }
+            if (s.name || s.paid > 0) simpleFilteredStuds.push(s);
         }
+
+        let totalPages = Math.ceil(simpleFilteredStuds.length / SIMPLE_ITEMS_PER_PAGE) || 1;
+        if (simpleCurrentPage > totalPages) simpleCurrentPage = totalPages;
+
+        const start = (simpleCurrentPage - 1) * SIMPLE_ITEMS_PER_PAGE;
+        const end = start + SIMPLE_ITEMS_PER_PAGE;
+
+        for (let i = start; i < end && i < simpleFilteredStuds.length; i++) {
+            let s = simpleFilteredStuds[i];
+            const tr = document.createElement("tr");
+            let rankIcon = s.rank === 'vip' ? ' ⭐' : (s.rank === 'warn' ? ' ⚠️' : '');
+            
+            tr.innerHTML = `<td>${s.id}</td><td><b>${s.name}</b>${rankIcon}</td><td><span class="badge" style="background:#eef2f5; color:#333; font-weight:bold;">${s.className || 'عام'}</span></td>`;
+            tr.style.cursor = "pointer";
+            
+            tr.onclick = function() { 
+                if($("allStudentsModal")) $("allStudentsModal").classList.add("hidden"); 
+                window.extOpen(s.id); 
+            };
+            tbody.appendChild(tr);
+        }
+
+        if ($("simplePageIndicator")) {
+            $("simplePageIndicator").textContent = `${simpleCurrentPage} / ${totalPages}`;
+        }
+        if ($("simplePrevPageBtn")) $("simplePrevPageBtn").disabled = (simpleCurrentPage === 1);
+        if ($("simpleNextPageBtn")) $("simpleNextPageBtn").disabled = (end >= simpleFilteredStuds.length);
     }
 
     function handleBulk() {
@@ -2205,8 +2230,10 @@ on("importExcelInput", "change", async function(e) {
         if(confirm(confMsg)) { deletedStudents = {}; saveAll(); renderBinList(); }
     });
 
-    on("openAllStudentsBtn", "click", function() { renderSimpleTable(); if ($("allStudentsModal")) $("allStudentsModal").classList.remove("hidden"); });
+    on("openAllStudentsBtn", "click", function() { simpleCurrentPage = 1; renderSimpleTable(); if ($("allStudentsModal")) $("allStudentsModal").classList.remove("hidden"); });
     on("closeModalBtn", "click", function() { if ($("allStudentsModal")) $("allStudentsModal").classList.add("hidden"); });
+    on("simplePrevPageBtn", "click", function() { if(simpleCurrentPage > 1) { simpleCurrentPage--; renderSimpleTable(); } });
+    on("simpleNextPageBtn", "click", function() { simpleCurrentPage++; renderSimpleTable(); });
 
     on("todayCountTopCard", "click", function() {
         const today = nowDateStr(); let ids = attByDate[today] || [];
@@ -2288,13 +2315,13 @@ on("importExcelInput", "change", async function(e) {
             let res = addAttendance(checkedBoxes[i].getAttribute("data-id"), nowDateStr());
             if (res.ok) count++;
         }
-        showToast(t("msg_att_ok")); renderList(); handleBulk(); 
+        showToast(t("msg_att_ok")); renderList(true); handleBulk(); 
     });
 
     on("bulkAbsentBtn", "click", function() { 
         const checkedBoxes = document.querySelectorAll(".stCheckbox:checked");
         for (let i = 0; i < checkedBoxes.length; i++) { removeAttendance(checkedBoxes[i].getAttribute("data-id"), nowDateStr()); }
-        showToast(t("msg_att_warn"), "warning"); renderList(); handleBulk();
+        showToast(t("msg_att_warn"), "warning"); renderList(true); handleBulk();
     });
 
    // ==========================================
@@ -2711,7 +2738,7 @@ function updateDriveUI() {
 
     // Tabs Listeners
     on("btnTabHome", "click", function() { window.switchTab('Home'); });
-    on("btnTabStudents", "click", function() { window.switchTab('Students'); renderList(); });
+    on("btnTabStudents", "click", function() { window.switchTab('Students'); renderList(true); });
     on("btnTabSessionStudents", "click", function() { window.switchTab('SessionStudents'); renderSessionStudentsList(nowDateStr()); if($("sessFilterDate")) $("sessFilterDate").value = nowDateStr(); });
     on("btnTabRevenue", "click", function() { window.switchTab('Revenue'); renderCharts(); updateFinanceSummary(); });
     on("btnTabReports", "click", function() { window.switchTab('Reports'); renderReportsPage(); });

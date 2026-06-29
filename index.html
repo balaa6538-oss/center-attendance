@@ -976,16 +976,21 @@
   </div>
 
   <div id="allStudentsModal" class="modal hidden">
-    <div class="modalContent hugeContent">
-      <div class="flexBetween">
-        <h2 data-i18n="modal_all_st">قائمة الطلاب المسجلين</h2>
-        <button id="closeModalBtn" class="btn danger smallBtn">❌</button>
+    <div class="modalContent hugeContent" style="border: 2px solid var(--primary); border-radius: 16px; box-shadow: 0 10px 30px rgba(37, 99, 235, 0.2);">
+      <div class="flexBetween" style="border-bottom: 2px solid var(--border); padding-bottom: 12px; margin-bottom: 15px;">
+        <h2 style="color: var(--primary); margin: 0; display: flex; align-items: center; gap: 10px;" data-i18n="modal_all_st">👥 قائمة الطلاب المسجلين</h2>
+        <button id="closeModalBtn" class="btn danger smallBtn" style="border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: bold;">✖</button>
       </div>
-      <div class="tableWrap">
+      <div class="tableWrap" style="max-height: 55vh; overflow-y: auto;">
         <table id="simpleStudentsTable">
           <thead><tr><th>ID</th><th data-i18n="tbl_name">الاسم</th><th data-i18n="tbl_class">المجموعة</th></tr></thead>
           <tbody></tbody>
         </table>
+      </div>
+      <div class="pagination flexBetween" style="margin-top: 15px; padding-top: 12px; border-top: 1px solid var(--border); background: var(--bg-inset); padding: 10px 15px; border-radius: 10px;">
+        <button id="simplePrevPageBtn" class="btn primary smallBtn" style="padding: 8px 18px; font-weight: bold;" disabled data-i18n="btn_prev">السابق</button>
+        <span id="simplePageIndicator" style="font-weight: bold; color: var(--primary); font-size: 1.1em;">صفحة 1</span>
+        <button id="simpleNextPageBtn" class="btn primary smallBtn" style="padding: 8px 18px; font-weight: bold;" data-i18n="btn_next">التالي</button>
       </div>
     </div>
   </div>
