@@ -91,6 +91,11 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 ::selection { background: var(--primary); color: #fff; }
 
+html::-webkit-scrollbar { width: 8px; height: 8px; }
+html::-webkit-scrollbar-track { background: transparent; }
+html::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+html::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
