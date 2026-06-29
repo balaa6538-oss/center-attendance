@@ -73,6 +73,10 @@
                 <span class="nav-icon">👥</span>
                 <span class="nav-text" data-i18n="nav_students">الطلاب</span>
               </button>
+              <button id="btnTabSessionStudents" class="nav-item">
+                <span class="nav-icon">🎟️</span>
+                <span class="nav-text">طلاب الحصة</span>
+              </button>
               <button id="btnTabSyllabus" class="nav-item">
                 <span class="nav-icon">🗺️</span>
                 <span class="nav-text" data-i18n="nav_syllabus">المنهج</span>
@@ -340,6 +344,72 @@
               <button id="prevPageBtn" class="btn smallBtn" disabled data-i18n="btn_prev">السابق</button>
               <span id="pageIndicator">صفحة 1</span>
               <button id="nextPageBtn" class="btn smallBtn" data-i18n="btn_next">التالي</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ====== SESSION STUDENTS (طلاب الحصة) ====== -->
+        <section id="secSessionStudents" class="tab-section hidden">
+          <div class="flexBetween" style="margin-bottom: 20px;">
+            <div>
+              <h1 style="color: var(--primary); display:flex; align-items:center; gap:10px;">
+                <span>🎟️</span> نظام تسجيل طلاب الحصة الفورية
+              </h1>
+              <p style="color: var(--text-secondary); font-size: 0.9em; margin-top: 5px;">
+                تسجيل الحضور والدفع للطلاب المؤقتين (بدون إصدار كارت أو حجز ID دائم في قاعدة البيانات)
+              </p>
+            </div>
+          </div>
+
+          <div class="grid2" style="gap: 20px;">
+            <!-- 1. نموذج الإضافة السريعة -->
+            <div class="card">
+              <h2 style="color: var(--success); margin-bottom: 15px;">➕ تسجيل حضور ودفع فوري</h2>
+              <label class="lbl">اسم الطالب *</label>
+              <input id="sessStName" class="inp" placeholder="مثال: أحمد محمود عثمان">
+
+              <label class="lbl">رقم الموبايل (اختياري)</label>
+              <input id="sessStPhone" class="inp" inputmode="tel" placeholder="مثال: 01012345678">
+
+              <label class="lbl">المادة / الصف / الباقة</label>
+              <select id="sessStClass" class="inp">
+                <option value="حصة فردية">حصة فردية (عام)</option>
+              </select>
+
+              <div class="grid2" style="gap:10px; margin-top:10px;">
+                <div>
+                  <label class="lbl">مبلغ الحصة *</label>
+                  <input id="sessStAmount" type="number" class="inp" placeholder="المبلغ (ج)">
+                </div>
+                <div>
+                  <label class="lbl">طريقة الدفع *</label>
+                  <select id="sessStMethod" class="inp">
+                    <option value="cash">💵 كاش</option>
+                    <option value="instapay">📱 إنستاباي</option>
+                    <option value="wallet">🟢 فودافون كاش / محفظة</option>
+                  </select>
+                </div>
+              </div>
+
+              <button id="saveSessionStudentBtn" class="btn success w100" style="margin-top: 20px; padding: 12px; font-weight: bold; font-size: 1.05em;">
+                تسجيل الحضور وتحصيل المبلغ 💾
+              </button>
+            </div>
+
+            <!-- 2. قائمة طلاب الحصة لليوم المختار -->
+            <div class="card">
+              <div class="flexBetween" style="margin-bottom: 15px;">
+                <h2>📋 سجل طلاب الحصة</h2>
+                <input id="sessFilterDate" type="date" class="inp" style="width: auto;">
+              </div>
+              <div class="badges" style="margin-bottom: 15px;">
+                <span class="badge">العدد: <b id="sessCountBadge">0</b></span>
+                <span class="badge" style="color: var(--success);">إجمالي الإيراد: <b id="sessRevenueBadge">0</b> ج</span>
+              </div>
+
+              <div id="sessStudentsList" class="list" style="max-height: 400px; overflow-y: auto; background: var(--bg-inset); border-radius: 8px; padding: 10px;">
+                <div class="mutedCenter">لا يوجد طلاب مسجلين بالحصة لهذا اليوم</div>
+              </div>
             </div>
           </div>
         </section>

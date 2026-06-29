@@ -41,6 +41,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const K_EXPENSES     = "ca_expenses_v1";
     const K_SYLLABUS     = "ca_syllabus_v1"; // مفتاح حفظ المنهج
     const K_EVAL         = "ca_eval_form_v1";
+    const K_SESSION_STUDENTS = "ca_session_students_v1";
 
     // ==========================================
     // 2. GLOBAL SYSTEM STATE
@@ -54,6 +55,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let expensesByDate   = {};
     let syllabusData     = []; 
     let evalData         = {};
+    let sessionStudentsByDate = {};
     
     let currentId        = null;
     let currentUserRole  = "admin";
@@ -404,6 +406,7 @@ document.addEventListener('DOMContentLoaded', function() {
             localStorage.setItem(K_DELETED, JSON.stringify(deletedStudents));
             localStorage.setItem(K_SYLLABUS, JSON.stringify(syllabusData));
             localStorage.setItem(K_EVAL, JSON.stringify(evalData));
+            localStorage.setItem(K_SESSION_STUDENTS, JSON.stringify(sessionStudentsByDate));
             updateTopStats(); updateFinanceSummary(); renderCharts();
             if (typeof renderReportsPage === "function") renderReportsPage();
         } catch(e) { 
@@ -431,6 +434,7 @@ document.addEventListener('DOMContentLoaded', function() {
             deletedStudents= JSON.parse(localStorage.getItem(K_DELETED) || "{}");
             syllabusData   = JSON.parse(localStorage.getItem(K_SYLLABUS) || "[]");
             evalData       = JSON.parse(localStorage.getItem(K_EVAL) || "{}");
+            sessionStudentsByDate = JSON.parse(localStorage.getItem(K_SESSION_STUDENTS) || "{}");
             
             if($("evalCenterName")) $("evalCenterName").value = evalData.centerName || "";
             if($("evalManager")) $("evalManager").value = evalData.manager || "";
@@ -590,10 +594,12 @@ document.addEventListener('DOMContentLoaded', function() {
         
         let currentVal = select.value; 
         let html = `<option value="">-- اختر الباقة / المجموعة --</option>`;
+        let sHtml = `<option value="حصة فردية">حصة فردية (عام)</option>`;
         
         let hasGroups = false;
         for (let g in groupFees) {
             html += `<option value="${g}">${g}</option>`;
+            sHtml += `<option value="${g}">${g}</option>`;
             hasGroups = true;
         }
         if(!hasGroups) html += `<option value="عام">عام</option>`;
@@ -601,6 +607,13 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if(currentVal && groupFees[currentVal] !== undefined) {
             select.value = currentVal;
+        }
+
+        const sessSelect = $("sessStClass");
+        if (sessSelect) {
+            let sVal = sessSelect.value;
+            sessSelect.innerHTML = sHtml;
+            if (sVal) sessSelect.value = sVal;
         }
     }
 
@@ -810,6 +823,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             } else if (s.paid > 0) {
                 cashTotal += toInt(s.paid);
+            }
+        }
+
+        // ✨ إدراج أموال طلاب الحصة الفورية في الخزائن الحقيقية
+        for (let d in sessionStudentsByDate) {
+            let sList = sessionStudentsByDate[d] || [];
+            for (let k = 0; k < sList.length; k++) {
+                let item = sList[k];
+                let amt = toInt(item.amount);
+                let m = item.method || "cash";
+                if (m === "cash") {
+                    cashTotal += amt;
+                    if (d === today) cashToday += amt;
+                } else if (m === "instapay") {
+                    instapayTotal += amt;
+                    if (d === today) instapayToday += amt;
+                } else if (m === "wallet") {
+                    walletTotal += amt;
+                    if (d === today) walletToday += amt;
+                }
             }
         }
 
@@ -1079,6 +1112,23 @@ let remainAmt = req > 0 ? (req - (s.paid || 0)) : 0;
             html += `</ul>`;
         }
         
+        let sessArr = sessionStudentsByDate[d] || [];
+        if(sessArr.length > 0) {
+            html += `
+            <h4 style="color:var(--primary); margin-top:15px; display:flex; align-items:center; gap:5px;"><span>🎟️</span> طلاب الحصة الفورية (${sessArr.length})</h4>
+            <div style="background:var(--bg-surface); border:1px solid var(--border); border-radius:8px; padding:10px; margin-top:5px;">`;
+            for (let i = 0; i < sessArr.length; i++) {
+                let item = sessArr[i];
+                let mBadge = item.method === "instapay" ? "📱 إنستاباي" : (item.method === "wallet" ? "🟢 فودافون كاش" : "💵 كاش");
+                html += `
+                <div class="item flexBetween" style="margin-bottom:8px; padding-bottom:8px; border-bottom:1px solid var(--border);">
+                    <div><b>${item.name}</b> <span class="badge" style="background:#eee; color:#333;">${item.className || "عام"}</span> <span class="badge" style="background:#e3f2fd; color:#0288d1;">${mBadge}</span></div>
+                    <div style="color:var(--success); font-weight:bold;">+ ${item.amount} ج</div>
+                </div>`;
+            }
+            html += `</div>`;
+        }
+
         if (html === "") {
             list.innerHTML = `<div class="mutedCenter">${t("wait_scan")}</div>`;
         } else {
@@ -2396,10 +2446,111 @@ function updateDriveUI() {
     // Tabs Listeners
     on("btnTabHome", "click", function() { window.switchTab('Home'); });
     on("btnTabStudents", "click", function() { window.switchTab('Students'); renderList(); });
+    on("btnTabSessionStudents", "click", function() { window.switchTab('SessionStudents'); renderSessionStudentsList(nowDateStr()); if($("sessFilterDate")) $("sessFilterDate").value = nowDateStr(); });
     on("btnTabRevenue", "click", function() { window.switchTab('Revenue'); renderCharts(); updateFinanceSummary(); });
     on("btnTabReports", "click", function() { window.switchTab('Reports'); renderReportsPage(); });
     on("btnTabAdmin", "click", function() { window.switchTab('Admin'); });
     on("btnTabSyllabus", "click", function() { window.switchTab('Syllabus'); renderSyllabus(); });
+
+    // === SESSION STUDENTS FUNCTIONS ===
+    window.renderSessionStudentsList = function(d) {
+        const slist = $("sessStudentsList"); if(!slist) return;
+        let arr = sessionStudentsByDate[d] || [];
+        let count = arr.length;
+        let totalRev = 0;
+        let h = "";
+        for(let i=0; i<arr.length; i++) {
+            let item = arr[i];
+            totalRev += toInt(item.amount);
+            let mBadge = item.method === "instapay" ? "📱 إنستاباي" : (item.method === "wallet" ? "🟢 فودافون كاش/محفظة" : "💵 كاش");
+            let badgeBg = item.method === "instapay" ? "#e3f2fd" : (item.method === "wallet" ? "#e8f5e9" : "#eef2f5");
+            let badgeColor = item.method === "instapay" ? "#0288d1" : (item.method === "wallet" ? "#2e7d32" : "#333");
+
+            h += `
+            <div class="item flexBetween" style="margin-bottom:10px; padding:12px; background:var(--bg-surface); border:1px solid var(--border); border-radius:8px;">
+                <div>
+                    <b>${item.name}</b> <span class="badge" style="background:#eee; color:#333;">${item.className || "عام"}</span>
+                    <span class="badge" style="background:${badgeBg}; color:${badgeColor}; font-size:0.8em; margin-inline-start:5px;">${mBadge}</span>
+                    <div style="font-size:0.8em; color:var(--text-secondary); margin-top:4px;">⏰ ${item.timestamp || ""} ${item.phone ? `| 📞 ${item.phone}` : ""}</div>
+                </div>
+                <div class="row" style="width:auto; gap:10px;">
+                    <span style="color:var(--success); font-weight:bold; font-size:1.1em;">+ ${item.amount} ج</span>
+                    ${item.phone ? `<button class="btn success smallBtn iconOnly" title="مراسلة واتساب" onclick="window.open('https://wa.me/20${item.phone}', '_blank')">💬</button>` : ""}
+                    <button class="btn danger smallBtn iconOnly delete-sess-btn" data-date="${d}" data-index="${i}" title="حذف وإلغاء الدفعة">🗑️</button>
+                </div>
+            </div>`;
+        }
+
+        if(count === 0) h = `<div class="mutedCenter">لا يوجد طلاب مسجلين بالحصة لهذا اليوم</div>`;
+        slist.innerHTML = h;
+
+        if($("sessCountBadge")) $("sessCountBadge").textContent = count;
+        if($("sessRevenueBadge")) $("sessRevenueBadge").textContent = totalRev;
+
+        document.querySelectorAll(".delete-sess-btn").forEach(btn => {
+            btn.onclick = function() {
+                let dt = this.getAttribute("data-date");
+                let idx = toInt(this.getAttribute("data-index"));
+                if(confirm("⚠️ متأكد من حذف وإلغاء حضور هذا الطالب المالي لليوم؟")) {
+                    let delItem = sessionStudentsByDate[dt][idx];
+                    revenueByDate[dt] = Math.max(0, (revenueByDate[dt] || 0) - toInt(delItem.amount));
+                    sessionStudentsByDate[dt].splice(idx, 1);
+                    saveAll();
+                    renderSessionStudentsList(dt);
+                    showToast("تم إلغاء تسجيل الحضور والمبلغ 🗑️");
+                }
+            };
+        });
+    };
+
+    on("saveSessionStudentBtn", "click", function() {
+        let name = $("sessStName") ? $("sessStName").value.trim() : "";
+        let phone = $("sessStPhone") ? $("sessStPhone").value.trim() : "";
+        let className = $("sessStClass") ? $("sessStClass").value : "حصة فردية";
+        let amount = $("sessStAmount") ? toInt($("sessStAmount").value) : 0;
+        let method = $("sessStMethod") ? $("sessStMethod").value : "cash";
+
+        if(!name || amount <= 0) {
+            showToast("⚠️ يرجى إدخال اسم الطالب والمبلغ بشكل صحيح!", "warning");
+            return;
+        }
+
+        const today = nowDateStr();
+        if(!sessionStudentsByDate[today]) sessionStudentsByDate[today] = [];
+
+        let record = {
+            id: Date.now(),
+            name: name,
+            phone: phone,
+            className: className,
+            amount: amount,
+            method: method,
+            timestamp: new Date().toLocaleTimeString()
+        };
+
+        sessionStudentsByDate[today].push(record);
+        revenueByDate[today] = (revenueByDate[today] || 0) + amount;
+
+        saveAll();
+        renderSessionStudentsList(today);
+        showToast("تم تسجيل حضور الحصة وتحصيل المبلغ بنجاح ✅", "success");
+        playSound("success");
+
+        if($("sessStName")) $("sessStName").value = "";
+        if($("sessStPhone")) $("sessStPhone").value = "";
+        if($("sessStAmount")) $("sessStAmount").value = "";
+
+        if(phone) {
+            let centerMgr = evalData.manager || "إدارة السنتر";
+            let mName = method === "instapay" ? "إنستاباي 📱" : (method === "wallet" ? "فودافون كاش 🟢" : "كاش 💵");
+            let msg = `مرحباً ${name}،\nتم تسجيل حضورك بنجاح لحصة اليوم (${className}) ✅\nالمبلغ المدفوع: ${amount} ج (${mName}).\n\nمع تحيات: أ/ ${centerMgr}`;
+            window.open(`https://wa.me/20${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+    });
+
+    on("sessFilterDate", "change", function(e) {
+        renderSessionStudentsList(e.target.value);
+    });
 
     on("todayRevenue", "click", function(e) {
         if(isRevHidden) return; 
@@ -2439,6 +2590,27 @@ function updateDriveUI() {
                     }
                 }
             }
+        }
+
+        let sArr = sessionStudentsByDate[today] || [];
+        for(let i=0; i<sArr.length; i++) {
+            let item = sArr[i];
+            let mBadge = item.method === "instapay" ? "📱 إنستاباي" : (item.method === "wallet" ? "🟢 فودافون كاش/محفظة" : "💵 كاش");
+            let badgeBg = item.method === "instapay" ? "#e3f2fd" : (item.method === "wallet" ? "#e8f5e9" : "#eef2f5");
+            let badgeColor = item.method === "instapay" ? "#0288d1" : (item.method === "wallet" ? "#2e7d32" : "#333");
+
+            html += `
+            <div class="item flexBetween" style="margin-bottom:8px; cursor:pointer;" onclick="document.getElementById('revenueModal').classList.add('hidden'); window.switchTab('SessionStudents'); if($('sessFilterDate')) $('sessFilterDate').value='${today}'; renderSessionStudentsList('${today}');">
+                <div>
+                    <b>${item.name}</b> <span class="badge" style="background:#fff3e0; color:#e65100;">طالب حصة 🎟️</span> <span class="badge" style="background:#eee; color:#333;">${item.className || "عام"}</span>
+                    <span class="badge" style="background:${badgeBg}; color:${badgeColor}; font-size:0.8em; margin-inline-start:5px;">${mBadge}</span>
+                </div>
+                <div style="text-align:left;">
+                    <span style="color:var(--success); font-weight:bold;">+ ${item.amount} ج</span><br>
+                    <span style="font-size:11px; color:#666;">دفع فوري</span>
+                </div>
+            </div>`;
+            count++;
         }
         
         if(count === 0) html = `<div class="mutedCenter">${t("txt_no_rev")}</div>`;
