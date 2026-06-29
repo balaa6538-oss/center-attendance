@@ -249,9 +249,22 @@
                 <div class="payRow" style="margin-top:10px;">
                   <span class="payLabel" data-i18n="lbl_new_pay">➕ دفعة جديدة:</span>
                   <div class="row" style="flex:1;">
-                    <input id="newPaymentInput" type="number" class="inp">
+                    <input id="newPaymentInput" type="number" class="inp" placeholder="المبلغ">
+                    <select id="newPaymentMethod" class="inp" style="width:auto; font-size:0.88em;">
+                      <option value="cash">💵 كاش</option>
+                      <option value="instapay">📱 إنستاباي</option>
+                      <option value="wallet">🟢 فودافون كاش / محفظة</option>
+                    </select>
                     <button id="addPaymentBtn" class="btn success" data-i18n="btn_deposit">إيداع</button>
                   </div>
+                </div>
+              </div>
+
+              <!-- 📋 تفاصيل الدفعات السابقة للطالب -->
+              <div class="st-payments-history" style="margin-top: 15px; border-top: 1px dashed var(--border); padding-top: 12px;">
+                <h4 style="font-size:0.9em; color:var(--text-secondary); margin-bottom:8px;">📋 سجل دفعات الطالب المفصل:</h4>
+                <div id="stPaymentsList" class="list" style="max-height: 150px; overflow-y: auto; background: var(--bg-inset); border-radius: 8px; padding: 10px;">
+                  <div class="mutedCenter" style="font-size:0.85em;">لا توجد دفعات مسجلة حتى الآن</div>
                 </div>
               </div>
 
@@ -346,6 +359,62 @@
             <div class="finance-card">
               <h4 data-i18n="fin_month_net">صافي ربح الشهر الحالي</h4>
               <div class="amount"><span id="monthNetProfit">0</span> ج</div>
+            </div>
+          </div>
+
+          <!-- 🏦 خزائن ومحافظ السنتر -->
+          <div class="card" style="margin-bottom: 20px;">
+            <h2 style="color: var(--primary); margin-bottom: 16px;">🏦 خزائن ومحافظ السنتر (إجمالي الأرصدة)</h2>
+            <div class="vaults-grid">
+              <div class="vault-card cash-vault">
+                <div class="vault-header">💵 خزينة الكاش</div>
+                <div class="vault-body">
+                  <div class="vault-stat">
+                    <span>تحصيل اليوم:</span>
+                    <b><span id="vaultCashToday">0</span> ج</b>
+                  </div>
+                  <div class="vault-stat">
+                    <span>إجمالي المحصل:</span>
+                    <b><span id="vaultCashTotal">0</span> ج</b>
+                  </div>
+                  <div class="vault-stat text-danger">
+                    <span>المصروفات:</span>
+                    <b>- <span id="vaultCashExp">0</span> ج</b>
+                  </div>
+                  <div class="vault-stat vault-net">
+                    <span>الصافي بالخزينة:</span>
+                    <b class="text-success"><span id="vaultCashNet">0</span> ج</b>
+                  </div>
+                </div>
+              </div>
+
+              <div class="vault-card instapay-vault">
+                <div class="vault-header">📱 خزينة إنستاباي (InstaPay)</div>
+                <div class="vault-body">
+                  <div class="vault-stat">
+                    <span>تحصيل اليوم:</span>
+                    <b><span id="vaultInstapayToday">0</span> ج</b>
+                  </div>
+                  <div class="vault-stat vault-net">
+                    <span>الرصيد الفعلي:</span>
+                    <b class="text-primary"><span id="vaultInstapayTotal">0</span> ج</b>
+                  </div>
+                </div>
+              </div>
+
+              <div class="vault-card wallet-vault">
+                <div class="vault-header">🟢 المحافظ الإلكترونية (فودافون كاش)</div>
+                <div class="vault-body">
+                  <div class="vault-stat">
+                    <span>تحصيل اليوم:</span>
+                    <b><span id="vaultWalletToday">0</span> ج</b>
+                  </div>
+                  <div class="vault-stat vault-net">
+                    <span>الرصيد الفعلي:</span>
+                    <b class="text-success"><span id="vaultWalletTotal">0</span> ج</b>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
