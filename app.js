@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', function() {
         "modal_shift_title": { ar: "👨‍💼 اختيار مسئول الشيفت", en: "👨‍💼 Select Shift Manager" },
         "plc_new_manager": { ar: "اسم المسئول الجديد...", en: "New manager name..." },
         "btn_add_manager": { ar: "إضافة", en: "Add" },
-        "err_no_manager": { ar: "يرجى اختيار اسم مسئول الشيفت أولاً", en: "Please select a shift manager first!" },
+        "err_no_manager": { ar: "يرجى اختيار اسم مسئول الشيفت أولاً", en: "Please select a shift manager first" },
        "drive_offline": { ar: "⚪ غير متصل", en: "⚪ Offline" },
         "drive_online": { ar: "🟢 متصل بالسحابة", en: "🟢 Cloud Connected" },
         "btn_drive_login": { ar: "ربط بجوجل درايف ☁️", en: "Connect Google Drive ☁️" },
@@ -199,11 +199,11 @@ document.addEventListener('DOMContentLoaded', function() {
         "modal_grp_fees": { ar: "⚙️ إدارة مصاريف الباقات/المجموعات", en: "⚙️ Manage Package Pricing" },
         "grp_fees_desc": { ar: "أضف الباقات هنا وسيتم عرضها للأسستنت أثناء تسجيل الطالب.", en: "Add packages here to display them to the assistant." },
         "btn_save_changes": { ar: "حفظ التعديلات 💾", en: "Save Changes 💾" },
-        "msg_saved": { ar: "تم الحفظ بنجاح ✅", en: "Progress saved! ✅" },
-        "msg_err_pass": { ar: "كلمة مرور خاطئة ❌", en: "Incorrect Password! ❌" },
+        "msg_saved": { ar: "تم الحفظ بنجاح ✅", en: "Progress saved ✅" },
+        "msg_err_pass": { ar: "كلمة مرور خاطئة ❌", en: "Incorrect Password ❌" },
         "msg_att_ok": { ar: "تم تسجيل الحضور ✅", en: "Attendance Recorded ✅" },
-        "msg_att_warn": { ar: "حاضر مسبقاً ⚠️", en: "Already marked present! ⚠️" },
-        "msg_added": { ar: "تم إضافة الطالب بنجاح ✅", en: "Student registered! ✅" },
+        "msg_att_warn": { ar: "حاضر مسبقاً ⚠️", en: "Already marked present ⚠️" },
+        "msg_added": { ar: "تم إضافة الطالب بنجاح ✅", en: "Student registered ✅" },
         "msg_deleted": { ar: "تم حذف الطالب", en: "Student deleted" },
         "msg_undo": { ar: "تم التراجع بنجاح ✅", en: "Action Undone ✅" },
         "msg_copied": { ar: "تم نسخ التقرير 📋", en: "Report Copied 📋" },
@@ -372,7 +372,7 @@ document.addEventListener('DOMContentLoaded', function() {
         popup.className = "celebration-popup";
         popup.innerHTML = `
             <div style="font-size: 3.8em; margin-bottom: 12px;">🏆🎉</div>
-            <h2 style="margin: 0; font-size: 2em; font-weight: 900; color: #fbbf24;">اكتمل سداد الباقة بالكامل!</h2>
+            <h2 style="margin: 0; font-size: 2em; font-weight: 900; color: #fbbf24;">اكتمل سداد الباقة بالكامل</h2>
             <p style="margin: 12px 0 0 0; font-size: 1.2em; opacity: 0.95;">ألف مبروك .. أصبح حساب الطالب خالص السداد 100% ✅</p>
         `;
         document.body.appendChild(popup);
@@ -472,7 +472,7 @@ document.addEventListener('DOMContentLoaded', function() {
             updateTopStats(); updateFinanceSummary(); renderCharts();
             if (typeof renderReportsPage === "function") renderReportsPage();
         } catch(e) { 
-            showToast("الذاكرة ممتلئة! يرجى حذف الخلفية لتوفير مساحة", "err"); 
+            showToast("الذاكرة ممتلئة، يرجى حذف الخلفية لتوفير مساحة", "err"); 
         }
     }
 
@@ -482,7 +482,7 @@ document.addEventListener('DOMContentLoaded', function() {
             localStorage.setItem(K_ATT_BY_DATE, JSON.stringify(attByDate));
             updateTopStats();
         } catch(e) { 
-            showToast("الذاكرة ممتلئة! يرجى حذف الخلفية لتوفير مساحة", "err"); 
+            showToast("الذاكرة ممتلئة، يرجى حذف الخلفية لتوفير مساحة", "err"); 
         }
     }
 
@@ -1368,7 +1368,7 @@ let remainAmt = req > 0 ? (req - (s.paid || 0)) : 0;
         let notes = $("syllNotes").value.trim();
         
         if(!name) {
-            let errMsg = currentLang === 'ar' ? "يرجى كتابة اسم الشابتر / الدرس أولاً!" : "Please enter the chapter/lesson name first!";
+            let errMsg = currentLang === 'ar' ? "يرجى كتابة اسم الشابتر / الدرس أولاً" : "Please enter the chapter/lesson name first";
             return showToast(errMsg, "err");
         }
 
@@ -1495,7 +1495,7 @@ on("quickAttendId", "keypress", function(e) {
             
             if (hasName || hasPaid || hasPayments || hasAttendance || hasNotes || hasClassName) {
                 triggerShake("newId");
-                showToast("⚠️ هذا الكود محجوز ومسجل به بيانات بالفعل!", "err");
+                showToast("⚠️ هذا الكود محجوز ومسجل به بيانات بالفعل", "err");
                 playSound("error");
                 window.extOpen(id);
                 if ($("newId")) $("newId").value = "";
@@ -2043,7 +2043,7 @@ on("importExcelInput", "change", async function(e) {
         const f = e.target.files[0]; if(!f) return; 
         const wb = XLSX.read(await f.arrayBuffer(), {type:"array"});
         
-        let warnMsg = currentLang==='ar' ? 'تحذير: سيتم مسح البيانات الحالية واستبدالها!' : 'Warning: Overwrite current data?';
+        let warnMsg = currentLang==='ar' ? 'تحذير: سيتم مسح البيانات الحالية واستبدالها' : 'Warning: Overwrite current data?';
         if(!confirm(warnMsg)) return;
         
         // تصفير كل حاجة قبل ما نستقبل الداتا الجديدة
@@ -2416,7 +2416,7 @@ function updateDriveUI() {
 
     on("restoreDriveBtn", "click", async function() {
         if (!accessToken) return showToast(currentLang === 'ar' ? "يرجى الربط بالدرايف أولاً ☁️" : "Please connect to Drive first ☁️", "err");
-        if (!confirm(currentLang === 'ar' ? "⚠️ تحذير شديد: سيتم مسح كل البيانات الحالية واستبدالها بنسخة السحابة! متأكد؟" : "⚠️ WARNING: Current data will be replaced by cloud backup. Sure?")) return;
+        if (!confirm(currentLang === 'ar' ? "⚠️ تحذير شديد: سيتم مسح كل البيانات الحالية واستبدالها بنسخة السحابة، متأكد؟" : "⚠️ WARNING: Current data will be replaced by cloud backup. Sure?")) return;
 
         try {
             const response = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${BACKUP_FILE_NAME}'&fields=files(id)`, { headers: { 'Authorization': `Bearer ${accessToken}` } });
@@ -2426,7 +2426,7 @@ function updateDriveUI() {
                 const fileRes = await fetch(`https://www.googleapis.com/drive/v3/files/${data.files[0].id}?alt=media`, { headers: { 'Authorization': `Bearer ${accessToken}` } });
                 const backupData = await fileRes.json();
                 for (let key in backupData) { localStorage.setItem(key, backupData[key]); }
-                showToast(currentLang === 'ar' ? "تم استرجاع البيانات بنجاح! سيتم إعادة التحميل..." : "Data restored successfully! Restarting...");
+                showToast(currentLang === 'ar' ? "تم استرجاع البيانات بنجاح، سيتم إعادة التحميل..." : "Data restored successfully. Restarting...");
                 setTimeout(() => location.reload(), 1500);
             } else { showToast(currentLang === 'ar' ? "لم يتم العثور على نسخة احتياطية في الدرايف" : "No backup found in Drive", "err"); }
         } catch (err) { showToast(currentLang === 'ar' ? "فشل الاسترجاع، تأكد من الاتصال بالنت" : "Restore failed, check connection", "err"); }
@@ -2498,7 +2498,7 @@ function updateDriveUI() {
         if(last !== nowDateStr()) {
             if($("btnTabAdmin")) $("btnTabAdmin").classList.add("needs-backup");
             setTimeout(function() {
-                let msg = currentLang==='ar' ? '⚠️ تذكير: لم تقم بتصدير نسخة Excel اليوم!' : '⚠️ Backup reminder!';
+                let msg = currentLang==='ar' ? '⚠️ تذكير: لم تقم بتصدير نسخة Excel اليوم' : '⚠️ Backup reminder';
                 showToast(msg, 'warning');
             }, 3000);
         }
@@ -2565,7 +2565,7 @@ function updateDriveUI() {
                     tbody.appendChild(tr);
                 }
                 if (debtors.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="4" class="mutedCenter">${currentLang === 'ar' ? "🎉 لا يوجد طلاب مديونين! الجميع خالص." : "🎉 No debtors found!"}</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="4" class="mutedCenter">${currentLang === 'ar' ? "🎉 لا يوجد طلاب مديونين، الجميع خالص." : "🎉 No debtors found."}</td></tr>`;
                 }
             }
         }
@@ -2590,7 +2590,7 @@ function updateDriveUI() {
 
     function exportColoredReport() {
         if (typeof XLSX === "undefined") {
-            return showToast("⚠️ مكتبة الإكسيل غير موجودة!", "err");
+            return showToast("⚠️ مكتبة الإكسيل غير موجودة", "err");
         }
         const wb = XLSX.utils.book_new();
 
@@ -2768,7 +2768,7 @@ function updateDriveUI() {
         let method = $("sessStMethod") ? $("sessStMethod").value : "cash";
 
         if(!name || amount <= 0) {
-            showToast("⚠️ يرجى إدخال اسم الطالب والمبلغ بشكل صحيح!", "warning");
+            showToast("⚠️ يرجى إدخال اسم الطالب والمبلغ بشكل صحيح", "warning");
             return;
         }
 
@@ -3042,7 +3042,7 @@ function updateDriveUI() {
         if (!bookletsStock[id]) return;
         let b = bookletsStock[id];
         if (b.sold >= b.qty) {
-            showToast("⚠️ انتهى مخزون هذه المذكرة! يرجى تعديل العدد الكلي إذا قمت بطباعة نسخ إضافية.", "err");
+            showToast("⚠️ انتهى مخزون هذه المذكرة، يرجى تعديل العدد الكلي إذا قمت بطباعة نسخ إضافية.", "err");
             playSound("error");
             return;
         }
@@ -3069,7 +3069,7 @@ function updateDriveUI() {
         if (!bookletsStock[id]) return;
         let b = bookletsStock[id];
         if (b.sold <= 0) {
-            showToast("لم يتم بيع أي نسخة من هذه المذكرة لإرجاعها!", "err");
+            showToast("لم يتم بيع أي نسخة من هذه المذكرة لإرجاعها", "err");
             return;
         }
         b.sold -= 1;
@@ -3219,7 +3219,7 @@ function updateDriveUI() {
 
     on("btnCopyCampaignNumbers", "click", function() {
         if (currentCampaignList.length === 0) {
-            showToast("قائمة الأرقام فارغة! قم بتصفية داتا الطلاب أولاً.", "err");
+            showToast("قائمة الأرقام فارغة، قم بتصفية داتا الطلاب أولاً.", "err");
             return;
         }
         let arr = currentCampaignList.map(item => item.phone);
