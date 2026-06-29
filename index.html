@@ -107,7 +107,29 @@
           </div>
         </div>
 
-        <!-- 3. SYSTEM -->
+        <!-- 3. TOOLS & MARKETING -->
+        <div class="nav-group">
+          <button class="nav-group-header" onclick="toggleNavGroup(this)" type="button">
+            <span class="nav-group-title">أدوات وتسويق</span>
+            <svg class="chevron-icon" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+          <div class="nav-group-items-wrapper">
+            <div class="nav-group-items">
+              <button id="btnTabBooklets" class="nav-item adminOnly">
+                <span class="nav-icon">📚</span>
+                <span class="nav-text">مخزون المذكرات</span>
+              </button>
+              <button id="btnTabMarketing" class="nav-item adminOnly">
+                <span class="nav-icon">🚀</span>
+                <span class="nav-text">حملات التسويق</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. SYSTEM -->
         <div class="nav-group">
           <button class="nav-group-header" onclick="toggleNavGroup(this)" type="button">
             <span class="nav-group-title">إعدادات النظام</span>
@@ -432,6 +454,148 @@
 
               <div id="sessStudentsList" class="list" style="max-height: 400px; overflow-y: auto; background: var(--bg-inset); border-radius: 8px; padding: 10px;">
                 <div class="mutedCenter">لا يوجد طلاب مسجلين بالحصة لهذا اليوم</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ====== BOOKLETS STOCK ====== -->
+        <section id="secBooklets" class="tab-section hidden adminOnly">
+          <div class="section-header-beautiful" style="margin-bottom: 25px; padding: 20px; background: linear-gradient(135deg, var(--bg-surface), var(--bg-inset)); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+            <h2 style="color: var(--primary); margin: 0; font-size: 1.6em; display: flex; align-items: center; gap: 10px;">
+              <span>📚</span> إدارة مخزون المذكرات والورق
+            </h2>
+            <p style="color: var(--text-secondary); margin: 8px 0 0 0; font-size: 0.95em;">
+              متابعة حركة طباعة واستلام المذكرات، المباع منها، المخزون المتبقي، وإجمالي العائد المالي بدقة تامة دون هدر.
+            </p>
+          </div>
+
+          <!-- بطاقات الملخص المالي للمذكرات (تصميم أزرق وأبيض فخم) -->
+          <div class="grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; margin-bottom: 25px;">
+            <div class="card stat-card" style="background: var(--bg-surface); border-top: 4px solid var(--primary); padding: 15px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align: center;">
+              <div style="color: var(--text-secondary); font-size: 0.85em;">أنواع المذكرات</div>
+              <div id="statTotalBookletTypes" style="font-size: 1.8em; font-weight: bold; color: var(--text); margin-top: 5px;">0</div>
+            </div>
+            <div class="card stat-card" style="background: var(--bg-surface); border-top: 4px solid #3b82f6; padding: 15px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align: center;">
+              <div style="color: var(--text-secondary); font-size: 0.85em;">إجمالي النسخ المستلمة</div>
+              <div id="statTotalCopiesReceived" style="font-size: 1.8em; font-weight: bold; color: #3b82f6; margin-top: 5px;">0</div>
+            </div>
+            <div class="card stat-card" style="background: var(--bg-surface); border-top: 4px solid #10b981; padding: 15px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align: center;">
+              <div style="color: var(--text-secondary); font-size: 0.85em;">النسخ المباعة</div>
+              <div id="statTotalCopiesSold" style="font-size: 1.8em; font-weight: bold; color: #10b981; margin-top: 5px;">0</div>
+            </div>
+            <div class="card stat-card" style="background: var(--bg-surface); border-top: 4px solid #f59e0b; padding: 15px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align: center;">
+              <div style="color: var(--text-secondary); font-size: 0.85em;">المخزون المتبقي بالسنتر</div>
+              <div id="statTotalCopiesRemain" style="font-size: 1.8em; font-weight: bold; color: #f59e0b; margin-top: 5px;">0</div>
+            </div>
+            <div class="card stat-card" style="background: var(--bg-surface); border-top: 4px solid var(--primary); padding: 15px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align: center; background-image: linear-gradient(135deg, rgba(37,99,235,0.05), rgba(37,99,235,0.15));">
+              <div style="color: var(--primary); font-size: 0.85em; font-weight: bold;">إجمالي عائد المذكرات 💰</div>
+              <div id="statTotalBookletsRevenue" style="font-size: 1.9em; font-weight: 900; color: var(--primary); margin-top: 5px;">0 ج</div>
+            </div>
+          </div>
+
+          <div class="bento-grid" style="display: grid; grid-template-columns: 1fr; gap: 25px;">
+            <!-- نموذج إضافة مذكرة جديدة -->
+            <div class="card bento-card" style="background: var(--bg-surface); border: 1px solid var(--border); border-radius: 12px; padding: 22px;">
+              <h3 style="margin-top: 0; color: var(--text); border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 15px;">
+                ➕ استلام وتسجيل ورق / مذكرة جديدة
+              </h3>
+              <div class="grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                <div>
+                  <label class="lbl">اسم المذكرة / الورق</label>
+                  <input id="bookletNameInp" class="inp" placeholder="مثال: مذكرة مراجعة الباب الأول...">
+                </div>
+                <div>
+                  <label class="lbl">العدد الكلي المستلم (نسخة)</label>
+                  <input id="bookletQtyInp" type="number" class="inp" placeholder="مثال: 150">
+                </div>
+                <div>
+                  <label class="lbl">سعر بيع النسخة (جنيه)</label>
+                  <input id="bookletPriceInp" type="number" class="inp" placeholder="مثال: 50">
+                </div>
+              </div>
+              <div style="margin-top: 18px; text-align: left;">
+                <button id="btnSaveBooklet" class="btn primary" style="padding: 12px 30px; font-weight: bold; font-size: 1.05em;">
+                  💾 تسجيل المذكرة وإضافتها للمخزون
+                </button>
+              </div>
+            </div>
+
+            <!-- قائمة الجرد والمبيعات الفورية -->
+            <div class="card bento-card" style="background: var(--bg-surface); border: 1px solid var(--border); border-radius: 12px; padding: 22px;">
+              <div class="flexBetween" style="border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 15px;">
+                <h3 style="margin: 0; color: var(--text);">📋 قائمة جرد المذكرات وحركة البيع الفورية</h3>
+                <span class="badge" style="background: #eef2f5; color: #333;">اضغط زر البيع 🛒 عند بيع أي نسخة للتحديث الفوري</span>
+              </div>
+              <div id="bookletsStockList" style="display: flex; flex-direction: column; gap: 15px; max-height: 550px; overflow-y: auto; padding-right: 5px;">
+                <div class="mutedCenter">لا توجد مذكرات مسجلة بالمخزون حالياً</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ====== MARKETING CAMPAIGNS ====== -->
+        <section id="secMarketing" class="tab-section hidden adminOnly">
+          <div class="section-header-beautiful" style="margin-bottom: 25px; padding: 20px; background: linear-gradient(135deg, var(--bg-surface), var(--bg-inset)); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+            <h2 style="color: var(--primary); margin: 0; font-size: 1.6em; display: flex; align-items: center; gap: 10px;">
+              <span>🚀</span> حملات التسويق وإعادة الاستهداف الذكية
+            </h2>
+            <p style="color: var(--text-secondary); margin: 8px 0 0 0; font-size: 0.95em;">
+              استهداف ذكي لجميع أرقام وداتا الطلاب المسجلة في السنتر لإطلاق حملات إعلانية لكورسات ومراجعات جديدة بضغطة زر.
+            </p>
+          </div>
+
+          <div class="bento-grid" style="display: grid; grid-template-columns: 1fr; gap: 25px;">
+            <!-- اختيار شريحة الاستهداف ونص الرسالة -->
+            <div class="card bento-card" style="background: var(--bg-surface); border: 1px solid var(--border); border-radius: 12px; padding: 22px;">
+              <h3 style="margin-top: 0; color: var(--text); border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 15px;">
+                🎯 إعداد شريحة الاستهداف الإعلانية
+              </h3>
+              <div class="grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px;">
+                <div>
+                  <label class="lbl">اختر شريحة الطلاب المستهدفة</label>
+                  <select id="marketingTargetFilter" class="inp" style="background: var(--bg-inset);">
+                    <option value="all">جميع الطلاب الدائمين المسجلين بالسنتر</option>
+                    <option value="groups">طلاب باقة / مجموعة محددة</option>
+                    <option value="session">داتا طلاب الحصة الفورية (المؤقتين)</option>
+                    <option value="vip">الطلاب أصحاب تصنيف VIP</option>
+                    <option value="debtors">الطلاب أصحاب الدفعات المتبقية (المديونين)</option>
+                  </select>
+                </div>
+                <div id="marketingGroupSelectContainer" style="display: none;">
+                  <label class="lbl">تحديد الباقة / المجموعة</label>
+                  <select id="marketingTargetGroupSelect" class="inp" style="background: var(--bg-inset);">
+                    <option value="">-- اختر الباقة --</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style="margin-top: 20px;">
+                <label class="lbl" style="color: var(--primary); font-weight: bold;">📝 نص الرسالة الإعلانية / التنبيه</label>
+                <textarea id="marketingMsgBody" class="inp" rows="5" placeholder="اكتب هنا نص الإعلان أو الكورس الجديد...&#10;مثال: مرحباً بك في سنترنا، نعلن عن انطلاق الحجز للكورس الجديد ومراجعة ليلة الامتحان بخصم خاص..." style="background: var(--bg-inset); line-height: 1.6; font-size: 1em;"></textarea>
+                <span style="font-size: 0.85em; color: var(--text-secondary); margin-top: 5px; display: block;">
+                  💡 تلميح: سيقوم السيستم بإرسال هذه الرسالة برابط واتساب مباشر لكل رقم في الشريحة المحددة.
+                </span>
+              </div>
+
+              <div class="row wrap" style="margin-top: 22px; gap: 15px;">
+                <button id="btnFilterCampaign" class="btn primary" style="padding: 12px 25px; font-weight: bold; font-size: 1.05em;">
+                  🔍 تصفية وعرض داتا الأرقام المستهدفة
+                </button>
+                <button id="btnCopyCampaignNumbers" class="btn success" style="padding: 12px 25px; font-weight: bold; font-size: 1.05em;">
+                  📋 نسخ جميع أرقام الموبايل (لبرامج الإرسال التلقائي)
+                </button>
+              </div>
+            </div>
+
+            <!-- جدول الداتا والأرقام المستهدفة -->
+            <div class="card bento-card" style="background: var(--bg-surface); border: 1px solid var(--border); border-radius: 12px; padding: 22px;">
+              <div class="flexBetween" style="border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 15px;">
+                <h3 style="margin: 0; color: var(--text);">📋 قائمة الأرقام المستهدفة في الحملة (<span id="campaignTargetCount">0</span> طالب)</h3>
+                <span class="badge" style="background: #eef2f5; color: #333;">اضغط زر المراسلة 💬 بجانب أي طالب لبدء الإرسال الفوري</span>
+              </div>
+              <div id="campaignNumbersList" style="display: flex; flex-direction: column; gap: 10px; max-height: 450px; overflow-y: auto; padding-right: 5px;">
+                <div class="mutedCenter">اضغط على "تصفية وعرض داتا الأرقام المستهدفة" لعرض القائمة</div>
               </div>
             </div>
           </div>

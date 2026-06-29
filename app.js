@@ -42,6 +42,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const K_SYLLABUS     = "ca_syllabus_v1"; // مفتاح حفظ المنهج
     const K_EVAL         = "ca_eval_form_v1";
     const K_SESSION_STUDENTS = "ca_session_students_v1";
+    const K_BOOKLETS     = "ca_booklets_v1";
 
     // ==========================================
     // 2. GLOBAL SYSTEM STATE
@@ -56,6 +57,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let syllabusData     = []; 
     let evalData         = {};
     let sessionStudentsByDate = {};
+    let bookletsStock    = {};
     
     let currentId        = null;
     let currentUserRole  = "admin";
@@ -407,6 +409,7 @@ document.addEventListener('DOMContentLoaded', function() {
             localStorage.setItem(K_SYLLABUS, JSON.stringify(syllabusData));
             localStorage.setItem(K_EVAL, JSON.stringify(evalData));
             localStorage.setItem(K_SESSION_STUDENTS, JSON.stringify(sessionStudentsByDate));
+            localStorage.setItem(K_BOOKLETS, JSON.stringify(bookletsStock));
             updateTopStats(); updateFinanceSummary(); renderCharts();
             if (typeof renderReportsPage === "function") renderReportsPage();
         } catch(e) { 
@@ -435,6 +438,7 @@ document.addEventListener('DOMContentLoaded', function() {
             syllabusData   = JSON.parse(localStorage.getItem(K_SYLLABUS) || "[]");
             evalData       = JSON.parse(localStorage.getItem(K_EVAL) || "{}");
             sessionStudentsByDate = JSON.parse(localStorage.getItem(K_SESSION_STUDENTS) || "{}");
+            bookletsStock  = JSON.parse(localStorage.getItem(K_BOOKLETS) || "{}");
             
             if($("evalCenterName")) $("evalCenterName").value = evalData.centerName || "";
             if($("evalManager")) $("evalManager").value = evalData.manager || "";
@@ -2632,6 +2636,8 @@ function updateDriveUI() {
     on("btnTabReports", "click", function() { window.switchTab('Reports'); renderReportsPage(); });
     on("btnTabAdmin", "click", function() { window.switchTab('Admin'); });
     on("btnTabSyllabus", "click", function() { window.switchTab('Syllabus'); renderSyllabus(); });
+    on("btnTabBooklets", "click", function() { window.switchTab('Booklets'); renderBookletsStock(); });
+    on("btnTabMarketing", "click", function() { window.switchTab('Marketing'); populateMarketingGroups(); filterCampaignTarget(); });
 
     // === SESSION STUDENTS FUNCTIONS ===
     window.renderSessionStudentsList = function(d) {
@@ -2872,6 +2878,289 @@ function updateDriveUI() {
             activeGroup.classList.remove('collapsed');
         }
     }
+
+    // ==========================================
+    // === BOOKLETS STOCK MANAGEMENT ===
+    // ==========================================
+    window.renderBookletsStock = function() {
+        const blist = $("bookletsStockList"); if(!blist) return;
+        let keys = Object.keys(bookletsStock);
+        let totalTypes = keys.length;
+        let totalReceived = 0;
+        let totalSold = 0;
+        let totalRemain = 0;
+        let totalRevenue = 0;
+        
+        let h = "";
+        for(let i = 0; i < keys.length; i++) {
+            let id = keys[i];
+            let b = bookletsStock[id];
+            let qty = toInt(b.qty);
+            let price = toInt(b.price);
+            let sold = toInt(b.sold);
+            let remain = qty - sold;
+            let rev = sold * price;
+            
+            totalReceived += qty;
+            totalSold += sold;
+            totalRemain += remain;
+            totalRevenue += rev;
+            
+            h += `
+            <div class="card item-card flexBetween wrap" style="background: var(--bg-inset); border: 1px solid var(--border); padding: 18px; border-radius: 10px; margin-bottom: 12px; gap: 15px;">
+                <div style="flex: 1; min-width: 220px;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:1.5em;">📘</span>
+                        <h4 style="margin:0; color:var(--text); font-size:1.2em;">${b.name}</h4>
+                    </div>
+                    <div style="font-size:0.9em; color:var(--text-secondary); margin-top:8px; display:flex; gap:15px; flex-wrap:wrap;">
+                        <span>الكمية الكلية: <b>${qty}</b></span>
+                        <span>سعر النسخة: <b>${price} ج</b></span>
+                        <span style="color:#10b981;">المباع: <b>${sold}</b></span>
+                        <span style="color:#f59e0b;">المخزون المتبقي: <b>${remain}</b></span>
+                    </div>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                    <div style="background:var(--bg-surface); padding:8px 15px; border-radius:8px; border:1px solid var(--border); text-align:center;">
+                        <span style="font-size:0.8em; color:var(--text-secondary); display:block;">عائد المذكرة</span>
+                        <strong style="color:var(--primary); font-size:1.2em;">${rev} ج</strong>
+                    </div>
+                    <button class="btn success" style="padding:10px 18px; font-weight:bold; font-size:1.05em; display:flex; align-items:center; gap:5px;" onclick="sellBookletCopy('${id}')">
+                        🛒 بيع نسخة (+1)
+                    </button>
+                    <button class="btn warning smallBtn" title="إرجاع نسخة (-1)" onclick="returnBookletCopy('${id}')">➖</button>
+                    <button class="btn primary smallBtn" title="تعديل العدد الكلي المستلم" onclick="editBookletQty('${id}')">✏️</button>
+                    <button class="btn danger smallBtn" title="حذف المذكرة" onclick="deleteBooklet('${id}')">🗑️</button>
+                </div>
+            </div>`;
+        }
+        
+        if (keys.length === 0) {
+            h = `<div class="mutedCenter" style="padding: 30px;">لا توجد مذكرات أو ورق مسجل بالمخزون حالياً .. أضف مذكرة جديدة بالترويسة أعلاه 📚</div>`;
+        }
+        
+        blist.innerHTML = h;
+        
+        if($("statTotalBookletTypes")) $("statTotalBookletTypes").textContent = totalTypes;
+        if($("statTotalCopiesReceived")) $("statTotalCopiesReceived").textContent = totalReceived;
+        if($("statTotalCopiesSold")) $("statTotalCopiesSold").textContent = totalSold;
+        if($("statTotalCopiesRemain")) $("statTotalCopiesRemain").textContent = totalRemain;
+        if($("statTotalBookletsRevenue")) $("statTotalBookletsRevenue").textContent = totalRevenue + " ج";
+    };
+
+    on("btnSaveBooklet", "click", function() {
+        let name = $("bookletNameInp") ? $("bookletNameInp").value.trim() : "";
+        let qty = $("bookletQtyInp") ? toInt($("bookletQtyInp").value) : 0;
+        let price = $("bookletPriceInp") ? toInt($("bookletPriceInp").value) : 0;
+        
+        if (!name) { showToast("يرجى إدخال اسم المذكرة أو الورق", "err"); return; }
+        if (qty <= 0) { showToast("يرجى إدخال عدد النسخ المستلمة", "err"); return; }
+        
+        let id = "b_" + Date.now();
+        bookletsStock[id] = { name: name, qty: qty, price: price, sold: 0 };
+        saveAll();
+        renderBookletsStock();
+        
+        if($("bookletNameInp")) $("bookletNameInp").value = "";
+        if($("bookletQtyInp")) $("bookletQtyInp").value = "";
+        if($("bookletPriceInp")) $("bookletPriceInp").value = "";
+        showToast("تم استلام وإضافة المذكرة للمخزون بنجاح ✅", "success");
+        playSound("beep");
+    });
+
+    window.sellBookletCopy = function(id) {
+        if (!bookletsStock[id]) return;
+        let b = bookletsStock[id];
+        if (b.sold >= b.qty) {
+            showToast("⚠️ انتهى مخزون هذه المذكرة! يرجى تعديل العدد الكلي إذا قمت بطباعة نسخ إضافية.", "err");
+            playSound("error");
+            return;
+        }
+        b.sold += 1;
+        
+        // تسجيل العائد في إيرادات اليوم التلقائية بالخزينة كاش
+        let today = nowDateStr();
+        if(!revenueByDate[today]) revenueByDate[today] = [];
+        revenueByDate[today].push({
+            stId: `مبيعات مذكرات (#${b.name})`,
+            stName: `بيع نسخة مذكرة: ${b.name}`,
+            amount: b.price,
+            method: "cash",
+            ts: Date.now()
+        });
+        
+        saveAll();
+        renderBookletsStock();
+        showToast(`تم بيع نسخة من ${b.name} وإضافة ${b.price} ج للخزينة كاش ✅`, "success");
+        playSound("beep");
+    };
+
+    window.returnBookletCopy = function(id) {
+        if (!bookletsStock[id]) return;
+        let b = bookletsStock[id];
+        if (b.sold <= 0) {
+            showToast("لم يتم بيع أي نسخة من هذه المذكرة لإرجاعها!", "err");
+            return;
+        }
+        b.sold -= 1;
+        saveAll();
+        renderBookletsStock();
+        showToast(`تم إرجاع نسخة من ${b.name} بنجاح ➖`, "warning");
+    };
+
+    window.editBookletQty = function(id) {
+        if (!bookletsStock[id]) return;
+        let b = bookletsStock[id];
+        let nQty = prompt(`تعديل العدد الكلي المستلم لمذكرة (${b.name}):`, b.qty);
+        if (nQty !== null) {
+            let q = toInt(nQty);
+            if (q >= 0) {
+                b.qty = q;
+                saveAll();
+                renderBookletsStock();
+                showToast("تم تحديث العدد الكلي بنجاح ✅");
+            }
+        }
+    };
+
+    window.deleteBooklet = function(id) {
+        if (!bookletsStock[id]) return;
+        let b = bookletsStock[id];
+        if (confirm(`هل أنت متأكد من حذف مذكرة (${b.name}) من قائمة الجرد؟`)) {
+            delete bookletsStock[id];
+            saveAll();
+            renderBookletsStock();
+            showToast("تم حذف المذكرة من قائمة المخزون 🗑️");
+        }
+    };
+
+    // ==========================================
+    // === MARKETING CAMPAIGNS MANAGEMENT ===
+    // ==========================================
+    window.populateMarketingGroups = function() {
+        const sel = $("marketingTargetGroupSelect"); if(!sel) return;
+        let html = `<option value="">-- اختر الباقة / المجموعة --</option>`;
+        let keys = Object.keys(groupFees);
+        for(let i=0; i<keys.length; i++) {
+            html += `<option value="${keys[i]}">${keys[i]} (${groupFees[keys[i]]} ج)</option>`;
+        }
+        sel.innerHTML = html;
+    };
+
+    on("marketingTargetFilter", "change", function() {
+        let val = this.value;
+        let gContainer = $("marketingGroupSelectContainer");
+        if(gContainer) {
+            gContainer.style.display = (val === "groups") ? "block" : "none";
+        }
+    });
+
+    let currentCampaignList = [];
+
+    window.filterCampaignTarget = function() {
+        let filter = $("marketingTargetFilter") ? $("marketingTargetFilter").value : "all";
+        let grp = $("marketingTargetGroupSelect") ? $("marketingTargetGroupSelect").value : "";
+        
+        let list = [];
+        let sKeys = Object.keys(students);
+        
+        if (filter === "session") {
+            // تجميع أرقام طلاب الحصة الفورية لليوم أو لكل الأيام
+            let sDates = Object.keys(sessionStudentsByDate);
+            let seenPhones = {};
+            for(let d=0; d<sDates.length; d++) {
+                let arr = sessionStudentsByDate[sDates[d]] || [];
+                for(let k=0; k<arr.length; k++) {
+                    let sess = arr[k];
+                    if (sess.phone && sess.phone.trim() !== "" && !seenPhones[sess.phone]) {
+                        seenPhones[sess.phone] = true;
+                        list.push({ name: sess.name || "طالب حصة", phone: sess.phone, desc: `طالب حصة (${sDates[d]})` });
+                    }
+                }
+            }
+        } else {
+            for(let i=0; i<sKeys.length; i++) {
+                let st = students[sKeys[i]];
+                if (!st || !st.name) continue;
+                if (!st.phone || st.phone.trim() === "") continue;
+                
+                let p = st.phone.trim();
+                let stClassName = st.className ? st.className.trim() : "";
+                let req = (stClassName && groupFees[stClassName] !== undefined) ? toInt(groupFees[stClassName]) : 0;
+                let paid = st.paid || 0;
+                let remain = req - paid;
+                
+                if (filter === "all") {
+                    list.push({ name: st.name, phone: p, desc: `باقة: ${st.className || "عام"}` });
+                } else if (filter === "groups") {
+                    if (grp && stClassName === grp) {
+                        list.push({ name: st.name, phone: p, desc: `باقة: ${grp}` });
+                    }
+                } else if (filter === "vip") {
+                    if (st.rank === "vip") {
+                        list.push({ name: st.name, phone: p, desc: `⭐ VIP` });
+                    }
+                } else if (filter === "debtors") {
+                    if (req > 0 && remain > 0) {
+                        list.push({ name: st.name, phone: p, desc: `متبقي عليه: ${remain} ج` });
+                    }
+                }
+            }
+        }
+        
+        currentCampaignList = list;
+        
+        const clist = $("campaignNumbersList"); if(!clist) return;
+        if($("campaignTargetCount")) $("campaignTargetCount").textContent = list.length;
+        
+        let msgBody = $("marketingMsgBody") ? $("marketingMsgBody").value.trim() : "";
+        
+        let h = "";
+        for(let i=0; i<list.length; i++) {
+            let item = list[i];
+            let cleanPhone = item.phone.startsWith("0") ? "+2" + item.phone : "+20" + item.phone;
+            let fullMsg = `مرحباً بك أ/ ${item.name}،\n${msgBody}`;
+            let waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(fullMsg)}`;
+            
+            h += `
+            <div class="card item-card flexBetween wrap" style="background: var(--bg-inset); border: 1px solid var(--border); padding: 15px; border-radius: 10px; margin-bottom: 10px; gap: 15px;">
+                <div>
+                    <h4 style="margin:0; color:var(--text); font-size:1.1em;">👤 ${item.name}</h4>
+                    <div style="font-size:0.9em; color:var(--text-secondary); margin-top:5px;">
+                        <span>📱 ${item.phone}</span> | <span style="color:var(--primary);">${item.desc}</span>
+                    </div>
+                </div>
+                <a href="${waUrl}" target="_blank" class="btn success" style="padding:8px 18px; text-decoration:none; font-weight:bold; display:flex; align-items:center; gap:5px;">
+                    💬 مراسلة واتساب
+                </a>
+            </div>`;
+        }
+        
+        if (list.length === 0) {
+            h = `<div class="mutedCenter" style="padding:30px;">لا يوجد أرقام هواتف مسجلة تطابق الشريحة المحددة 🎯</div>`;
+        }
+        clist.innerHTML = h;
+    };
+
+    on("btnFilterCampaign", "click", function() {
+        filterCampaignTarget();
+        showToast("تم تصفية الأرقام المستهدفة بنجاح 🔍");
+    });
+
+    on("btnCopyCampaignNumbers", "click", function() {
+        if (currentCampaignList.length === 0) {
+            showToast("قائمة الأرقام فارغة! قم بتصفية داتا الطلاب أولاً.", "err");
+            return;
+        }
+        let arr = currentCampaignList.map(item => item.phone);
+        let textToCopy = arr.join("\n");
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            showToast(`تم نسخ ${arr.length} رقم موبايل بنجاح 📋 (جاهز للصق في برامج الإرسال)`, "success");
+            playSound("beep");
+        }).catch(() => {
+            showToast("فشل النسخ المباشر، يرجى تكرار المحاولة", "err");
+        });
+    });
 
     // Startup Sequence
     loadAll(); 
