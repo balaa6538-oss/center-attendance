@@ -1399,11 +1399,30 @@ on("quickAttendId", "keypress", function(e) {
     on("addNewBtn", "click", function() {
         const id = $("newId") ? toInt($("newId").value) : 0;
         if(!id) return;
-        if (students[String(id)] && students[String(id)].name) { triggerShake("newId"); return showToast("الكود مستخدم بالفعل", "err"); }
+        
+        let existing = students[String(id)];
+        if (existing) {
+            let hasName = existing.name && existing.name.trim() !== "";
+            let hasPaid = existing.paid > 0;
+            let hasPayments = existing.payments && existing.payments.length > 0;
+            let hasAttendance = existing.attendanceDates && existing.attendanceDates.length > 0;
+            let hasNotes = existing.notes && existing.notes.trim() !== "";
+            let hasClassName = existing.className && existing.className.trim() !== "";
+            
+            if (hasName || hasPaid || hasPayments || hasAttendance || hasNotes || hasClassName) {
+                triggerShake("newId");
+                showToast("⚠️ هذا الكود محجوز ومسجل به بيانات بالفعل!", "err");
+                playSound("error");
+                window.extOpen(id);
+                if ($("newId")) $("newId").value = "";
+                return;
+            }
+        }
         
         students[String(id)] = makeEmptyStudent(id); 
         if(id > BASE_MAX_ID) extraIds.push(id);
         saveAll(); window.extOpen(id); showToast(t("msg_added"));
+        if ($("newId")) $("newId").value = "";
     });
 
     on("saveStudentBtn", "click", function() {
