@@ -439,6 +439,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 activeGroup.classList.remove('collapsed');
             }
         }
+        if ($("sidebarNav")) $("sidebarNav").classList.remove("mobile-open");
+        if ($("sidebarOverlay")) $("sidebarOverlay").classList.remove("active");
     };
 
     window.extOpen = function(id) {

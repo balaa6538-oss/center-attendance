@@ -1166,9 +1166,7 @@ body.flash-green::after { box-shadow: inset 0 0 25px 8px rgba(16,185,129,0.5); t
 @media (max-width: 1024px) {
   .bento-grid { grid-template-columns: repeat(2, 1fr); }
   .bento-grid > .card:nth-child(3) { grid-column: 1 / -1; }
-}
-
-@media (max-width: 768px) {
+  
   .sidebar {
     transform: translateX(100%);
     width: 280px;
@@ -1192,7 +1190,9 @@ body.flash-green::after { box-shadow: inset 0 0 25px 8px rgba(16,185,129,0.5); t
   .topbar-stats { display: flex; width: 100%; justify-content: center; order: 3; margin-top: 8px; gap: 6px; flex-wrap: wrap; }
   
   .content-body { padding: 16px; }
-  
+}
+
+@media (max-width: 768px) {
   .bento-grid { grid-template-columns: 1fr; }
   .grid2 { grid-template-columns: 1fr; }
   .settings-grid { grid-template-columns: 1fr; }
