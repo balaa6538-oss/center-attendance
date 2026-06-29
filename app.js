@@ -545,6 +545,38 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ==========================================
+    // === MOBILE SIDEBAR BACK-BUTTON HISTORY LOGIC ===
+    // ==========================================
+    function openMobileSidebar() {
+        var sidebar = $("sidebarNav");
+        var overlay = $("sidebarOverlay");
+        if(sidebar && !sidebar.classList.contains("mobile-open")) {
+            sidebar.classList.add("mobile-open");
+            if(overlay) overlay.classList.add("active");
+            history.pushState({ sidebarOpen: true }, "", "#sidebar");
+        }
+    }
+
+    function closeMobileSidebar(fromPopstate) {
+        var sidebar = $("sidebarNav");
+        var overlay = $("sidebarOverlay");
+        if(sidebar && sidebar.classList.contains("mobile-open")) {
+            sidebar.classList.remove("mobile-open");
+            if(overlay) overlay.classList.remove("active");
+            if(!fromPopstate && history.state && history.state.sidebarOpen) {
+                history.back();
+            }
+        }
+    }
+
+    window.addEventListener("popstate", function(e) {
+        var sidebar = $("sidebarNav");
+        if(sidebar && sidebar.classList.contains("mobile-open")) {
+            closeMobileSidebar(true);
+        }
+    });
+
+    // ==========================================
     // 5. GLOBAL NAVIGATION & TABS
     // ==========================================
     window.switchTab = function(tabId) {
@@ -561,8 +593,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 activeGroup.classList.remove('collapsed');
             }
         }
-        if ($("sidebarNav")) $("sidebarNav").classList.remove("mobile-open");
-        if ($("sidebarOverlay")) $("sidebarOverlay").classList.remove("active");
+        closeMobileSidebar(false);
     };
 
     window.extOpen = function(id) {
@@ -3173,16 +3204,15 @@ function updateDriveUI() {
 
     on("mobileSidebarToggle", "click", function() {
         var sidebar = $("sidebarNav");
-        var overlay = $("sidebarOverlay");
-        if(sidebar) sidebar.classList.toggle("mobile-open");
-        if(overlay) overlay.classList.toggle("active");
+        if(sidebar && sidebar.classList.contains("mobile-open")) {
+            closeMobileSidebar(false);
+        } else {
+            openMobileSidebar();
+        }
     });
 
     on("sidebarOverlay", "click", function() {
-        var sidebar = $("sidebarNav");
-        var overlay = $("sidebarOverlay");
-        if(sidebar) sidebar.classList.remove("mobile-open");
-        if(overlay) overlay.classList.remove("active");
+        closeMobileSidebar(false);
     });
 
     // === SIDEBAR ACCORDION LOGIC ===
