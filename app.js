@@ -1355,6 +1355,7 @@ on("quickAttendId", "keypress", function(e) {
         if ($("stName")) s.name = $("stName").value; 
         if ($("stClass")) s.className = $("stClass").value; 
         if ($("stPhone")) s.phone = $("stPhone").value;
+        if ($("stNotes")) s.notes = $("stNotes").value;
         saveAll(); showToast(t("msg_saved")); updateStudentUI(currentId);
     });
 
@@ -1479,10 +1480,11 @@ on("quickAttendId", "keypress", function(e) {
         const txt = noteInp.value.trim(); if(!txt) return;
         
         const now = new Date(); const stamp = `[${now.toISOString().split('T')[0]}]`;
-        let oldNotes = students[currentId].notes ? students[currentId].notes : "";
+        let oldNotes = $("stNotes") ? $("stNotes").value : (students[currentId].notes ? students[currentId].notes : "");
         students[currentId].notes = `${stamp} : ${txt}\n${oldNotes}`;
         
         saveAll(); updateStudentUI(currentId); showToast(t("msg_saved"));
+        noteInp.value = "";
     });
 
     on("waBtn", "click", function() { 
@@ -1515,11 +1517,14 @@ on("quickAttendId", "keypress", function(e) {
         
         for(let g in groupFees) {
             let val = groupFees[g];
-            h += `<div class="group-fee-row">
-                    <label>📘 ${g}</label>
-                    <div class="row" style="width:auto;">
-                        <input type="number" class="inp g-fee-inp" data-group="${g}" value="${val}"> ج
-                        <button class="btn danger smallBtn iconOnly delete-pkg-btn" data-group="${g}">🗑️</button>
+            h += `<div class="group-fee-row" style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; padding:10px; background:var(--bg-surface); border:1px solid var(--border); border-radius:8px;">
+                    <div style="display:flex; align-items:center; gap:5px; flex:1;">
+                        <span>📘</span>
+                        <input type="text" class="inp g-fee-name-inp" data-old-group="${g}" value="${g}" style="flex:1; font-weight:bold;">
+                    </div>
+                    <div class="row" style="width:auto; gap:5px;">
+                        <input type="number" class="inp g-fee-inp" data-group="${g}" value="${val}" style="width:90px; text-align:center;"> ج
+                        <button class="btn danger smallBtn iconOnly delete-pkg-btn" data-group="${g}" title="حذف الباقة">🗑️</button>
                     </div>
                   </div>`;
         }
@@ -1559,11 +1564,30 @@ on("quickAttendId", "keypress", function(e) {
     });
 
     on("saveGroupFeesBtn", "click", function() {
-        const inputs = document.querySelectorAll(".g-fee-inp");
-        for (let i = 0; i < inputs.length; i++) {
-            let groupName = inputs[i].getAttribute("data-group");
-            groupFees[groupName] = toInt(inputs[i].value);
+        const nameInputs = document.querySelectorAll(".g-fee-name-inp");
+        const priceInputs = document.querySelectorAll(".g-fee-inp");
+        let newGroupFees = {};
+        let renamedGroups = {};
+        
+        for (let i = 0; i < nameInputs.length; i++) {
+            let oldName = nameInputs[i].getAttribute("data-old-group");
+            let newName = nameInputs[i].value.trim() || oldName;
+            let price = toInt(priceInputs[i].value);
+            newGroupFees[newName] = price;
+            if (newName !== oldName) {
+                renamedGroups[oldName] = newName;
+            }
         }
+        groupFees = newGroupFees;
+        
+        const allStuds = Object.values(students);
+        for (let i = 0; i < allStuds.length; i++) {
+            let s = allStuds[i];
+            if (s.className && renamedGroups[s.className]) {
+                s.className = renamedGroups[s.className];
+            }
+        }
+        
         saveAll(); 
         populatePackages(); 
         if ($("groupFeesModal")) $("groupFeesModal").classList.add("hidden"); 
