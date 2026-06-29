@@ -572,10 +572,13 @@
 
               <div style="margin-top: 20px;">
                 <label class="lbl" style="color: var(--primary); font-weight: bold;">📝 نص الرسالة الإعلانية / التنبيه</label>
-                <textarea id="marketingMsgBody" class="inp" rows="5" placeholder="اكتب هنا نص الإعلان أو الكورس الجديد...&#10;مثال: مرحباً بك في سنترنا، نعلن عن انطلاق الحجز للكورس الجديد ومراجعة ليلة الامتحان بخصم خاص..." style="background: var(--bg-inset); line-height: 1.6; font-size: 1em;"></textarea>
-                <span style="font-size: 0.85em; color: var(--text-secondary); margin-top: 5px; display: block;">
-                  💡 تلميح: سيقوم السيستم بإرسال هذه الرسالة برابط واتساب مباشر لكل رقم في الشريحة المحددة.
-                </span>
+                <textarea id="marketingMsgBody" class="inp" rows="5" placeholder="اكتب هنا نص الإعلان أو التنبيه...&#10;يمكنك استخدام الوسوم الذكية [اسم_الطالب] و [المبلغ] وسيتم استبدالها تلقائياً لكل طالب." style="background: var(--bg-inset); line-height: 1.6; font-size: 1em;"></textarea>
+                <div style="margin-top: 8px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                  <span style="font-size: 0.85em; color: var(--text-secondary);">💡 المتغيرات الذكية المدعومة في الرسالة:</span>
+                  <span class="badge" style="background: #eef2f5; color: #0284c7; border: 1px solid #cbd5e1; font-weight: bold; cursor: pointer;" onclick="document.getElementById('marketingMsgBody').value += ' [اسم_الطالب] '">👤 [اسم_الطالب]</span>
+                  <span class="badge" style="background: #eef2f5; color: #10b981; border: 1px solid #cbd5e1; font-weight: bold; cursor: pointer;" onclick="document.getElementById('marketingMsgBody').value += ' [المبلغ] '">💵 [المبلغ]</span>
+                  <span style="font-size: 0.8em; color: var(--text-secondary);">(اضغط على الوسم لإضافته للنص)</span>
+                </div>
               </div>
 
               <div class="row wrap" style="margin-top: 22px; gap: 15px;">

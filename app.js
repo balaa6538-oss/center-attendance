@@ -3123,6 +3123,12 @@ function updateDriveUI() {
         if(gContainer) {
             gContainer.style.display = (val === "groups") ? "block" : "none";
         }
+        let msgInp = $("marketingMsgBody");
+        if (val === "debtors" && msgInp) {
+            if (!msgInp.value || msgInp.value.trim() === "") {
+                msgInp.value = "مساء الخير أ/ [اسم_الطالب]،\nنتمنى أن تكون بكل خير.\nحابة أفكّرك بأن الرصيد المتبقي من رسوم الكورس هو [المبلغ] ج، ونستأذنك في استكماله خلال حضورك في أقرب محاضرة لضمان استمرار الخدمة بسلاسة.\nشكراً جداً لتعاونك معنا 🤍";
+            }
+        }
     });
 
     let currentCampaignList = [];
@@ -3144,7 +3150,7 @@ function updateDriveUI() {
                     let sess = arr[k];
                     if (sess.phone && sess.phone.trim() !== "" && !seenPhones[sess.phone]) {
                         seenPhones[sess.phone] = true;
-                        list.push({ name: sess.name || "طالب حصة", phone: sess.phone, desc: `طالب حصة (${sDates[d]})` });
+                        list.push({ name: sess.name || "طالب حصة", phone: sess.phone, desc: `طالب حصة (${sDates[d]})`, remain: 0 });
                     }
                 }
             }
@@ -3161,18 +3167,18 @@ function updateDriveUI() {
                 let remain = req - paid;
                 
                 if (filter === "all") {
-                    list.push({ name: st.name, phone: p, desc: `باقة: ${st.className || "عام"}` });
+                    list.push({ name: st.name, phone: p, desc: `باقة: ${st.className || "عام"}`, remain: remain > 0 ? remain : 0 });
                 } else if (filter === "groups") {
                     if (grp && stClassName === grp) {
-                        list.push({ name: st.name, phone: p, desc: `باقة: ${grp}` });
+                        list.push({ name: st.name, phone: p, desc: `باقة: ${grp}`, remain: remain > 0 ? remain : 0 });
                     }
                 } else if (filter === "vip") {
                     if (st.rank === "vip") {
-                        list.push({ name: st.name, phone: p, desc: `⭐ VIP` });
+                        list.push({ name: st.name, phone: p, desc: `⭐ VIP`, remain: remain > 0 ? remain : 0 });
                     }
                 } else if (filter === "debtors") {
                     if (req > 0 && remain > 0) {
-                        list.push({ name: st.name, phone: p, desc: `متبقي عليه: ${remain} ج` });
+                        list.push({ name: st.name, phone: p, desc: `متبقي عليه: ${remain} ج`, remain: remain });
                     }
                 }
             }
@@ -3189,8 +3195,16 @@ function updateDriveUI() {
         for(let i=0; i<list.length; i++) {
             let item = list[i];
             let cleanPhone = item.phone.startsWith("0") ? "+2" + item.phone : "+20" + item.phone;
-            let fullMsg = `مرحباً بك أ/ ${item.name}،\n${msgBody}`;
-            let waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(fullMsg)}`;
+            
+            let customMsg = msgBody;
+            if (customMsg) {
+                customMsg = customMsg.replace(/\[اسم_الطالب\]/g, item.name);
+                customMsg = customMsg.replace(/\[المبلغ\]/g, item.remain || 0);
+            } else {
+                customMsg = `مرحباً بك أ/ ${item.name}،\nيرجى التواصل مع إدارة السنتر.`;
+            }
+            
+            let waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(customMsg)}`;
             
             h += `
             <div class="card item-card flexBetween wrap" style="background: var(--bg-inset); border: 1px solid var(--border); padding: 15px; border-radius: 10px; margin-bottom: 10px; gap: 15px;">
