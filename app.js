@@ -72,6 +72,18 @@ document.addEventListener('DOMContentLoaded', function() {
     // 3. THE COMPREHENSIVE DICTIONARY
     // ==========================================
     const dict = {
+        "grp_daily": { ar: "الإدارة اليومية", en: "Daily Operations" },
+        "nav_session_st": { ar: "طلاب الحصة", en: "Session Students" },
+        "grp_finance": { ar: "الحسابات والإحصائيات", en: "Finance & Analytics" },
+        "grp_tools": { ar: "أدوات وتسويق", en: "Tools & Marketing" },
+        "nav_booklets": { ar: "مخزون المذكرات", en: "Booklets Inventory" },
+        "nav_marketing": { ar: "حملات التسويق", en: "Marketing Campaigns" },
+        "grp_system": { ar: "إعدادات النظام", en: "System Settings" },
+        "note_header": { ar: "ملاحظات الطالب (منفصلة وقابلة للتعديل)", en: "Student Notes (Editable)" },
+        "txt_no_notes": { ar: "لا توجد ملاحظات مسجلة لهذا الطالب", en: "No notes recorded for this student" },
+        "print_receipt_lock": { ar: "إصدار إيصال سداد الباقة (مغلق لحين إكمال الدفع)", en: "Issue Package Receipt (Locked until full payment)" },
+        "print_receipt_unlock": { ar: "🖨️ طباعة إيصال سداد الباقة (مكتمل)", en: "🖨️ Print Package Receipt (Completed)" },
+        "correct_pay_btn": { ar: "إيداع", en: "Deposit" },
        "shift_manager": { ar: "مسئول الشيفت:", en: "Shift Manager:" },
         "modal_shift_title": { ar: "👨‍💼 اختيار مسئول الشيفت", en: "👨‍💼 Select Shift Manager" },
         "plc_new_manager": { ar: "اسم المسئول الجديد...", en: "New manager name..." },
@@ -1982,8 +1994,31 @@ on("quickAttendId", "keypress", function(e) {
     });
 
     on("changeLangBtn", "click", function() { 
-        currentLang = (currentLang === "ar" ? "en" : "ar"); 
-        localStorage.setItem(K_LANG, currentLang); applyLanguage(); 
+        const targetLang = (currentLang === "ar" ? "en" : "ar");
+        const overlay = $("langSwitchOverlay");
+        const textEl = $("langSwitchText");
+        if(overlay && textEl) {
+            textEl.innerText = targetLang === "en" ? "Switching to English... ⏳" : "جاري التبديل للعربية... ⏳";
+            overlay.classList.add("active");
+            setTimeout(() => {
+                currentLang = targetLang;
+                localStorage.setItem(K_LANG, currentLang); 
+                applyLanguage();
+                if(typeof currentId !== 'undefined' && currentId) {
+                    if(typeof updateStudentUI === 'function') updateStudentUI(currentId);
+                }
+                setTimeout(() => {
+                    overlay.classList.remove("active");
+                }, 400);
+            }, 600);
+        } else {
+            currentLang = targetLang;
+            localStorage.setItem(K_LANG, currentLang); 
+            applyLanguage();
+            if(typeof currentId !== 'undefined' && currentId) {
+                if(typeof updateStudentUI === 'function') updateStudentUI(currentId);
+            }
+        }
     });
 
     on("themeSelector", "change", function(e) { applyTheme(e.target.value); });

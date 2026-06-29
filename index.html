@@ -24,6 +24,12 @@
   <div id="fullscreenFeedback" class="fullscreen-feedback hidden">
     <div id="feedbackIcon" class="feedback-icon"></div>
   </div>
+  
+  <!-- ============ LANGUAGE SWITCH OVERLAY ============ -->
+  <div id="langSwitchOverlay" class="lang-switch-overlay">
+    <div class="lang-spinner"></div>
+    <div id="langSwitchText" class="lang-switch-text">جاري تغيير اللغة...</div>
+  </div>
 
   <!-- ============ LOGIN ============ -->
   <div id="loginBox" class="login-wrapper">
@@ -58,7 +64,7 @@
         <!-- 1. DAILY OPERATIONS -->
         <div class="nav-group">
           <button class="nav-group-header" onclick="toggleNavGroup(this)" type="button">
-            <span class="nav-group-title">الإدارة اليومية</span>
+            <span class="nav-group-title" data-i18n="grp_daily">الإدارة اليومية</span>
             <svg class="chevron-icon" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="6 9 12 15 18 9"></polyline>
             </svg>
@@ -75,7 +81,7 @@
               </button>
               <button id="btnTabSessionStudents" class="nav-item">
                 <span class="nav-icon">🎟️</span>
-                <span class="nav-text">طلاب الحصة</span>
+                <span class="nav-text" data-i18n="nav_session_st">طلاب الحصة</span>
               </button>
               <button id="btnTabSyllabus" class="nav-item">
                 <span class="nav-icon">🗺️</span>
@@ -88,7 +94,7 @@
         <!-- 2. FINANCE & ANALYTICS -->
         <div class="nav-group collapsed">
           <button class="nav-group-header" onclick="toggleNavGroup(this)" type="button">
-            <span class="nav-group-title">الحسابات والإحصائيات</span>
+            <span class="nav-group-title" data-i18n="grp_finance">الحسابات والإحصائيات</span>
             <svg class="chevron-icon" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="6 9 12 15 18 9"></polyline>
             </svg>
@@ -110,7 +116,7 @@
         <!-- 3. TOOLS & MARKETING -->
         <div class="nav-group collapsed">
           <button class="nav-group-header" onclick="toggleNavGroup(this)" type="button">
-            <span class="nav-group-title">أدوات وتسويق</span>
+            <span class="nav-group-title" data-i18n="grp_tools">أدوات وتسويق</span>
             <svg class="chevron-icon" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="6 9 12 15 18 9"></polyline>
             </svg>
@@ -119,11 +125,11 @@
             <div class="nav-group-items">
               <button id="btnTabBooklets" class="nav-item adminOnly">
                 <span class="nav-icon">📚</span>
-                <span class="nav-text">مخزون المذكرات</span>
+                <span class="nav-text" data-i18n="nav_booklets">مخزون المذكرات</span>
               </button>
               <button id="btnTabMarketing" class="nav-item adminOnly">
                 <span class="nav-icon">🚀</span>
-                <span class="nav-text">حملات التسويق</span>
+                <span class="nav-text" data-i18n="nav_marketing">حملات التسويق</span>
               </button>
             </div>
           </div>
@@ -132,7 +138,7 @@
         <!-- 4. SYSTEM -->
         <div class="nav-group collapsed">
           <button class="nav-group-header" onclick="toggleNavGroup(this)" type="button">
-            <span class="nav-group-title">إعدادات النظام</span>
+            <span class="nav-group-title" data-i18n="grp_system">إعدادات النظام</span>
             <svg class="chevron-icon" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="6 9 12 15 18 9"></polyline>
             </svg>
