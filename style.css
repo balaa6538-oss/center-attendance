@@ -211,7 +211,7 @@ a { color: var(--primary); text-decoration: none; }
   margin-bottom: 6px;
   background: transparent;
   border: none;
-  color: var(--primary);
+  color: var(--text-secondary);
   font-family: var(--font);
   font-size: 0.78em;
   font-weight: 700;
@@ -222,11 +222,7 @@ a { color: var(--primary); text-decoration: none; }
   text-align: start;
 }
 
-.nav-group.collapsed .nav-group-header {
-  color: var(--text-secondary);
-}
-
-.nav-group.collapsed .nav-group-header:hover {
+.nav-group-header:hover {
   color: var(--primary);
 }
 
@@ -360,9 +356,9 @@ a { color: var(--primary); text-decoration: none; }
 }
 
 .sidebar-collapse-btn {
-  background: var(--bg-hover);
-  border: 1px solid var(--border);
-  color: var(--text-secondary);
+  background: var(--bg-inset);
+  border: 1px solid var(--primary);
+  color: var(--primary);
   width: 36px;
   height: 36px;
   border-radius: 8px;
@@ -372,11 +368,16 @@ a { color: var(--primary); text-decoration: none; }
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
+  box-shadow: 0 0 8px rgba(37, 99, 235, 0.2);
 }
 
-.sidebar-collapse-btn:hover { color: var(--primary); border-color: var(--primary); }
+.sidebar-collapse-btn:hover { background: var(--primary); color: #ffffff; border-color: var(--primary); }
 
 .app-shell.sidebar-collapsed .sidebar-collapse-btn { transform: scaleX(-1); }
+
+[dir="ltr"] .sidebar-collapse-btn { transform: scaleX(-1); }
+[dir="ltr"] .app-shell.sidebar-collapsed .sidebar-collapse-btn { transform: scaleX(1); }
+
 
 .sidebar-overlay {
   display: none;

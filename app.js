@@ -1296,6 +1296,10 @@ let remainAmt = req > 0 ? (req - (s.paid || 0)) : 0;
             $("changeLangBtn").innerText = currentLang === "ar" ? "🌐 تغيير اللغة (Ar / En)" : "🌐 Switch Language";
         }
         
+        if($("sidebarCollapseBtn")) {
+            $("sidebarCollapseBtn").title = currentLang === "ar" ? "طي القائمة" : "Collapse Sidebar";
+        }
+        
         // Sidebar doesn't need flex-direction change for RTL (handled by CSS logical properties)
         
         // السطر الجديد لتحديث كلمات جوجل درايف فوراً مع تغيير اللغة
