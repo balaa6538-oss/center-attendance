@@ -431,7 +431,14 @@ document.addEventListener('DOMContentLoaded', function() {
         if(target) target.classList.remove('hidden');
         document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
         const activeBtn = $("btnTab" + tabId); 
-        if(activeBtn) activeBtn.classList.add('active');
+        if(activeBtn) {
+            activeBtn.classList.add('active');
+            const activeGroup = activeBtn.closest('.nav-group');
+            if (activeGroup) {
+                document.querySelectorAll('.nav-group').forEach(g => g.classList.add('collapsed'));
+                activeGroup.classList.remove('collapsed');
+            }
+        }
     };
 
     window.extOpen = function(id) {
@@ -2936,7 +2943,11 @@ function updateDriveUI() {
     window.toggleNavGroup = function(btn) {
         const group = btn.closest('.nav-group');
         if (group) {
-            group.classList.toggle('collapsed');
+            const isCollapsed = group.classList.contains('collapsed');
+            document.querySelectorAll('.nav-group').forEach(g => g.classList.add('collapsed'));
+            if (isCollapsed) {
+                group.classList.remove('collapsed');
+            }
         }
     };
 
@@ -2945,6 +2956,7 @@ function updateDriveUI() {
     if (activeNavItem) {
         const activeGroup = activeNavItem.closest('.nav-group');
         if (activeGroup) {
+            document.querySelectorAll('.nav-group').forEach(g => g.classList.add('collapsed'));
             activeGroup.classList.remove('collapsed');
         }
     }
