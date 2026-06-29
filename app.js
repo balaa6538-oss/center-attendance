@@ -669,6 +669,27 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
+        const rBtn = $("showReceiptBtn");
+        if (rBtn) {
+            if (req > 0 && remain <= 0) {
+                rBtn.disabled = false;
+                rBtn.style.cursor = "pointer";
+                rBtn.style.background = "linear-gradient(135deg, #10b981, #059669)";
+                rBtn.style.color = "#ffffff";
+                rBtn.style.boxShadow = "0 4px 12px rgba(16, 185, 129, 0.4)";
+                if ($("receiptBtnIcon")) $("receiptBtnIcon").textContent = "🖨️";
+                if ($("receiptBtnText")) $("receiptBtnText").textContent = "عرض وطباعة إيصال السداد النهائي 📜";
+            } else {
+                rBtn.disabled = true;
+                rBtn.style.cursor = "not-allowed";
+                rBtn.style.background = "#334155";
+                rBtn.style.color = "#94a3b8";
+                rBtn.style.boxShadow = "none";
+                if ($("receiptBtnIcon")) $("receiptBtnIcon").textContent = "🔒";
+                if ($("receiptBtnText")) $("receiptBtnText").textContent = "إصدار إيصال سداد الباقة (مغلق لحين إكمال الدفع)";
+            }
+        }
+
         let r = st.rank || "normal";
         if($("rankNormalBtn")) $("rankNormalBtn").className = "st-rank-btn " + (r === "normal" ? "active-normal" : "");
         if($("rankVipBtn")) $("rankVipBtn").className = "st-rank-btn " + (r === "vip" ? "active-vip" : "");
@@ -1433,6 +1454,52 @@ on("quickAttendId", "keypress", function(e) {
         if ($("stPhone")) s.phone = $("stPhone").value;
         saveAll(); showToast(t("msg_saved")); updateStudentUI(currentId);
     });
+
+    on("showReceiptBtn", "click", function() {
+        if(!currentId) return;
+        const st = students[currentId]; if (!st) return;
+
+        if ($("receiptCenterName")) $("receiptCenterName").textContent = evalData.centerName || "إدارة السنتر";
+        if ($("receiptManagerName")) $("receiptManagerName").textContent = evalData.manager ? `إشراف أ/ ${evalData.manager}` : "المدير المسئول";
+        if ($("receiptDate")) $("receiptDate").textContent = `التاريخ: ${nowDateStr()}`;
+        
+        if ($("receiptStudentName")) $("receiptStudentName").textContent = st.name || "طالب بدون اسم";
+        if ($("receiptStudentID")) $("receiptStudentID").textContent = `#${st.id}`;
+        if ($("receiptStudentClass")) $("receiptStudentClass").textContent = st.className || "عام";
+        if ($("receiptStudentPhone")) $("receiptStudentPhone").textContent = st.phone ? `0${st.phone}` : "غير مسجل";
+        
+        if ($("receiptTotalPaid")) $("receiptTotalPaid").textContent = `${st.paid || 0} ج`;
+        
+        let methodsStr = "طرق الدفع: ";
+        let mMap = {};
+        if (st.payments && st.payments.length > 0) {
+            for(let i=0; i<st.payments.length; i++) {
+                let m = st.payments[i].method || "cash";
+                mMap[m] = (mMap[m] || 0) + toInt(st.payments[i].amount);
+            }
+            let arr = [];
+            if(mMap["cash"]) arr.push(`كاش (${mMap["cash"]} ج)`);
+            if(mMap["instapay"]) arr.push(`إنستاباي (${mMap["instapay"]} ج)`);
+            if(mMap["wallet"]) arr.push(`محافظ/فودافون كاش (${mMap["wallet"]} ج)`);
+            methodsStr += arr.join(" + ");
+        } else {
+            methodsStr += "كاش";
+        }
+        if ($("receiptPaymentMethods")) $("receiptPaymentMethods").textContent = methodsStr;
+        
+        togglePhotoView(false);
+        if ($("receiptModal")) $("receiptModal").classList.remove("hidden");
+    });
+
+    window.togglePhotoView = function(isPhoto) {
+        if (isPhoto) {
+            if ($("receiptModalActions")) $("receiptModalActions").style.display = "none";
+            if ($("photoViewTip")) $("photoViewTip").style.display = "block";
+        } else {
+            if ($("receiptModalActions")) $("receiptModalActions").style.display = "flex";
+            if ($("photoViewTip")) $("photoViewTip").style.display = "none";
+        }
+    };
 
     on("rankNormalBtn", "click", function() {
         if(!currentId) return;
