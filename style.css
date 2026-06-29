@@ -1188,8 +1188,8 @@ body.flash-green::after { box-shadow: inset 0 0 25px 8px rgba(16,185,129,0.5); t
   .mobile-menu-btn { display: flex; align-items: center; justify-content: center; }
   .sidebar-collapse-btn { display: none; }
   
-  .topbar { padding: 0 16px; height: auto; min-height: var(--topbar-h); padding-top: 10px; padding-bottom: 10px; }
-  .topbar-stats { display: flex; width: 100%; justify-content: center; order: 3; margin-top: 8px; }
+  .topbar { padding: 8px 16px; height: auto; min-height: var(--topbar-h); align-items: center; justify-content: space-between; }
+  .topbar-stats { display: flex; width: 100%; justify-content: center; order: 3; margin-top: 8px; gap: 6px; flex-wrap: wrap; }
   
   .content-body { padding: 16px; }
   
@@ -1204,8 +1204,8 @@ body.flash-green::after { box-shadow: inset 0 0 25px 8px rgba(16,185,129,0.5); t
 }
 
 @media (max-width: 480px) {
-  .topbar-end { gap: 6px; }
-  .stat-pill { font-size: 0.75em; padding: 4px 10px; }
+  .topbar-end { gap: 8px; }
+  .stat-pill { font-size: 0.75em; padding: 4px 8px; gap: 4px; }
 }
 
 /* ── 22. FULLSCREEN FEEDBACK ── */

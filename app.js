@@ -569,6 +569,7 @@ document.addEventListener('DOMContentLoaded', function() {
             $("currentUserBadgeText").innerText = isAdmin ? (currentLang === "ar" ? "👑 مسؤول عام" : "👑 Admin") : (currentLang === "ar" ? "👥 مساعد" : "👥 Assistant");
         }
         document.querySelectorAll(".adminOnly").forEach(el => {
+            if (el.classList.contains("tab-section")) return;
             if(isAdmin) el.classList.remove("hidden"); 
             else el.classList.add("hidden"); 
         });
