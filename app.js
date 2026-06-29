@@ -2230,7 +2230,7 @@ on("importExcelInput", "change", async function(e) {
         if(confirm(confMsg)) { deletedStudents = {}; saveAll(); renderBinList(); }
     });
 
-    on("openAllStudentsBtn", "click", function() { simpleCurrentPage = 1; renderSimpleTable(); if ($("allStudentsModal")) $("allStudentsModal").classList.remove("hidden"); });
+    on("openAllStudentsBtn", "click", function() { renderSimpleTable(); if ($("allStudentsModal")) $("allStudentsModal").classList.remove("hidden"); });
     on("closeModalBtn", "click", function() { if ($("allStudentsModal")) $("allStudentsModal").classList.add("hidden"); });
     on("simplePrevPageBtn", "click", function() { if(simpleCurrentPage > 1) { simpleCurrentPage--; renderSimpleTable(); } });
     on("simpleNextPageBtn", "click", function() { simpleCurrentPage++; renderSimpleTable(); });
