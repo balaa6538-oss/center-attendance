@@ -678,6 +678,48 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             $("attList").innerHTML = datesHtml;
         }
+
+        if($("stPaymentsList")) {
+            let payHtml = "";
+            const isAdmin = (currentUserRole === "admin");
+            if (st.payments && st.payments.length > 0) {
+                for (let i = st.payments.length - 1; i >= 0; i--) {
+                    let p = st.payments[i];
+                    let m = p.method || "cash";
+                    let mBadge = "💵 كاش";
+                    let badgeBg = "#eef2f5";
+                    let badgeColor = "#333";
+                    if (m === "instapay") { mBadge = "📱 إنستاباي"; badgeBg = "#e3f2fd"; badgeColor = "#0288d1"; }
+                    if (m === "wallet") { mBadge = "🟢 فودافون كاش/محفظة"; badgeBg = "#e8f5e9"; badgeColor = "#2e7d32"; }
+                    
+                    let delBtn = isAdmin ? `<button class="btn danger smallBtn iconOnly" style="padding:2px 6px; font-size:11px;" onclick="window.deleteStudentPayment(${i})" title="حذف الدفعة">🗑️</button>` : "";
+                    
+                    payHtml += `
+                    <div class="item flexBetween" style="margin-bottom:8px; font-size:0.9em; padding:8px 10px; background:var(--bg-surface); border-radius:6px; border:1px solid var(--border);">
+                        <div>
+                            <span style="font-weight:bold; color:var(--success);">+ ${p.amount} ج</span>
+                            <span class="badge" style="background:${badgeBg}; color:${badgeColor}; font-size:0.8em; margin-inline-start:8px;">${mBadge}</span>
+                        </div>
+                        <div class="row" style="width:auto; gap:10px;">
+                            <span style="font-size:0.85em; color:var(--text-secondary);">${prettyDate(p.date)}</span>
+                            ${delBtn}
+                        </div>
+                    </div>`;
+                }
+            } else if (st.paid > 0) {
+                payHtml = `
+                <div class="item flexBetween" style="margin-bottom:8px; font-size:0.9em; padding:8px 10px; background:var(--bg-surface); border-radius:6px; border:1px solid var(--border);">
+                    <div>
+                        <span style="font-weight:bold; color:var(--success);">+ ${st.paid} ج</span>
+                        <span class="badge" style="background:#eef2f5; color:#333; font-size:0.8em; margin-inline-start:8px;">💵 كاش (رصيد سابق)</span>
+                    </div>
+                    <span style="font-size:0.85em; color:var(--text-secondary);">—</span>
+                </div>`;
+            } else {
+                payHtml = `<div class="mutedCenter" style="font-size:0.85em;">لا توجد دفعات مسجلة حتى الآن</div>`;
+            }
+            $("stPaymentsList").innerHTML = payHtml;
+        }
         
         if($("newBadge")) {
             if(dates.length === 0 && st.name) $("newBadge").classList.remove("hidden"); 
@@ -742,6 +784,52 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         if($("monthNetProfit")) $("monthNetProfit").textContent = (mRev - mExp);
        if($("monthTotalExp")) $("monthTotalExp").textContent = mExp;
+
+        let cashToday = 0, instapayToday = 0, walletToday = 0;
+        let cashTotal = 0, instapayTotal = 0, walletTotal = 0;
+        
+        const allStuds = Object.values(students);
+        for(let i = 0; i < allStuds.length; i++) {
+            let s = allStuds[i];
+            if (s.payments && s.payments.length > 0) {
+                for(let j = 0; j < s.payments.length; j++) {
+                    let p = s.payments[j];
+                    let amt = toInt(p.amount);
+                    let m = p.method || "cash";
+                    
+                    if (m === "cash") {
+                        cashTotal += amt;
+                        if (p.date === today) cashToday += amt;
+                    } else if (m === "instapay") {
+                        instapayTotal += amt;
+                        if (p.date === today) instapayToday += amt;
+                    } else if (m === "wallet") {
+                        walletTotal += amt;
+                        if (p.date === today) walletToday += amt;
+                    }
+                }
+            } else if (s.paid > 0) {
+                cashTotal += toInt(s.paid);
+            }
+        }
+
+        let expTotal = 0;
+        for(let d in expensesByDate) {
+            for(let k = 0; k < expensesByDate[d].length; k++) {
+                expTotal += expensesByDate[d][k].amount;
+            }
+        }
+
+        if($("vaultCashToday")) $("vaultCashToday").textContent = cashToday;
+        if($("vaultInstapayToday")) $("vaultInstapayToday").textContent = instapayToday;
+        if($("vaultWalletToday")) $("vaultWalletToday").textContent = walletToday;
+
+        if($("vaultCashTotal")) $("vaultCashTotal").textContent = cashTotal;
+        if($("vaultCashExp")) $("vaultCashExp").textContent = expTotal;
+        if($("vaultCashNet")) $("vaultCashNet").textContent = (cashTotal - expTotal);
+
+        if($("vaultInstapayTotal")) $("vaultInstapayTotal").textContent = instapayTotal;
+        if($("vaultWalletTotal")) $("vaultWalletTotal").textContent = walletTotal;
     }
 
     function renderCharts() {
@@ -1301,9 +1389,15 @@ on("quickAttendId", "keypress", function(e) {
         const payInp = $("newPaymentInput"); if (!payInp) return;
         const v = toInt(payInp.value); if(!v) return;
         
+        const methodInp = $("newPaymentMethod");
+        const method = methodInp ? methodInp.value : "cash";
+        let methodName = "كاش 💵";
+        if (method === "instapay") methodName = "إنستاباي 📱";
+        if (method === "wallet") methodName = "فودافون كاش/محفظة 🟢";
+        
         const st = students[currentId]; st.paid += v;
        if (!st.payments) st.payments = [];
-        st.payments.push({ date: nowDateStr(), amount: v });
+        st.payments.push({ date: nowDateStr(), amount: v, method: method });
         const today = nowDateStr();
         if (!revenueByDate[today]) revenueByDate[today] = 0;
         revenueByDate[today] += v;
@@ -1321,13 +1415,36 @@ on("quickAttendId", "keypress", function(e) {
                 showToast(t("err_no_manager"), "err");
                 return; // يمنع فتح الواتساب
             }
-            let msg = `مرحباً ${st.name}،\nتم إيداع مبلغ ${v} ج ✅\nإجمالي المدفوع: ${st.paid} ج.\n\nمع تحيات: أ/ ${currentManager}`;
+            let msg = `مرحباً ${st.name}،\nتم إيداع مبلغ ${v} ج (${methodName}) ✅\nإجمالي المدفوع: ${st.paid} ج.\n\nمع تحيات: أ/ ${currentManager}`;
             setTimeout(function() { 
                 window.open(`https://wa.me/20${st.phone}?text=${encodeURIComponent(msg)}`, '_blank'); 
             }, 1000);
         }
         payInp.value = "";
     });
+
+    window.deleteStudentPayment = function(index) {
+        if(!currentId) return;
+        let st = students[currentId];
+        if(!st || !st.payments || !st.payments[index]) return;
+        
+        if(!confirm(currentLang === 'ar' ? "⚠️ متأكد من حذف هذه الدفعة نهائياً؟" : "⚠️ Are you sure you want to delete this payment?")) return;
+        
+        let p = st.payments[index];
+        st.paid = Math.max(0, st.paid - p.amount);
+        
+        if (revenueByDate[p.date]) {
+            revenueByDate[p.date] = Math.max(0, revenueByDate[p.date] - p.amount);
+        }
+        
+        st.payments.splice(index, 1);
+        
+        saveAll(); 
+        updateStudentUI(currentId); 
+        renderReport(nowDateStr()); 
+        renderCharts();
+        showToast(currentLang === 'ar' ? "تم حذف الدفعة وتعديل الحساب ✅" : "Payment deleted ✅", "warning");
+    };
 
     on("correctPayBtn", "click", function() {
         if(!currentId) return; 
@@ -2277,10 +2394,17 @@ function updateDriveUI() {
                         let remain = req > 0 ? (req - s.paid) : 0;
                         if(remain < 0) remain = 0;
                         
+                        let m = s.payments[j].method || "cash";
+                        let mBadge = "💵 كاش";
+                        let badgeBg = "#eef2f5"; let badgeColor = "#333";
+                        if (m === "instapay") { mBadge = "📱 إنستاباي"; badgeBg = "#e3f2fd"; badgeColor = "#0288d1"; }
+                        if (m === "wallet") { mBadge = "🟢 فودافون كاش/محفظة"; badgeBg = "#e8f5e9"; badgeColor = "#2e7d32"; }
+
                         html += `
                         <div class="item flexBetween" style="margin-bottom:8px; cursor:pointer;" onclick="document.getElementById('revenueModal').classList.add('hidden'); window.extOpen('${s.id}')">
                             <div>
                                 <b>${s.name}</b> (#${s.id}) <span class="badge" style="background:#eee; color:#333;">${sClass}</span>
+                                <span class="badge" style="background:${badgeBg}; color:${badgeColor}; font-size:0.8em; margin-inline-start:5px;">${mBadge}</span>
                             </div>
                             <div style="text-align:left;">
                                 <span style="color:var(--success); font-weight:bold;">+ ${s.payments[j].amount} ج</span><br>
