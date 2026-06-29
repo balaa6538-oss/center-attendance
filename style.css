@@ -258,6 +258,15 @@ a { color: var(--primary); text-decoration: none; }
   transform: rotate(-90deg);
 }
 
+[dir="ltr"] .nav-group-header .chevron-icon {
+  order: -1 !important;
+  margin-right: auto !important;
+  margin-left: 0 !important;
+}
+[dir="ltr"] .nav-group-header .nav-group-title {
+  order: 2 !important;
+}
+
 /* Silky Smooth Pure CSS Height Transition */
 .nav-group-items-wrapper {
   display: grid;
@@ -440,6 +449,68 @@ a { color: var(--primary); text-decoration: none; }
 @keyframes pulseText {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.6; }
+}
+
+/* 🚀 ELITE UI: THEME SWITCH LOADING OVERLAY & CREATIVE TRANSITION */
+.theme-switch-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-surface);
+  backdrop-filter: blur(20px);
+  z-index: 99999999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.theme-switch-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+.theme-switch-icon-box {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--bg-inset);
+  box-shadow: 0 0 30px var(--primary);
+  animation: floatThemeIcon 2s ease-in-out infinite;
+}
+@keyframes floatThemeIcon {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-10px) scale(1.08); }
+}
+.theme-switch-text {
+  font-family: var(--font);
+  font-size: 1.4em;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  animation: pulseThemeText 1.5s infinite;
+}
+@keyframes pulseThemeText {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* Beautiful SVG icons for Theme Button */
+.theme-svg-icon {
+  width: 22px;
+  height: 22px;
+  stroke: currentColor;
+  stroke-width: 2;
+  fill: none;
+  transition: transform 0.3s ease;
+}
+.topbar-icon-btn:hover .theme-svg-icon {
+  transform: rotate(30deg) scale(1.15);
 }
 
 /* Needs backup red dot */

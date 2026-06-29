@@ -31,6 +31,12 @@
     <div id="langSwitchText" class="lang-switch-text">جاري تغيير اللغة...</div>
   </div>
 
+  <!-- ============ THEME SWITCH OVERLAY ============ -->
+  <div id="themeSwitchOverlay" class="theme-switch-overlay">
+    <div id="themeSwitchIconBox" class="theme-switch-icon-box"></div>
+    <div id="themeSwitchText" class="theme-switch-text">جاري تبديل المظهر...</div>
+  </div>
+
   <!-- ============ LOGIN ============ -->
   <div id="loginBox" class="login-wrapper">
     <div class="login-card">
@@ -187,26 +193,28 @@
           </span>
         </div>
         <div class="topbar-end" style="position: relative;">
-          <button id="topbarThemeToggle" class="topbar-icon-btn" title="تبديل الثيم">☀️</button>
+          <button id="topbarThemeToggle" class="topbar-icon-btn" title="تبديل الثيم">
+            <svg class="theme-svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+          </button>
           
           <!-- COMPACT ICON TOGGLE BUTTON (NO WORDS, REPLACES UNPROFESSIONAL LOGOUT BUTTON) -->
           <button id="userProfileToggleBtn" class="topbar-icon-btn" title="قائمة النظام والخروج">⚙️</button>
           
           <!-- THE QUICK ACTION DROPDOWN / DRAWER -->
           <div id="userProfileDropdown" class="user-profile-dropdown hidden" style="position: absolute; top: 110%; inset-inline-end: 0; width: 260px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); padding: 12px; z-index: 9999; display: flex; flex-direction: column; gap: 8px;">
-            <div style="font-weight: bold; font-size: 0.95em; color: var(--primary); padding: 4px 8px; border-bottom: 1px solid var(--border); margin-bottom: 4px;">🛠️ قائمة التحكم السريعة</div>
+            <div style="font-weight: bold; font-size: 0.95em; color: var(--primary); padding: 4px 8px; border-bottom: 1px solid var(--border); margin-bottom: 4px;" data-i18n="quick_controls_title">🛠️ قائمة التحكم السريعة</div>
             
             <button id="quickSwitchRoleBtn" class="btn secondary" style="width: 100%; display: flex; align-items: center; gap: 10px; padding: 8px 12px; font-weight: bold; font-size: 0.9em; text-align: start; justify-content: flex-start;">
-              <span>👑</span> <span>تبديل الصلاحيات (مسؤول)</span>
+              <span>👑</span> <span data-i18n="quick_switch_role">تبديل الصلاحيات (مسؤول)</span>
             </button>
             <button id="quickGroupFeesBtn" class="btn secondary adminOnly" style="width: 100%; display: flex; align-items: center; gap: 10px; padding: 8px 12px; font-weight: bold; font-size: 0.9em; text-align: start; justify-content: flex-start;">
-              <span>⚙️</span> <span>إدارة الباقات والمصاريف</span>
+              <span>⚙️</span> <span data-i18n="quick_group_fees">إدارة الباقات والمصاريف</span>
             </button>
             <button id="quickExportBtn" class="btn secondary" style="width: 100%; display: flex; align-items: center; gap: 10px; padding: 8px 12px; font-weight: bold; font-size: 0.9em; text-align: start; justify-content: flex-start;">
-              <span>📊</span> <span>تصدير التقرير التحليلي</span>
+              <span>📊</span> <span data-i18n="quick_export">تصدير التقرير التحليلي</span>
             </button>
             <button id="quickBinBtn" class="btn secondary" style="width: 100%; display: flex; align-items: center; gap: 10px; padding: 8px 12px; font-weight: bold; font-size: 0.9em; text-align: start; justify-content: flex-start;">
-              <span>🗑️</span> <span>سلة المحذوفات</span>
+              <span>🗑️</span> <span data-i18n="quick_bin">سلة المحذوفات</span>
             </button>
             
             <div style="border-top: 1px solid var(--border); margin: 4px 0;"></div>
@@ -298,32 +306,23 @@
                 <div class="payRow">
                   <span class="payLabel" data-i18n="lbl_total_paid">💰 إجمالي المدفوع:</span>
                   <input id="stTotalPaid" class="inp blurTarget" readonly style="font-weight:bold; color:var(--primary); max-width:120px; flex:1; text-align:center;">
-                  <button id="correctPayBtn" class="btn warning smallBtn adminOnly" data-i18n="btn_discount">خصم</button>
+                  <select id="payMethodSel" class="inp" style="width:110px;">
+                    <option value="cash" data-i18n="opt_cash">💵 كاش / نقدي</option>
+                    <option value="wallet" data-i18n="opt_wallet">🟢 فودافون كاش / محفظة</option>
+                  </select>
+                  <button id="addPaymentBtn" class="btn success" data-i18n="btn_deposit">إيداع</button>
                 </div>
                 
                 <div id="remainingBox" class="remain-box remain-red">
                   <span data-i18n="lbl_remaining">⚠️ المتبقي:</span> <span id="stRemainingAmt">0</span> ج
                 </div>
-
-                <div class="payRow" style="margin-top:10px;">
-                  <span class="payLabel" data-i18n="lbl_new_pay">➕ دفعة جديدة:</span>
-                  <div class="row" style="flex:1;">
-                    <input id="newPaymentInput" type="number" class="inp" placeholder="المبلغ">
-                    <select id="newPaymentMethod" class="inp" style="width:auto; font-size:0.88em;">
-                      <option value="cash">💵 كاش</option>
-                      <option value="instapay">📱 إنستاباي</option>
-                      <option value="wallet">🟢 فودافون كاش / محفظة</option>
-                    </select>
-                    <button id="addPaymentBtn" class="btn success" data-i18n="btn_deposit">إيداع</button>
-                  </div>
-                </div>
               </div>
 
               <!-- 📋 تفاصيل الدفعات السابقة للطالب -->
               <div class="st-payments-history" style="margin-top: 15px; border-top: 1px dashed var(--border); padding-top: 12px;">
-                <h4 style="font-size:0.9em; color:var(--text-secondary); margin-bottom:8px;">📋 سجل دفعات الطالب المفصل:</h4>
+                <h4 style="font-size:0.9em; color:var(--text-secondary); margin-bottom:8px;" data-i18n="lbl_pay_history">📋 سجل دفعات الطالب المفصل:</h4>
                 <div id="stPaymentsList" class="list" style="max-height: 150px; overflow-y: auto; background: var(--bg-inset); border-radius: 8px; padding: 10px;">
-                  <div class="mutedCenter" style="font-size:0.85em;">لا توجد دفعات مسجلة حتى الآن</div>
+                  <div class="mutedCenter" style="font-size:0.85em;" data-i18n="txt_no_payments">لا توجد دفعات مسجلة حتى الآن</div>
                 </div>
               </div>
 
@@ -332,7 +331,7 @@
                 <!-- 🔒 الطبقة السوداء الشفافة عند عدم اختيار طالب -->
                 <div id="notesLockOverlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(3px); z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 8px; color: #94a3b8; font-size: 0.95em;">
                   <span style="font-size: 1.8em; margin-bottom: 5px;">🔒</span>
-                  <span>يرجى اختيار أو البحث عن طالب أولاً لتفعيل الملاحظات</span>
+                  <span data-i18n="notes_lock_msg">يرجى اختيار أو البحث عن طالب أولاً لتفعيل الملاحظات</span>
                 </div>
 
                 <label class="lbl" data-i18n="lbl_notes" style="color: var(--primary); font-weight: bold; display: flex; align-items: center; gap: 5px;">
@@ -345,7 +344,7 @@
 
                 <!-- قائمة الملاحظات الثابتة (لا تزيد الشاشة لأسفل) -->
                 <div id="stNotesListContainer" class="list" style="max-height: 210px; overflow-y: auto; background: var(--bg-inset); border: 1px solid var(--border); border-radius: 8px; padding: 10px; margin-top: 8px; display: flex; flex-direction: column; gap: 8px;">
-                  <div class="mutedCenter" style="font-size:0.85em;">لا توجد ملاحظات مسجلة لهذا الطالب</div>
+                  <div class="mutedCenter" style="font-size:0.85em;" data-i18n="txt_no_notes">لا توجد ملاحظات مسجلة لهذا الطالب</div>
                 </div>
               </div>
               
@@ -360,7 +359,7 @@
               <div id="printReceiptContainer" style="margin-top:15px;">
                 <button id="showReceiptBtn" class="btn" style="width:100%; display:flex; align-items:center; justify-content:center; gap:10px; padding:12px; font-size:1.05em; font-weight:bold; border-radius:8px; transition:all 0.3s ease; background:#334155; color:#94a3b8; cursor:not-allowed;" disabled>
                   <span id="receiptBtnIcon">🔒</span>
-                  <span id="receiptBtnText">إصدار إيصال سداد الباقة (مغلق لحين إكمال الدفع)</span>
+                  <span id="receiptBtnText" data-i18n="print_receipt_lock">إصدار إيصال سداد الباقة (مغلق لحين إكمال الدفع)</span>
                 </button>
               </div>
               
@@ -430,10 +429,10 @@
         <section id="secSessionStudents" class="tab-section hidden">
           <div class="flexBetween" style="margin-bottom: 20px;">
             <div>
-              <h1 style="color: var(--primary); display:flex; align-items:center; gap:10px;">
+              <h1 style="color: var(--primary); display:flex; align-items:center; gap:10px;" data-i18n="sess_main_title">
                 <span>🎟️</span> نظام تسجيل طلاب الحصة الفورية
               </h1>
-              <p style="color: var(--text-secondary); font-size: 0.9em; margin-top: 5px;">
+              <p style="color: var(--text-secondary); font-size: 0.9em; margin-top: 5px;" data-i18n="sess_main_desc">
                 تسجيل الحضور والدفع للطلاب المؤقتين (بدون إصدار كارت أو حجز ID دائم في قاعدة البيانات)
               </p>
             </div>
@@ -442,34 +441,34 @@
           <div class="grid2" style="gap: 20px;">
             <!-- 1. نموذج الإضافة السريعة -->
             <div class="card">
-              <h2 style="color: var(--success); margin-bottom: 15px;">➕ تسجيل حضور ودفع فوري</h2>
-              <label class="lbl">اسم الطالب *</label>
-              <input id="sessStName" class="inp" placeholder="مثال: أحمد محمود عثمان">
+              <h2 style="color: var(--success); margin-bottom: 15px;" data-i18n="sess_add_title">➕ تسجيل حضور ودفع فوري</h2>
+              <label class="lbl" data-i18n="sess_name_lbl">اسم الطالب *</label>
+              <input id="sessStName" class="inp" placeholder="مثال: أحمد محمود عثمان" data-i18n-placeholder="sess_name_plc">
 
-              <label class="lbl">رقم الموبايل (اختياري)</label>
-              <input id="sessStPhone" class="inp" inputmode="tel" placeholder="مثال: 01012345678">
+              <label class="lbl" data-i18n="sess_phone_lbl">رقم الموبايل (اختياري)</label>
+              <input id="sessStPhone" class="inp" inputmode="tel" placeholder="مثال: 01012345678" data-i18n-placeholder="sess_phone_plc">
 
-              <label class="lbl">المادة / الصف / الباقة</label>
+              <label class="lbl" data-i18n="sess_class_lbl">المادة / الصف / الباقة</label>
               <select id="sessStClass" class="inp">
-                <option value="حصة فردية">حصة فردية (عام)</option>
+                <option value="حصة فردية" data-i18n="sess_class_opt">حصة فردية (عام)</option>
               </select>
 
               <div class="grid2" style="gap:10px; margin-top:10px;">
                 <div>
-                  <label class="lbl">مبلغ الحصة *</label>
-                  <input id="sessStAmount" type="number" class="inp" placeholder="المبلغ (ج)">
+                  <label class="lbl" data-i18n="sess_amount_lbl">مبلغ الحصة *</label>
+                  <input id="sessStAmount" type="number" class="inp" placeholder="المبلغ (ج)" data-i18n-placeholder="sess_amount_plc">
                 </div>
                 <div>
-                  <label class="lbl">طريقة الدفع *</label>
+                  <label class="lbl" data-i18n="sess_method_lbl">طريقة الدفع *</label>
                   <select id="sessStMethod" class="inp">
-                    <option value="cash">💵 كاش</option>
-                    <option value="instapay">📱 إنستاباي</option>
-                    <option value="wallet">🟢 فودافون كاش / محفظة</option>
+                    <option value="cash" data-i18n="opt_cash">💵 كاش</option>
+                    <option value="instapay" data-i18n="badge_instapay">📱 إنستاباي</option>
+                    <option value="wallet" data-i18n="badge_wallet">🟢 فودافون كاش / محفظة</option>
                   </select>
                 </div>
               </div>
 
-              <button id="saveSessionStudentBtn" class="btn success w100" style="margin-top: 20px; padding: 12px; font-weight: bold; font-size: 1.05em;">
+              <button id="saveSessionStudentBtn" class="btn success w100" style="margin-top: 20px; padding: 12px; font-weight: bold; font-size: 1.05em;" data-i18n="sess_save_btn">
                 تسجيل الحضور وتحصيل المبلغ 💾
               </button>
             </div>
@@ -477,16 +476,16 @@
             <!-- 2. قائمة طلاب الحصة لليوم المختار -->
             <div class="card">
               <div class="flexBetween" style="margin-bottom: 15px;">
-                <h2>📋 سجل طلاب الحصة</h2>
+                <h2 data-i18n="sess_list_title">📋 سجل طلاب الحصة</h2>
                 <input id="sessFilterDate" type="date" class="inp" style="width: auto;">
               </div>
               <div class="badges" style="margin-bottom: 15px;">
-                <span class="badge">العدد: <b id="sessCountBadge">0</b></span>
-                <span class="badge" style="color: var(--success);">إجمالي الإيراد: <b id="sessRevenueBadge">0</b> ج</span>
+                <span class="badge"><span data-i18n="badge_count">العدد:</span> <b id="sessCountBadge">0</b></span>
+                <span class="badge" style="color: var(--success);"><span data-i18n="badge_rev">إجمالي الإيراد:</span> <b id="sessRevenueBadge">0</b> ج</span>
               </div>
 
               <div id="sessStudentsList" class="list" style="max-height: 400px; overflow-y: auto; background: var(--bg-inset); border-radius: 8px; padding: 10px;">
-                <div class="mutedCenter">لا يوجد طلاب مسجلين بالحصة لهذا اليوم</div>
+                <div class="mutedCenter" data-i18n="sess_no_students">لا يوجد طلاب مسجلين بالحصة لهذا اليوم</div>
               </div>
             </div>
           </div>
@@ -495,10 +494,10 @@
         <!-- ====== BOOKLETS STOCK ====== -->
         <section id="secBooklets" class="tab-section hidden adminOnly">
           <div class="section-header-beautiful" style="margin-bottom: 25px; padding: 20px; background: linear-gradient(135deg, var(--bg-surface), var(--bg-inset)); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
-            <h2 style="color: var(--primary); margin: 0; font-size: 1.6em; display: flex; align-items: center; gap: 10px;">
+            <h2 style="color: var(--primary); margin: 0; font-size: 1.6em; display: flex; align-items: center; gap: 10px;" data-i18n="booklets_main_title">
               <span>📚</span> إدارة مخزون المذكرات والورق
             </h2>
-            <p style="color: var(--text-secondary); margin: 8px 0 0 0; font-size: 0.95em;">
+            <p style="color: var(--text-secondary); margin: 8px 0 0 0; font-size: 0.95em;" data-i18n="booklets_main_desc">
               متابعة حركة طباعة واستلام المذكرات، المباع منها، المخزون المتبقي، وإجمالي العائد المالي بدقة تامة دون هدر.
             </p>
           </div>
@@ -506,23 +505,23 @@
           <!-- بطاقات الملخص المالي للمذكرات (تصميم أزرق وأبيض فخم) -->
           <div class="grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; margin-bottom: 25px;">
             <div class="card stat-card" style="background: var(--bg-surface); border-top: 4px solid var(--primary); padding: 15px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align: center;">
-              <div style="color: var(--text-secondary); font-size: 0.85em;">أنواع المذكرات</div>
+              <div style="color: var(--text-secondary); font-size: 0.85em;" data-i18n="stat_b_types">أنواع المذكرات</div>
               <div id="statTotalBookletTypes" style="font-size: 1.8em; font-weight: bold; color: var(--text); margin-top: 5px;">0</div>
             </div>
             <div class="card stat-card" style="background: var(--bg-surface); border-top: 4px solid #3b82f6; padding: 15px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align: center;">
-              <div style="color: var(--text-secondary); font-size: 0.85em;">إجمالي النسخ المستلمة</div>
+              <div style="color: var(--text-secondary); font-size: 0.85em;" data-i18n="stat_b_recd">إجمالي النسخ المستلمة</div>
               <div id="statTotalCopiesReceived" style="font-size: 1.8em; font-weight: bold; color: #3b82f6; margin-top: 5px;">0</div>
             </div>
             <div class="card stat-card" style="background: var(--bg-surface); border-top: 4px solid #10b981; padding: 15px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align: center;">
-              <div style="color: var(--text-secondary); font-size: 0.85em;">النسخ المباعة</div>
+              <div style="color: var(--text-secondary); font-size: 0.85em;" data-i18n="stat_b_sold">النسخ المباعة</div>
               <div id="statTotalCopiesSold" style="font-size: 1.8em; font-weight: bold; color: #10b981; margin-top: 5px;">0</div>
             </div>
             <div class="card stat-card" style="background: var(--bg-surface); border-top: 4px solid #f59e0b; padding: 15px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align: center;">
-              <div style="color: var(--text-secondary); font-size: 0.85em;">المخزون المتبقي بالسنتر</div>
+              <div style="color: var(--text-secondary); font-size: 0.85em;" data-i18n="stat_b_remain">المخزون المتبقي بالسنتر</div>
               <div id="statTotalCopiesRemain" style="font-size: 1.8em; font-weight: bold; color: #f59e0b; margin-top: 5px;">0</div>
             </div>
             <div class="card stat-card" style="background: var(--bg-surface); border-top: 4px solid var(--primary); padding: 15px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align: center; background-image: linear-gradient(135deg, rgba(37,99,235,0.05), rgba(37,99,235,0.15));">
-              <div style="color: var(--primary); font-size: 0.85em; font-weight: bold;">إجمالي عائد المذكرات 💰</div>
+              <div style="color: var(--primary); font-size: 0.85em; font-weight: bold;" data-i18n="stat_b_rev">إجمالي عائد المذكرات 💰</div>
               <div id="statTotalBookletsRevenue" style="font-size: 1.9em; font-weight: 900; color: var(--primary); margin-top: 5px;">0 ج</div>
             </div>
           </div>
@@ -530,25 +529,25 @@
           <div class="bento-grid" style="display: grid; grid-template-columns: 1fr; gap: 25px;">
             <!-- نموذج إضافة مذكرة جديدة -->
             <div class="card bento-card" style="background: var(--bg-surface); border: 1px solid var(--border); border-radius: 12px; padding: 22px;">
-              <h3 style="margin-top: 0; color: var(--text); border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 15px;">
+              <h3 style="margin-top: 0; color: var(--text); border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 15px;" data-i18n="booklet_add_title">
                 ➕ استلام وتسجيل ورق / مذكرة جديدة
               </h3>
               <div class="grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
                 <div>
-                  <label class="lbl">اسم المذكرة / الورق</label>
-                  <input id="bookletNameInp" class="inp" placeholder="مثال: مذكرة مراجعة الباب الأول...">
+                  <label class="lbl" data-i18n="booklet_name_lbl">اسم المذكرة / الورق</label>
+                  <input id="bookletNameInp" class="inp" placeholder="مثال: مذكرة مراجعة الباب الأول..." data-i18n-placeholder="booklet_name_plc">
                 </div>
                 <div>
-                  <label class="lbl">العدد الكلي المستلم (نسخة)</label>
-                  <input id="bookletQtyInp" type="number" class="inp" placeholder="مثال: 150">
+                  <label class="lbl" data-i18n="booklet_qty_lbl">العدد الكلي المستلم (نسخة)</label>
+                  <input id="bookletQtyInp" type="number" class="inp" placeholder="مثال: 150" data-i18n-placeholder="booklet_qty_plc">
                 </div>
                 <div>
-                  <label class="lbl">سعر بيع النسخة (جنيه)</label>
-                  <input id="bookletPriceInp" type="number" class="inp" placeholder="مثال: 50">
+                  <label class="lbl" data-i18n="booklet_price_lbl">سعر بيع النسخة (جنيه)</label>
+                  <input id="bookletPriceInp" type="number" class="inp" placeholder="مثال: 50" data-i18n-placeholder="booklet_price_plc">
                 </div>
               </div>
               <div style="margin-top: 18px; text-align: left;">
-                <button id="btnSaveBooklet" class="btn primary" style="padding: 12px 30px; font-weight: bold; font-size: 1.05em;">
+                <button id="btnSaveBooklet" class="btn primary" style="padding: 12px 30px; font-weight: bold; font-size: 1.05em;" data-i18n="booklet_save_btn">
                   💾 تسجيل المذكرة وإضافتها للمخزون
                 </button>
               </div>
@@ -557,11 +556,11 @@
             <!-- قائمة الجرد والمبيعات الفورية -->
             <div class="card bento-card" style="background: var(--bg-surface); border: 1px solid var(--border); border-radius: 12px; padding: 22px;">
               <div class="flexBetween" style="border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 15px;">
-                <h3 style="margin: 0; color: var(--text);">📋 قائمة جرد المذكرات وحركة البيع الفورية</h3>
-                <span class="badge" style="background: #eef2f5; color: #333;">اضغط زر البيع 🛒 عند بيع أي نسخة للتحديث الفوري</span>
+                <h3 style="margin: 0; color: var(--text);" data-i18n="booklet_list_title">📋 قائمة جرد المذكرات وحركة البيع الفورية</h3>
+                <span class="badge" style="background: #eef2f5; color: #333;" data-i18n="booklet_list_tip">اضغط زر البيع 🛒 عند بيع أي نسخة للتحديث الفوري</span>
               </div>
               <div id="bookletsStockList" style="display: flex; flex-direction: column; gap: 15px; max-height: 550px; overflow-y: auto; padding-right: 5px;">
-                <div class="mutedCenter">لا توجد مذكرات مسجلة بالمخزون حالياً</div>
+                <div class="mutedCenter" data-i18n="booklet_no_items">لا توجد مذكرات مسجلة بالمخزون حالياً</div>
               </div>
             </div>
           </div>
@@ -570,10 +569,10 @@
         <!-- ====== MARKETING CAMPAIGNS ====== -->
         <section id="secMarketing" class="tab-section hidden adminOnly">
           <div class="section-header-beautiful" style="margin-bottom: 25px; padding: 20px; background: linear-gradient(135deg, var(--bg-surface), var(--bg-inset)); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
-            <h2 style="color: var(--primary); margin: 0; font-size: 1.6em; display: flex; align-items: center; gap: 10px;">
+            <h2 style="color: var(--primary); margin: 0; font-size: 1.6em; display: flex; align-items: center; gap: 10px;" data-i18n="mkt_main_title">
               <span>🚀</span> حملات التسويق وإعادة الاستهداف الذكية
             </h2>
-            <p style="color: var(--text-secondary); margin: 8px 0 0 0; font-size: 0.95em;">
+            <p style="color: var(--text-secondary); margin: 8px 0 0 0; font-size: 0.95em;" data-i18n="mkt_main_desc">
               استهداف ذكي لجميع أرقام وداتا الطلاب المسجلة في السنتر لإطلاق حملات إعلانية لكورسات ومراجعات جديدة بضغطة زر.
             </p>
           </div>
@@ -581,47 +580,47 @@
           <div class="bento-grid" style="display: grid; grid-template-columns: 1fr; gap: 25px;">
             <!-- اختيار شريحة الاستهداف ونص الرسالة -->
             <div class="card bento-card" style="background: var(--bg-surface); border: 1px solid var(--border); border-radius: 12px; padding: 22px;">
-              <h3 style="margin-top: 0; color: var(--text); border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 15px;">
+              <h3 style="margin-top: 0; color: var(--text); border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 15px;" data-i18n="mkt_setup_title">
                 🎯 إعداد شريحة الاستهداف الإعلانية
               </h3>
               <div class="grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px;">
                 <div>
-                  <label class="lbl">اختر شريحة الطلاب المستهدفة</label>
+                  <label class="lbl" data-i18n="mkt_target_lbl">اختر شريحة الطلاب المستهدفة</label>
                   <select id="marketingTargetFilter" class="inp" style="background: var(--bg-inset);">
-                    <option value="all">جميع الطلاب الدائمين المسجلين بالسنتر</option>
-                    <option value="groups">طلاب باقة / مجموعة محددة</option>
-                    <option value="session">داتا طلاب الحصة الفورية (المؤقتين)</option>
-                    <option value="vip">الطلاب أصحاب تصنيف VIP</option>
-                    <option value="debtors">الطلاب أصحاب الدفعات المتبقية (المديونين)</option>
+                    <option value="all" data-i18n="mkt_opt_all">جميع الطلاب الدائمين المسجلين بالسنتر</option>
+                    <option value="groups" data-i18n="mkt_opt_groups">طلاب باقة / مجموعة محددة</option>
+                    <option value="session" data-i18n="mkt_opt_session">داتا طلاب الحصة الفورية (المؤقتين)</option>
+                    <option value="vip" data-i18n="mkt_opt_vip">الطلاب أصحاب تصنيف VIP</option>
+                    <option value="debtors" data-i18n="mkt_opt_debtors">الطلاب أصحاب الدفعات المتبقية (المديونين)</option>
                   </select>
                 </div>
                 <div id="marketingGroupSelectContainer" style="display: none;">
-                  <label class="lbl">تحديد الباقة / المجموعة</label>
+                  <label class="lbl" data-i18n="mkt_select_grp_lbl">تحديد الباقة / المجموعة</label>
                   <select id="marketingTargetGroupSelect" class="inp" style="background: var(--bg-inset);">
-                    <option value="">-- اختر الباقة --</option>
+                    <option value="" data-i18n="mkt_opt_select">-- اختر الباقة --</option>
                   </select>
                 </div>
               </div>
 
               <div style="margin-top: 20px;">
-                <label class="lbl" style="color: var(--primary); font-weight: bold;">📝 نص الرسالة الإعلانية / التنبيه</label>
-                <textarea id="marketingMsgBody" class="inp" rows="5" placeholder="اكتب هنا نص الإعلان أو التنبيه...&#10;يمكنك استخدام الوسوم الذكية [اسم_الطالب] و [المبلغ] وسيتم استبدالها تلقائياً لكل طالب." style="background: var(--bg-inset); line-height: 1.6; font-size: 1em;"></textarea>
+                <label class="lbl" style="color: var(--primary); font-weight: bold;" data-i18n="mkt_msg_lbl">📝 نص الرسالة الإعلانية / التنبيه</label>
+                <textarea id="marketingMsgBody" class="inp" rows="5" placeholder="اكتب هنا نص الإعلان أو التنبيه...&#10;يمكنك استخدام الوسوم الذكية [اسم_الطالب] و [المبلغ] وسيتم استبدالها تلقائياً لكل طالب." data-i18n-placeholder="mkt_msg_plc" style="background: var(--bg-inset); line-height: 1.6; font-size: 1em;"></textarea>
                 <div style="margin-top: 8px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                  <span style="font-size: 0.85em; color: var(--text-secondary);">💡 المتغيرات الذكية المدعومة في الرسالة:</span>
+                  <span style="font-size: 0.85em; color: var(--text-secondary);" data-i18n="mkt_vars_tip">💡 المتغيرات الذكية المدعومة في الرسالة:</span>
                   <span class="badge" style="background: #eef2f5; color: #0284c7; border: 1px solid #cbd5e1; font-weight: bold; cursor: pointer;" onclick="document.getElementById('marketingMsgBody').value += ' [اسم_الطالب] '">👤 [اسم_الطالب]</span>
                   <span class="badge" style="background: #eef2f5; color: #10b981; border: 1px solid #cbd5e1; font-weight: bold; cursor: pointer;" onclick="document.getElementById('marketingMsgBody').value += ' [المبلغ] '">💵 [المبلغ]</span>
-                  <span style="font-size: 0.8em; color: var(--text-secondary);">(اضغط على الوسم لإضافته للنص)</span>
+                  <span style="font-size: 0.8em; color: var(--text-secondary);" data-i18n="mkt_click_tip">(اضغط على الوسم لإضافته للنص)</span>
                 </div>
               </div>
 
               <div class="row wrap" style="margin-top: 22px; gap: 15px;">
-                <button id="btnFilterCampaign" class="btn primary" style="padding: 12px 25px; font-weight: bold; font-size: 1.05em;">
+                <button id="btnFilterCampaign" class="btn primary" style="padding: 12px 25px; font-weight: bold; font-size: 1.05em;" data-i18n="mkt_filter_btn">
                   🔍 تصفية وعرض داتا الأرقام المستهدفة
                 </button>
-                <button id="btnStartAutoBroadcast" class="btn" style="padding: 12px 25px; font-weight: bold; font-size: 1.05em; background: linear-gradient(135deg, #2563eb, #1e40af); color: #ffffff; border: none; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);">
+                <button id="btnStartAutoBroadcast" class="btn" style="padding: 12px 25px; font-weight: bold; font-size: 1.05em; background: linear-gradient(135deg, #2563eb, #1e40af); color: #ffffff; border: none; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);" data-i18n="mkt_broadcast_btn">
                   🚀 بدء الإرسال التلقائي الذكي (بفاصل زمني لمنع الحظر)
                 </button>
-                <button id="btnCopyCampaignNumbers" class="btn success" style="padding: 12px 25px; font-weight: bold; font-size: 1.05em;">
+                <button id="btnCopyCampaignNumbers" class="btn success" style="padding: 12px 25px; font-weight: bold; font-size: 1.05em;" data-i18n="mkt_copy_btn">
                   📋 نسخ جميع أرقام الموبايل (لبرامج خارجية)
                 </button>
               </div>
@@ -633,20 +632,20 @@
                 <div style="display: flex; align-items: center; gap: 12px;">
                   <span id="broadcastPulseIcon" style="font-size: 2.2em; animation: pulse 1.5s infinite;">📡</span>
                   <div>
-                    <h3 id="broadcastStatusTitle" style="margin: 0; font-size: 1.4em; color: #38bdf8;">جاري الاستعداد لبدء البث التلقائي...</h3>
-                    <p id="broadcastStatusSub" style="margin: 5px 0 0 0; font-size: 0.95em; color: #94a3b8;">سيتم فتح نوافذ المحادثات تباعاً بفاصل زمني آمن لحماية حسابك من الحظر (Anti-Ban).</p>
+                    <h3 id="broadcastStatusTitle" style="margin: 0; font-size: 1.4em; color: #38bdf8;" data-i18n="mkt_broad_prep">جاري الاستعداد لبدء البث التلقائي...</h3>
+                    <p id="broadcastStatusSub" style="margin: 5px 0 0 0; font-size: 0.95em; color: #94a3b8;" data-i18n="mkt_broad_sub">سيتم فتح نوافذ المحادثات تباعاً بفاصل زمني آمن لحماية حسابك من الحظر (Anti-Ban).</p>
                   </div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                  <button id="btnPauseBroadcast" class="btn" style="background: #f59e0b; color: #fff; font-weight: bold; padding: 8px 18px; border: none;">⏸ إيقاف مؤقت</button>
-                  <button id="btnStopBroadcast" class="btn" style="background: #ef4444; color: #fff; font-weight: bold; padding: 8px 18px; border: none;">⏹ إنهاء البث</button>
+                  <button id="btnPauseBroadcast" class="btn" style="background: #f59e0b; color: #fff; font-weight: bold; padding: 8px 18px; border: none;" data-i18n="btn_pause">⏸ إيقاف مؤقت</button>
+                  <button id="btnStopBroadcast" class="btn" style="background: #ef4444; color: #fff; font-weight: bold; padding: 8px 18px; border: none;" data-i18n="btn_stop">⏹ إنهاء البث</button>
                 </div>
               </div>
 
               <div style="background: #0b0f19; padding: 18px; border-radius: 10px; border: 1px solid #1e293b;">
                 <div class="flexBetween" style="margin-bottom: 10px; font-size: 1.05em;">
-                  <span style="color: #94a3b8;">مستوى التقدم: <b id="broadcastProgressText" style="color: #38bdf8;">0 / 0</b></span>
-                  <span style="color: #94a3b8;">النافذة التالية خلال: <b id="broadcastTimerText" style="color: #f43f5e; font-size: 1.2em;">10</b> ثواني</span>
+                  <span style="color: #94a3b8;"><span data-i18n="lbl_progress">مستوى التقدم:</span> <b id="broadcastProgressText" style="color: #38bdf8;">0 / 0</b></span>
+                  <span style="color: #94a3b8;"><span data-i18n="lbl_next_win">النافذة التالية خلال:</span> <b id="broadcastTimerText" style="color: #f43f5e; font-size: 1.2em;">10</b> <span data-i18n="lbl_seconds">ثواني</span></span>
                 </div>
                 <div style="width: 100%; background: #1e293b; height: 10px; border-radius: 5px; overflow: hidden;">
                   <div id="broadcastProgressBar" style="width: 0%; height: 100%; background: linear-gradient(to right, #3b82f6, #06b6d4); transition: width 0.4s ease;"></div>
@@ -661,11 +660,11 @@
             <!-- جدول الداتا والأرقام المستهدفة -->
             <div class="card bento-card" style="background: var(--bg-surface); border: 1px solid var(--border); border-radius: 12px; padding: 22px;">
               <div class="flexBetween" style="border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 15px;">
-                <h3 style="margin: 0; color: var(--text);">📋 قائمة الأرقام المستهدفة في الحملة (<span id="campaignTargetCount">0</span> طالب)</h3>
-                <span class="badge" style="background: #eef2f5; color: #333;">اضغط زر المراسلة 💬 بجانب أي طالب لبدء الإرسال الفوري</span>
+                <h3 style="margin: 0; color: var(--text);"><span data-i18n="mkt_list_title">📋 قائمة الأرقام المستهدفة في الحملة</span> (<span id="campaignTargetCount">0</span> <span data-i18n="lbl_student_cnt">طالب</span>)</h3>
+                <span class="badge" style="background: #eef2f5; color: #333;" data-i18n="mkt_list_tip">اضغط زر المراسلة 💬 بجانب أي طالب لبدء الإرسال الفوري</span>
               </div>
               <div id="campaignNumbersList" style="display: flex; flex-direction: column; gap: 10px; max-height: 450px; overflow-y: auto; padding-right: 5px;">
-                <div class="mutedCenter">اضغط على "تصفية وعرض داتا الأرقام المستهدفة" لعرض القائمة</div>
+                <div class="mutedCenter" data-i18n="mkt_no_data">اضغط على "تصفية وعرض داتا الأرقام المستهدفة" لعرض القائمة</div>
               </div>
             </div>
           </div>
@@ -691,53 +690,53 @@
 
           <!-- 🏦 خزائن ومحافظ السنتر -->
           <div class="card" style="margin-bottom: 20px;">
-            <h2 style="color: var(--primary); margin-bottom: 16px;">🏦 خزائن ومحافظ السنتر (إجمالي الأرصدة)</h2>
+            <h2 style="color: var(--primary); margin-bottom: 16px;" data-i18n="vaults_title">🏦 خزائن ومحافظ السنتر (إجمالي الأرصدة)</h2>
             <div class="vaults-grid">
               <div class="vault-card cash-vault">
-                <div class="vault-header">💵 خزينة الكاش</div>
+                <div class="vault-header" data-i18n="vault_cash">💵 خزينة الكاش</div>
                 <div class="vault-body">
                   <div class="vault-stat">
-                    <span>تحصيل اليوم:</span>
+                    <span data-i18n="vault_today">تحصيل اليوم:</span>
                     <b><span id="vaultCashToday">0</span> ج</b>
                   </div>
                   <div class="vault-stat">
-                    <span>إجمالي المحصل:</span>
+                    <span data-i18n="vault_total">إجمالي المحصل:</span>
                     <b><span id="vaultCashTotal">0</span> ج</b>
                   </div>
                   <div class="vault-stat text-danger">
-                    <span>المصروفات:</span>
+                    <span data-i18n="vault_exp">المصروفات:</span>
                     <b>- <span id="vaultCashExp">0</span> ج</b>
                   </div>
                   <div class="vault-stat vault-net">
-                    <span>الصافي بالخزينة:</span>
+                    <span data-i18n="vault_net">الصافي بالخزينة:</span>
                     <b class="text-success"><span id="vaultCashNet">0</span> ج</b>
                   </div>
                 </div>
               </div>
 
               <div class="vault-card instapay-vault">
-                <div class="vault-header">📱 خزينة إنستاباي (InstaPay)</div>
+                <div class="vault-header" data-i18n="vault_instapay">📱 خزينة إنستاباي (InstaPay)</div>
                 <div class="vault-body">
                   <div class="vault-stat">
-                    <span>تحصيل اليوم:</span>
+                    <span data-i18n="vault_today">تحصيل اليوم:</span>
                     <b><span id="vaultInstapayToday">0</span> ج</b>
                   </div>
                   <div class="vault-stat vault-net">
-                    <span>الرصيد الفعلي:</span>
+                    <span data-i18n="vault_act_total">الرصيد الفعلي:</span>
                     <b class="text-primary"><span id="vaultInstapayTotal">0</span> ج</b>
                   </div>
                 </div>
               </div>
 
               <div class="vault-card wallet-vault">
-                <div class="vault-header">🟢 المحافظ الإلكترونية (فودافون كاش)</div>
+                <div class="vault-header" data-i18n="vault_wallet">🟢 المحافظ الإلكترونية (فودافون كاش)</div>
                 <div class="vault-body">
                   <div class="vault-stat">
-                    <span>تحصيل اليوم:</span>
+                    <span data-i18n="vault_today">تحصيل اليوم:</span>
                     <b><span id="vaultWalletToday">0</span> ج</b>
                   </div>
                   <div class="vault-stat vault-net">
-                    <span>الرصيد الفعلي:</span>
+                    <span data-i18n="vault_act_total">الرصيد الفعلي:</span>
                     <b class="text-success"><span id="vaultWalletTotal">0</span> ج</b>
                   </div>
                 </div>
@@ -1103,14 +1102,14 @@
       <!-- أزرار الإجراءات العلوية (لن تظهر في الطباعة أو وضع التصوير) -->
       <div class="flexBetween no-print" id="receiptModalActions" style="border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 25px;">
         <div class="row" style="gap: 10px;">
-          <button class="btn success" style="display:flex; align-items:center; gap:5px; font-weight:bold; padding:8px 15px;" onclick="window.print()">🖨️ طباعة (A4 / إيصال)</button>
-          <button id="togglePhotoViewStateBtn" class="btn primary" style="display:flex; align-items:center; gap:5px; font-weight:bold; padding:8px 15px;" onclick="togglePhotoView(true)">📱 وضع التصوير بالهاتف</button>
+          <button class="btn success" style="display:flex; align-items:center; gap:5px; font-weight:bold; padding:8px 15px;" onclick="window.print()" data-i18n="btn_print">🖨️ طباعة (A4 / إيصال)</button>
+          <button id="togglePhotoViewStateBtn" class="btn primary" style="display:flex; align-items:center; gap:5px; font-weight:bold; padding:8px 15px;" onclick="togglePhotoView(true)" data-i18n="btn_photo_mode">📱 وضع التصوير بالهاتف</button>
         </div>
-        <button class="btn danger smallBtn" onclick="document.getElementById('receiptModal').classList.add('hidden'); togglePhotoView(false);">✖ إغلاق</button>
+        <button class="btn danger smallBtn" onclick="document.getElementById('receiptModal').classList.add('hidden'); togglePhotoView(false);" data-i18n="btn_close_rec">✖ إغلاق</button>
       </div>
 
       <!-- تلميح وضع التصوير (للخروج منه) -->
-      <div id="photoViewTip" class="no-print" style="display:none; background:#f59e0b; color:#000; padding:8px; border-radius:6px; font-size:0.9em; font-weight:bold; margin-bottom:20px; cursor:pointer;" onclick="togglePhotoView(false)">
+      <div id="photoViewTip" class="no-print" style="display:none; background:#f59e0b; color:#000; padding:8px; border-radius:6px; font-size:0.9em; font-weight:bold; margin-bottom:20px; cursor:pointer;" onclick="togglePhotoView(false)" data-i18n="photo_mode_tip">
         📸 الشاشة الآن في وضع التصوير الصافي للطالب .. اضغط هنا لإعادة إظهار أزرار الإغلاق والطباعة 🔄
       </div>
 
@@ -1123,7 +1122,7 @@
             <span id="receiptManagerName" style="color: var(--text-secondary); font-size: 1em;">المدير المسئول</span>
           </div>
           <div style="text-align: left;">
-            <div style="display: inline-block; background: #10b981; color: #ffffff; font-weight: 900; font-size: 1.2em; padding: 8px 20px; border-radius: 50px; letter-spacing: 1px; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.4);">
+            <div style="display: inline-block; background: #10b981; color: #ffffff; font-weight: 900; font-size: 1.2em; padding: 8px 20px; border-radius: 50px; letter-spacing: 1px; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.4);" data-i18n="receipt_paid_full">
               خالص السداد ✔️
             </div>
             <div style="font-size: 0.85em; color: var(--text-secondary); margin-top: 8px; text-align: center;" id="receiptDate">التاريخ: 2026-06-29</div>
@@ -1132,25 +1131,25 @@
 
         <!-- معلومات الطالب الأساسية -->
         <div style="background: var(--bg-inset); border: 1px solid var(--border); border-radius: 12px; padding: 25px; margin-bottom: 25px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);">
-          <h3 style="margin-top: 0; color: var(--text); border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 20px; font-size: 1.3em;">
+          <h3 style="margin-top: 0; color: var(--text); border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 20px; font-size: 1.3em;" data-i18n="receipt_st_details_title">
             📜 بيانات التسجيل والسداد
           </h3>
           
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; font-size: 1.1em;">
             <div style="display: flex; flex-direction: column; gap: 5px;">
-              <span style="color: var(--text-secondary); font-size: 0.85em;">اسم الطالب:</span>
+              <span style="color: var(--text-secondary); font-size: 0.85em;" data-i18n="receipt_lbl_name">اسم الطالب:</span>
               <strong id="receiptStudentName" class="receipt-value" style="color: var(--text); font-size: 1.2em;">---</strong>
             </div>
             <div style="display: flex; flex-direction: column; gap: 5px;">
-              <span style="color: var(--text-secondary); font-size: 0.85em;">كود التعريف (ID):</span>
+              <span style="color: var(--text-secondary); font-size: 0.85em;" data-i18n="receipt_lbl_id">كود التعريف (ID):</span>
               <strong id="receiptStudentID" class="receipt-value" style="color: var(--text); font-size: 1.2em;">#---</strong>
             </div>
             <div style="display: flex; flex-direction: column; gap: 5px;">
-              <span style="color: var(--text-secondary); font-size: 0.85em;">الباقة / المجموعة:</span>
+              <span style="color: var(--text-secondary); font-size: 0.85em;" data-i18n="receipt_lbl_class">الباقة / المجموعة:</span>
               <strong id="receiptStudentClass" class="receipt-value" style="color: var(--text); font-size: 1.2em;">---</strong>
             </div>
             <div style="display: flex; flex-direction: column; gap: 5px;">
-              <span style="color: var(--text-secondary); font-size: 0.85em;">رقم الموبايل:</span>
+              <span style="color: var(--text-secondary); font-size: 0.85em;" data-i18n="receipt_lbl_phone">رقم الموبايل:</span>
               <strong id="receiptStudentPhone" class="receipt-value" style="color: var(--text); font-size: 1.2em;">---</strong>
             </div>
           </div>
@@ -1158,16 +1157,16 @@
 
         <!-- التفاصيل المالية -->
         <div style="background: rgba(16, 185, 129, 0.05); border: 2px solid #10b981; border-radius: 12px; padding: 25px; margin-bottom: 30px; text-align: center;">
-          <span style="font-size: 0.95em; color: #10b981; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">المبلغ الكلي المدفوع</span>
+          <span style="font-size: 0.95em; color: #10b981; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;" data-i18n="receipt_lbl_total">المبلغ الكلي المدفوع</span>
           <div style="font-size: 2.8em; font-weight: 900; color: #10b981; margin: 10px 0;" id="receiptTotalPaid">0 ج</div>
-          <div style="font-size: 0.9em; color: var(--text-secondary);" id="receiptPaymentMethods">شامل طرق الدفع المسجلة بالسنتر</div>
+          <div style="font-size: 0.9em; color: var(--text-secondary);" id="receiptPaymentMethods" data-i18n="receipt_inc_methods">شامل طرق الدفع المسجلة بالسنتر</div>
         </div>
 
         <!-- قسم الختم والاعتماد -->
         <div style="display: flex; align-items: center; justify-content: space-between; border-top: 2px dashed var(--border); padding-top: 20px; color: var(--text-secondary); font-size: 0.9em;">
           <div style="text-align: right;">
-            <div><strong>📜 اعتماد إلكتروني معتمد</strong></div>
-            <div>توقيع الموظف / المحاسب المسئول</div>
+            <div><strong data-i18n="receipt_auth_title">📜 اعتماد إلكتروني معتمد</strong></div>
+            <div data-i18n="receipt_auth_sub">توقيع الموظف / المحاسب المسئول</div>
           </div>
           <div style="text-align: left; display: flex; align-items: center; gap: 10px;">
             <!-- رمز QR وهمي جميل للاعتماد -->
@@ -1175,7 +1174,7 @@
               🔲
             </div>
             <div style="text-align: right; font-size: 0.85em;">
-              <span>رمز التحقق الأمني</span><br>
+              <span data-i18n="receipt_sec_code">رمز التحقق الأمني</span><br>
               <strong style="color: var(--primary); font-family: monospace;">AUTH-V3-100%</strong>
             </div>
           </div>

@@ -247,7 +247,116 @@ document.addEventListener('DOMContentLoaded', function() {
         "eval_followup_plan": { ar: "خطة المتابعة:", en: "Follow-up Plan:" },
         "eval_needs": { ar: "احتياجات السنتر أو المقترحات التي تم مناقشتها:", en: "Center Needs / Suggested Proposals:" },
         "eval_final_rate": { ar: "التقييم النهائي:", en: "Final Evaluation:" },
-        "btn_save_eval": { ar: "حفظ التقييم الإداري 💾", en: "Save Evaluation 💾" }
+        "btn_save_eval": { ar: "حفظ التقييم الإداري 💾", en: "Save Evaluation 💾" },
+        "opt_cash": { ar: "💵 كاش / نقدي", en: "💵 Cash / Direct" },
+        "opt_wallet": { ar: "🟢 فودافون كاش / محفظة", en: "🟢 Vodafone Cash / Wallet" },
+        "lbl_pay_history": { ar: "📋 سجل دفعات الطالب المفصل:", en: "📋 Detailed Payments History:" },
+        "txt_no_payments": { ar: "لا توجد دفعات مسجلة حتى الآن", en: "No payments recorded yet" },
+        "notes_lock_msg": { ar: "يرجى اختيار أو البحث عن طالب أولاً لتفعيل الملاحظات", en: "Please select or search for a student first to enable notes" },
+        "btn_delete": { ar: "🗑️ حذف", en: "🗑️ Delete" },
+        "btn_edit_note": { ar: "تعديل الملحوظة", en: "Edit Note" },
+        "btn_del_note": { ar: "مسح الملحوظة", en: "Delete Note" },
+        "btn_del_payment": { ar: "حذف الدفعة", en: "Delete Payment" },
+        "txt_cash_old": { ar: "💵 كاش (رصيد سابق)", en: "💵 Cash (Prior Balance)" },
+        "badge_instapay": { ar: "📱 إنستاباي", en: "📱 Instapay" },
+        "badge_wallet": { ar: "🟢 فودافون كاش/محفظة", en: "🟢 Vodafone Cash / Wallet" },
+        "badge_cash": { ar: "💵 كاش", en: "💵 Cash" },
+        "prompt_edit_note": { ar: "✏️ تعديل نص الملحوظة:", en: "✏️ Edit note text:" },
+        "confirm_empty_note": { ar: "⚠️ النص فارغ، هل تريد مسح الملحوظة؟", en: "⚠️ Text is empty, delete note?" },
+        "confirm_del_note": { ar: "⚠️ متأكد من مسح هذه الملحوظة نهائياً؟", en: "⚠️ Are you sure you want to delete this note?" },
+        "msg_note_edited": { ar: "تم تعديل الملحوظة بنجاح ✏️", en: "Note edited successfully ✏️" },
+        "msg_note_deleted": { ar: "تم مسح الملحوظة 🗑️", en: "Note deleted 🗑️" },
+        "quick_controls_title": { ar: "🛠️ قائمة التحكم السريعة", en: "🛠️ Quick Controls Menu" },
+        "quick_switch_role": { ar: "تبديل الصلاحيات (مسؤول)", en: "Switch Privileges (Admin)" },
+        "quick_group_fees": { ar: "إدارة الباقات والمصاريف", en: "Group Packages & Fees" },
+        "quick_export": { ar: "تصدير التقرير التحليلي", en: "Export Analytics Report" },
+        "quick_bin": { ar: "سلة المحذوفات", en: "Recycle Bin" },
+        "sess_main_title": { ar: "<span>🎟️</span> نظام تسجيل طلاب الحصة الفورية", en: "<span>🎟️</span> Immediate Session Students" },
+        "sess_main_desc": { ar: "تسجيل الحضور والدفع للطلاب المؤقتين (بدون إصدار كارت أو حجز ID دائم في قاعدة البيانات)", en: "Quick attendance and payment for temporary students (without permanent card/ID in database)" },
+        "sess_add_title": { ar: "➕ تسجيل حضور ودفع فوري", en: "➕ Quick Attend & Payment" },
+        "sess_name_lbl": { ar: "اسم الطالب *", en: "Student Name *" },
+        "sess_name_plc": { ar: "مثال: أحمد محمود عثمان", en: "Ex: Ahmed Mahmoud Osman" },
+        "sess_phone_lbl": { ar: "رقم الموبايل (اختياري)", en: "Mobile Number (Optional)" },
+        "sess_phone_plc": { ar: "مثال: 01012345678", en: "Ex: 01012345678" },
+        "sess_class_lbl": { ar: "المادة / الصف / الباقة", en: "Subject / Class / Package" },
+        "sess_class_opt": { ar: "حصة فردية (عام)", en: "Individual Session (General)" },
+        "sess_amount_lbl": { ar: "مبلغ الحصة *", en: "Session Amount *" },
+        "sess_amount_plc": { ar: "المبلغ (ج)", en: "Amount (EGP)" },
+        "sess_method_lbl": { ar: "طريقة الدفع *", en: "Payment Method *" },
+        "sess_save_btn": { ar: "تسجيل الحضور وتحصيل المبلغ 💾", en: "Record Attend & Collect 💾" },
+        "sess_list_title": { ar: "📋 سجل طلاب الحصة", en: "📋 Session Students Log" },
+        "sess_no_students": { ar: "لا يوجد طلاب مسجلين بالحصة لهذا اليوم", en: "No session students recorded for this day" },
+        "booklets_main_title": { ar: "<span>📚</span> إدارة مخزون المذكرات والورق", en: "<span>📚</span> Booklets & Inventory Stock" },
+        "booklets_main_desc": { ar: "متابعة حركة طباعة واستلام المذكرات، المباع منها، المخزون المتبقي، وإجمالي العائد المالي بدقة تامة دون هدر.", en: "Monitor booklet prints, received copies, sold copies, remaining stock, and total revenue with complete accuracy." },
+        "stat_b_types": { ar: "أنواع المذكرات", en: "Booklet Types" },
+        "stat_b_recd": { ar: "إجمالي النسخ المستلمة", en: "Total Received Copies" },
+        "stat_b_sold": { ar: "النسخ المباعة", en: "Sold Copies" },
+        "stat_b_remain": { ar: "المخزون المتبقي بالسنتر", en: "Remaining Center Stock" },
+        "stat_b_rev": { ar: "إجمالي عائد المذكرات 💰", en: "Total Booklets Revenue 💰" },
+        "booklet_add_title": { ar: "➕ استلام وتسجيل ورق / مذكرة جديدة", en: "➕ Receive & Register New Booklet" },
+        "booklet_name_lbl": { ar: "اسم المذكرة / الورق", en: "Booklet / Note Name" },
+        "booklet_name_plc": { ar: "مثال: مذكرة مراجعة الباب الأول...", en: "Ex: Chapter 1 Review Booklet..." },
+        "booklet_qty_lbl": { ar: "العدد الكلي المستلم (نسخة)", en: "Total Received (Copies)" },
+        "booklet_qty_plc": { ar: "مثال: 150", en: "Ex: 150" },
+        "booklet_price_lbl": { ar: "سعر بيع النسخة (جنيه)", en: "Selling Price (EGP)" },
+        "booklet_price_plc": { ar: "مثال: 50", en: "Ex: 50" },
+        "booklet_save_btn": { ar: "💾 تسجيل المذكرة وإضافتها للمخزون", en: "💾 Save Booklet & Add to Stock" },
+        "booklet_list_title": { ar: "📋 قائمة جرد المذكرات وحركة البيع الفورية", en: "📋 Booklets Inventory & Instant Sales" },
+        "booklet_list_tip": { ar: "اضغط زر البيع 🛒 عند بيع أي نسخة للتحديث الفوري", en: "Click Sale 🛒 when selling any copy for instant updates" },
+        "booklet_no_items": { ar: "لا توجد مذكرات مسجلة بالمخزون حالياً", en: "No booklets currently registered in stock" },
+        "mkt_main_title": { ar: "<span>🚀</span> حملات التسويق وإعادة الاستهداف الذكية", en: "<span>🚀</span> Smart Marketing & Retargeting Campaigns" },
+        "mkt_main_desc": { ar: "استهداف ذكي لجميع أرقام وداتا الطلاب المسجلة في السنتر لإطلاق حملات إعلانية لكورسات ومراجعات جديدة بضغطة زر.", en: "Smart targeting of all student data in the center to launch advertising campaigns for new courses with one click." },
+        "mkt_setup_title": { ar: "🎯 إعداد شريحة الاستهداف الإعلانية", en: "🎯 Setup Campaign Targeting Segment" },
+        "mkt_target_lbl": { ar: "اختر شريحة الطلاب المستهدفة", en: "Select Target Student Segment" },
+        "mkt_opt_all": { ar: "جميع الطلاب الدائمين المسجلين بالسنتر", en: "All Permanent Students in Center" },
+        "mkt_opt_groups": { ar: "طلاب باقة / مجموعة محددة", en: "Students of Specific Package/Group" },
+        "mkt_opt_session": { ar: "داتا طلاب الحصة الفورية (المؤقتين)", en: "Session Students Data (Temporary)" },
+        "mkt_opt_vip": { ar: "الطلاب أصحاب تصنيف VIP", en: "VIP Classified Students" },
+        "mkt_opt_debtors": { ar: "الطلاب أصحاب الدفعات المتبقية (المديونين)", en: "Debtors Students (Remaining Balance)" },
+        "mkt_select_grp_lbl": { ar: "تحديد الباقة / المجموعة", en: "Select Package / Group" },
+        "mkt_opt_select": { ar: "-- اختر الباقة --", en: "-- Select Package --" },
+        "mkt_msg_lbl": { ar: "📝 نص الرسالة الإعلانية / التنبيه", en: "📝 Message / Broadcast Body" },
+        "mkt_msg_plc": { ar: "اكتب هنا نص الإعلان أو التنبيه...\nيمكنك استخدام الوسوم الذكية [اسم_الطالب] و [المبلغ] وسيتم استبدالها تلقائياً لكل طالب.", en: "Write your broadcast text here...\nYou can use smart tags [اسم_الطالب] and [المبلغ] for dynamic student replacement." },
+        "mkt_vars_tip": { ar: "💡 المتغيرات الذكية المدعومة في الرسالة:", en: "💡 Supported Smart Variables:" },
+        "mkt_click_tip": { ar: "(اضغط على الوسم لإضافته للنص)", en: "(Click tag to insert into text)" },
+        "mkt_filter_btn": { ar: "🔍 تصفية وعرض داتا الأرقام المستهدفة", en: "🔍 Filter & View Target Numbers Data" },
+        "mkt_broadcast_btn": { ar: "🚀 بدء الإرسال التلقائي الذكي (بفاصل زمني لمنع الحظر)", en: "🚀 Start Smart Auto Broadcast (Anti-Ban Interval)" },
+        "mkt_copy_btn": { ar: "📋 نسخ جميع أرقام الموبايل (لبرامج خارجية)", en: "📋 Copy All Mobile Numbers (For External Apps)" },
+        "mkt_broad_prep": { ar: "جاري الاستعداد لبدء البث التلقائي...", en: "Preparing to start auto broadcast..." },
+        "mkt_broad_sub": { ar: "سيتم فتح نوافذ المحادثات تباعاً بفاصل زمني آمن لحماية حسابك من الحظر (Anti-Ban).", en: "Chat windows will open sequentially with a safe delay to protect your account from ban." },
+        "btn_pause": { ar: "⏸ إيقاف مؤقت", en: "⏸ Pause" },
+        "btn_stop": { ar: "⏹ إنهاء البث", en: "⏹ Stop Broadcast" },
+        "lbl_progress": { ar: "مستوى التقدم:", en: "Progress Level:" },
+        "lbl_next_win": { ar: "النافذة التالية خلال:", en: "Next Window in:" },
+        "lbl_seconds": { ar: "ثواني", en: "seconds" },
+        "mkt_list_title": { ar: "📋 قائمة الأرقام المستهدفة في الحملة", en: "📋 Target Campaign Numbers List" },
+        "lbl_student_cnt": { ar: "طالب", en: "student(s)" },
+        "mkt_list_tip": { ar: "اضغط زر المراسلة 💬 بجانب أي طالب لبدء الإرسال الفوري", en: "Click chat button 💬 next to any student for instant messaging" },
+        "mkt_no_data": { ar: "اضغط على \"تصفية وعرض داتا الأرقام المستهدفة\" لعرض القائمة", en: "Click 'Filter & View Target Numbers Data' to display list" },
+        "vaults_title": { ar: "🏦 خزائن ومحافظ السنتر (إجمالي الأرصدة)", en: "🏦 Center Vaults & Wallets (Total Balances)" },
+        "vault_cash": { ar: "💵 خزينة الكاش", en: "💵 Cash Vault" },
+        "vault_today": { ar: "تحصيل اليوم:", en: "Collected Today:" },
+        "vault_total": { ar: "إجمالي المحصل:", en: "Total Collected:" },
+        "vault_exp": { ar: "المصروفات:", en: "Expenses:" },
+        "vault_net": { ar: "الصافي بالخزينة:", en: "Net in Vault:" },
+        "vault_instapay": { ar: "📱 خزينة إنستاباي (InstaPay)", en: "📱 InstaPay Vault" },
+        "vault_act_total": { ar: "الرصيد الفعلي:", en: "Actual Balance:" },
+        "vault_wallet": { ar: "🟢 المحافظ الإلكترونية (فودافون كاش)", en: "🟢 Electronic Wallets (Vodafone Cash)" },
+        "btn_print": { ar: "🖨️ طباعة (A4 / إيصال)", en: "🖨️ Print (A4 / Receipt)" },
+        "btn_photo_mode": { ar: "📱 وضع التصوير بالهاتف", en: "📱 Mobile Photo Mode" },
+        "btn_close_rec": { ar: "✖ إغلاق", en: "✖ Close" },
+        "photo_mode_tip": { ar: "📸 الشاشة الآن في وضع التصوير الصافي للطالب .. اضغط هنا لإعادة إظهار أزرار الإغلاق والطباعة 🔄", en: "📸 Screen is in clean photo mode .. Click here to restore Close & Print buttons 🔄" },
+        "receipt_paid_full": { ar: "خالص السداد ✔️", en: "Paid in Full ✔️" },
+        "receipt_st_details_title": { ar: "📜 بيانات التسجيل والسداد", en: "📜 Registration & Payment Details" },
+        "receipt_lbl_name": { ar: "اسم الطالب:", en: "Student Name:" },
+        "receipt_lbl_id": { ar: "كود التعريف (ID):", en: "Definition Code (ID):" },
+        "receipt_lbl_class": { ar: "الباقة / المجموعة:", en: "Package / Group:" },
+        "receipt_lbl_phone": { ar: "رقم الموبايل:", en: "Mobile Number:" },
+        "receipt_lbl_total": { ar: "المبلغ الكلي المدفوع", en: "TOTAL PAID AMOUNT" },
+        "receipt_inc_methods": { ar: "شامل طرق الدفع المسجلة بالسنتر", en: "Includes all registered payment methods" },
+        "receipt_auth_title": { ar: "📜 اعتماد إلكتروني معتمد", en: "📜 Certified Electronic Approval" },
+        "receipt_auth_sub": { ar: "توقيع الموظف / المحاسب المسئول", en: "Authorized Accountant / Employee Signature" },
+        "receipt_sec_code": { ar: "رمز التحقق الأمني", en: "Security Verification Code" }
     };
 
     // ==========================================
@@ -766,7 +875,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 rBtn.style.color = "#ffffff";
                 rBtn.style.boxShadow = "0 4px 12px rgba(16, 185, 129, 0.4)";
                 if ($("receiptBtnIcon")) $("receiptBtnIcon").textContent = "🖨️";
-                if ($("receiptBtnText")) $("receiptBtnText").textContent = "عرض وطباعة إيصال السداد النهائي 📜";
+                if ($("receiptBtnText")) $("receiptBtnText").textContent = t("print_receipt_unlock");
             } else {
                 rBtn.disabled = true;
                 rBtn.style.cursor = "not-allowed";
@@ -774,7 +883,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 rBtn.style.color = "#94a3b8";
                 rBtn.style.boxShadow = "none";
                 if ($("receiptBtnIcon")) $("receiptBtnIcon").textContent = "🔒";
-                if ($("receiptBtnText")) $("receiptBtnText").textContent = "إصدار إيصال سداد الباقة (مغلق لحين إكمال الدفع)";
+                if ($("receiptBtnText")) $("receiptBtnText").textContent = t("print_receipt_lock");
             }
         }
 
@@ -815,13 +924,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 for (let i = st.payments.length - 1; i >= 0; i--) {
                     let p = st.payments[i];
                     let m = p.method || "cash";
-                    let mBadge = "💵 كاش";
+                    let mBadge = t("badge_cash");
                     let badgeBg = "#eef2f5";
                     let badgeColor = "#333";
-                    if (m === "instapay") { mBadge = "📱 إنستاباي"; badgeBg = "#e3f2fd"; badgeColor = "#0288d1"; }
-                    if (m === "wallet") { mBadge = "🟢 فودافون كاش/محفظة"; badgeBg = "#e8f5e9"; badgeColor = "#2e7d32"; }
+                    if (m === "instapay") { mBadge = t("badge_instapay"); badgeBg = "#e3f2fd"; badgeColor = "#0288d1"; }
+                    if (m === "wallet") { mBadge = t("badge_wallet"); badgeBg = "#e8f5e9"; badgeColor = "#2e7d32"; }
                     
-                    let delBtn = isAdmin ? `<button class="btn danger smallBtn iconOnly" style="padding:2px 6px; font-size:11px;" onclick="window.deleteStudentPayment(${i})" title="حذف الدفعة">🗑️</button>` : "";
+                    let delBtn = isAdmin ? `<button class="btn danger smallBtn iconOnly" style="padding:2px 6px; font-size:11px;" onclick="window.deleteStudentPayment(${i})" title="${t('btn_del_payment')}">🗑️</button>` : "";
                     
                     payHtml += `
                     <div class="item flexBetween" style="margin-bottom:8px; font-size:0.9em; padding:8px 10px; background:var(--bg-surface); border-radius:6px; border:1px solid var(--border);">
@@ -840,12 +949,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="item flexBetween" style="margin-bottom:8px; font-size:0.9em; padding:8px 10px; background:var(--bg-surface); border-radius:6px; border:1px solid var(--border);">
                     <div>
                         <span style="font-weight:bold; color:var(--success);">+ ${st.paid} ج</span>
-                        <span class="badge" style="background:#eef2f5; color:#333; font-size:0.8em; margin-inline-start:8px;">💵 كاش (رصيد سابق)</span>
+                        <span class="badge" style="background:#eef2f5; color:#333; font-size:0.8em; margin-inline-start:8px;">${t("txt_cash_old")}</span>
                     </div>
                     <span style="font-size:0.85em; color:var(--text-secondary);">—</span>
                 </div>`;
             } else {
-                payHtml = `<div class="mutedCenter" style="font-size:0.85em;">لا توجد دفعات مسجلة حتى الآن</div>`;
+                payHtml = `<div class="mutedCenter" style="font-size:0.85em;">${t("txt_no_payments")}</div>`;
             }
             $("stPaymentsList").innerHTML = payHtml;
         }
@@ -1313,12 +1422,37 @@ document.addEventListener('DOMContentLoaded', function() {
         if(theme === "dark") document.body.classList.add("theme-dark");
         localStorage.setItem(K_THEME, theme); 
         if($("themeSelector")) $("themeSelector").value = theme;
-        // Update topbar theme toggle icon
+        // Update topbar theme toggle icon with stunning SVG icons
         var themeBtn = $("topbarThemeToggle");
-        if(themeBtn) themeBtn.textContent = theme === "dark" ? "☀️" : "🌙";
+        if(themeBtn) {
+            themeBtn.innerHTML = theme === "dark" 
+                ? `<svg class="theme-svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`
+                : `<svg class="theme-svg-icon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
+        }
         // Update PWA theme-color meta
         var metaTheme = document.querySelector('meta[name="theme-color"]');
         if(metaTheme) metaTheme.content = theme === "dark" ? "#0B1120" : "#F1F5F9";
+    }
+
+    function switchThemeWithAnimation(targetTheme) {
+        const overlay = $("themeSwitchOverlay");
+        const iconBox = $("themeSwitchIconBox");
+        const textEl = $("themeSwitchText");
+        if(overlay && iconBox && textEl) {
+            textEl.innerText = currentLang === "ar" ? "جاري تبديل المظهر... ⏳" : "Switching Theme... ⏳";
+            iconBox.innerHTML = targetTheme === "dark" 
+                ? `<svg class="theme-svg-icon" style="width:50px;height:50px;color:#f59e0b;" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>` 
+                : `<svg class="theme-svg-icon" style="width:50px;height:50px;color:#f59e0b;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
+            overlay.classList.add("active");
+            setTimeout(() => {
+                applyTheme(targetTheme);
+                setTimeout(() => {
+                    overlay.classList.remove("active");
+                }, 400);
+            }, 600);
+        } else {
+            applyTheme(targetTheme);
+        }
     }
 
     function applyLanguage() {
@@ -1789,13 +1923,13 @@ on("quickAttendId", "keypress", function(e) {
         
         let notesStr = st.notes ? st.notes.trim() : "";
         if (!notesStr) {
-            container.innerHTML = `<div class="mutedCenter" style="font-size:0.85em;">لا توجد ملاحظات مسجلة لهذا الطالب</div>`;
+            container.innerHTML = `<div class="mutedCenter" style="font-size:0.85em;">${t("txt_no_notes")}</div>`;
             return;
         }
         
         let lines = notesStr.split("\n").filter(l => l.trim() !== "");
         if (lines.length === 0) {
-            container.innerHTML = `<div class="mutedCenter" style="font-size:0.85em;">لا توجد ملاحظات مسجلة لهذا الطالب</div>`;
+            container.innerHTML = `<div class="mutedCenter" style="font-size:0.85em;">${t("txt_no_notes")}</div>`;
             return;
         }
         
@@ -1818,8 +1952,8 @@ on("quickAttendId", "keypress", function(e) {
                     <span style="color:var(--text); font-size:0.9em;">${textPart}</span>
                 </div>
                 <div class="row" style="width:auto; gap:6px;">
-                    <button class="btn warning smallBtn iconOnly edit-note-btn" data-index="${i}" title="تعديل الملحوظة">✏️</button>
-                    <button class="btn danger smallBtn iconOnly delete-note-btn" data-index="${i}" title="مسح الملحوظة">🗑️</button>
+                    <button class="btn warning smallBtn iconOnly edit-note-btn" data-index="${i}" title="${t('btn_edit_note')}">✏️</button>
+                    <button class="btn danger smallBtn iconOnly delete-note-btn" data-index="${i}" title="${t('btn_del_note')}">🗑️</button>
                 </div>
             </div>`;
         }
@@ -1840,10 +1974,10 @@ on("quickAttendId", "keypress", function(e) {
                     editableText = match[2];
                 }
                 
-                let newText = prompt("✏️ تعديل نص الملحوظة:", editableText);
+                let newText = prompt(t("prompt_edit_note"), editableText);
                 if (newText !== null) {
                     if (newText.trim() === "") {
-                        if (confirm("⚠️ النص فارغ، هل تريد مسح الملحوظة؟")) {
+                        if (confirm(t("confirm_empty_note"))) {
                             allLines.splice(idx, 1);
                         }
                     } else {
@@ -1852,7 +1986,7 @@ on("quickAttendId", "keypress", function(e) {
                     students[currentId].notes = allLines.join("\n");
                     saveAll();
                     renderStudentNotes(currentId);
-                    showToast("تم تعديل الملحوظة بنجاح ✏️", "success");
+                    showToast(t("msg_note_edited"), "success");
                 }
             };
         });
@@ -1860,13 +1994,13 @@ on("quickAttendId", "keypress", function(e) {
         container.querySelectorAll(".delete-note-btn").forEach(btn => {
             btn.onclick = function() {
                 let idx = toInt(this.getAttribute("data-index"));
-                if (confirm("⚠️ متأكد من مسح هذه الملحوظة نهائياً؟")) {
+                if (confirm(t("confirm_del_note"))) {
                     let allLines = (students[currentId].notes || "").split("\n").filter(l => l.trim() !== "");
                     allLines.splice(idx, 1);
                     students[currentId].notes = allLines.join("\n");
                     saveAll();
                     renderStudentNotes(currentId);
-                    showToast("تم مسح الملحوظة 🗑️", "warning");
+                    showToast(t("msg_note_deleted"), "warning");
                 }
             };
         });
@@ -2021,7 +2155,7 @@ on("quickAttendId", "keypress", function(e) {
         }
     });
 
-    on("themeSelector", "change", function(e) { applyTheme(e.target.value); });
+    on("themeSelector", "change", function(e) { switchThemeWithAnimation(e.target.value); });
 
     if($("bgInput")) {
         $("bgInput").addEventListener("change", function(e) {
@@ -3028,7 +3162,7 @@ function updateDriveUI() {
     // === SIDEBAR & THEME TOGGLE LISTENERS ===
     on("topbarThemeToggle", "click", function() {
         var current = localStorage.getItem(K_THEME) || "dark";
-        applyTheme(current === "dark" ? "light" : "dark");
+        switchThemeWithAnimation(current === "dark" ? "light" : "dark");
     });
 
     on("sidebarCollapseBtn", "click", function() {
