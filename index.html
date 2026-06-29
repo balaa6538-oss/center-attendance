@@ -585,9 +585,43 @@
                 <button id="btnFilterCampaign" class="btn primary" style="padding: 12px 25px; font-weight: bold; font-size: 1.05em;">
                   🔍 تصفية وعرض داتا الأرقام المستهدفة
                 </button>
-                <button id="btnCopyCampaignNumbers" class="btn success" style="padding: 12px 25px; font-weight: bold; font-size: 1.05em;">
-                  📋 نسخ جميع أرقام الموبايل (لبرامج الإرسال التلقائي)
+                <button id="btnStartAutoBroadcast" class="btn" style="padding: 12px 25px; font-weight: bold; font-size: 1.05em; background: linear-gradient(135deg, #2563eb, #1e40af); color: #ffffff; border: none; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);">
+                  🚀 بدء الإرسال التلقائي الذكي (بفاصل زمني لمنع الحظر)
                 </button>
+                <button id="btnCopyCampaignNumbers" class="btn success" style="padding: 12px 25px; font-weight: bold; font-size: 1.05em;">
+                  📋 نسخ جميع أرقام الموبايل (لبرامج خارجية)
+                </button>
+              </div>
+            </div>
+
+            <!-- لوحة التحكم في البث التلقائي (مخفية حتى بدء البث) -->
+            <div id="broadcastControllerPanel" class="card bento-card hidden" style="background: linear-gradient(135deg, #1e293b, #0f172a); border: 2px solid #3b82f6; border-radius: 12px; padding: 25px; color: #ffffff;">
+              <div class="flexBetween wrap" style="gap: 15px; border-bottom: 1px solid #334155; padding-bottom: 15px; margin-bottom: 20px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <span id="broadcastPulseIcon" style="font-size: 2.2em; animation: pulse 1.5s infinite;">📡</span>
+                  <div>
+                    <h3 id="broadcastStatusTitle" style="margin: 0; font-size: 1.4em; color: #38bdf8;">جاري الاستعداد لبدء البث التلقائي...</h3>
+                    <p id="broadcastStatusSub" style="margin: 5px 0 0 0; font-size: 0.95em; color: #94a3b8;">سيتم فتح نوافذ المحادثات تباعاً بفاصل زمني آمن لحماية حسابك من الحظر (Anti-Ban).</p>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <button id="btnPauseBroadcast" class="btn" style="background: #f59e0b; color: #fff; font-weight: bold; padding: 8px 18px; border: none;">⏸ إيقاف مؤقت</button>
+                  <button id="btnStopBroadcast" class="btn" style="background: #ef4444; color: #fff; font-weight: bold; padding: 8px 18px; border: none;">⏹ إنهاء البث</button>
+                </div>
+              </div>
+
+              <div style="background: #0b0f19; padding: 18px; border-radius: 10px; border: 1px solid #1e293b;">
+                <div class="flexBetween" style="margin-bottom: 10px; font-size: 1.05em;">
+                  <span style="color: #94a3b8;">مستوى التقدم: <b id="broadcastProgressText" style="color: #38bdf8;">0 / 0</b></span>
+                  <span style="color: #94a3b8;">النافذة التالية خلال: <b id="broadcastTimerText" style="color: #f43f5e; font-size: 1.2em;">10</b> ثواني</span>
+                </div>
+                <div style="width: 100%; background: #1e293b; height: 10px; border-radius: 5px; overflow: hidden;">
+                  <div id="broadcastProgressBar" style="width: 0%; height: 100%; background: linear-gradient(to right, #3b82f6, #06b6d4); transition: width 0.4s ease;"></div>
+                </div>
+              </div>
+
+              <div id="broadcastCurrentStudentInfo" style="margin-top: 15px; text-align: center; font-size: 1.1em; color: #10b981; font-weight: bold;">
+                --
               </div>
             </div>
 

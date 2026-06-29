@@ -3246,6 +3246,125 @@ function updateDriveUI() {
         });
     });
 
+    // ==========================================
+    // 17.9. SMART ANTI-BAN AUTO BROADCASTER
+    // ==========================================
+    let broadcastTimer = null;
+    let broadcastCurrentIndex = 0;
+    let broadcastIntervalSeconds = 10;
+    let broadcastCurrentCount = 10;
+    let broadcastIsPaused = false;
+
+    function startNextBroadcastWindow() {
+        if (broadcastCurrentIndex >= currentCampaignList.length) {
+            endBroadcast(true);
+            return;
+        }
+
+        let item = currentCampaignList[broadcastCurrentIndex];
+        let msgBody = $("marketingMsgBody") ? $("marketingMsgBody").value.trim() : "";
+        let customMsg = msgBody;
+        if (customMsg) {
+            customMsg = customMsg.replace(/\[اسم_الطالب\]/g, item.name);
+            customMsg = customMsg.replace(/\[المبلغ\]/g, item.remain || 0);
+        } else {
+            customMsg = `مرحباً بك أ/ ${item.name}،\nيرجى التواصل مع إدارة السنتر.`;
+        }
+
+        let cleanPhone = item.phone.startsWith("0") ? "+2" + item.phone : "+20" + item.phone;
+        let waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(customMsg)}`;
+
+        // فتح نافذة المحادثة
+        window.open(waUrl, '_blank');
+
+        broadcastCurrentIndex++;
+        if ($("broadcastProgressText")) $("broadcastProgressText").textContent = `${broadcastCurrentIndex} / ${currentCampaignList.length}`;
+        if ($("broadcastCurrentStudentInfo")) {
+            $("broadcastCurrentStudentInfo").innerHTML = `✨ جاري التواصل مع: <b>${item.name}</b> (📱 ${item.phone}) <br><span style="font-size:0.85em; color:#94a3b8; font-weight:normal;">💡 اضغط إرسال (Enter) في نافذة الواتساب المفتوحة.. النافذة التالية تفتح قريباً.</span>`;
+        }
+
+        let pct = (broadcastCurrentIndex / currentCampaignList.length) * 100;
+        if ($("broadcastProgressBar")) $("broadcastProgressBar").style.width = pct + "%";
+
+        if (broadcastCurrentIndex >= currentCampaignList.length) {
+            setTimeout(() => endBroadcast(true), 3000);
+            return;
+        }
+
+        // بدء العد التنازلي للنافذة التالية
+        broadcastCurrentCount = broadcastIntervalSeconds;
+        if ($("broadcastTimerText")) $("broadcastTimerText").textContent = broadcastCurrentCount;
+        
+        broadcastTimer = setInterval(() => {
+            if (broadcastIsPaused) return;
+            broadcastCurrentCount--;
+            if ($("broadcastTimerText")) $("broadcastTimerText").textContent = broadcastCurrentCount;
+            if (broadcastCurrentCount <= 0) {
+                clearInterval(broadcastTimer);
+                startNextBroadcastWindow();
+            }
+        }, 1000);
+    }
+
+    function endBroadcast(completed) {
+        if (broadcastTimer) clearInterval(broadcastTimer);
+        broadcastTimer = null;
+        broadcastIsPaused = false;
+        if ($("btnPauseBroadcast")) $("btnPauseBroadcast").textContent = "⏸ إيقاف مؤقت";
+        if ($("broadcastStatusTitle")) $("broadcastStatusTitle").textContent = completed ? "🎉 اكتمل البث التلقائي بنجاح" : "⏹ تم إنهاء البث التلقائي";
+        if ($("broadcastStatusSub")) $("broadcastStatusSub").textContent = completed ? "تم فتح جميع المحادثات بنجاح وإرسال الإشعارات بدون التعرض لأي حظر." : "تم إيقاف عملية البث التلقائي بناءً على طلبك.";
+        if ($("broadcastPulseIcon")) $("broadcastPulseIcon").style.animation = "none";
+        if ($("broadcastCurrentStudentInfo")) $("broadcastCurrentStudentInfo").innerHTML = completed ? "✅ اكتملت المهمة بنجاح" : "تم الإيقاف";
+        showToast(completed ? "اكتمل البث التلقائي الذكي لجميع الطلاب ✅" : "تم إيقاف البث التلقائي ⏹", completed ? "success" : "warning");
+        playSound(completed ? "beep" : "error");
+    }
+
+    on("btnStartAutoBroadcast", "click", function() {
+        if (currentCampaignList.length === 0) {
+            showToast("⚠️ قائمة الأرقام فارغة، قم بتصفية داتا الطلاب أولاً.", "err");
+            return;
+        }
+        if (broadcastTimer) clearInterval(broadcastTimer);
+        
+        broadcastCurrentIndex = 0;
+        broadcastIsPaused = false;
+        broadcastCurrentCount = broadcastIntervalSeconds;
+        
+        if ($("broadcastControllerPanel")) $("broadcastControllerPanel").classList.remove("hidden");
+        if ($("broadcastStatusTitle")) $("broadcastStatusTitle").textContent = "🚀 جاري تشغيل البث التلقائي المضاد للحظر (Anti-Ban)...";
+        if ($("broadcastStatusSub")) $("broadcastStatusSub").textContent = "سيتم فتح نوافذ المحادثات تباعاً بفاصل زمني آمن لحماية حسابك من الحظر (Anti-Ban).";
+        if ($("broadcastPulseIcon")) $("broadcastPulseIcon").style.animation = "pulse 1.5s infinite";
+        if ($("broadcastProgressText")) $("broadcastProgressText").textContent = `0 / ${currentCampaignList.length}`;
+        if ($("broadcastProgressBar")) $("broadcastProgressBar").style.width = "0%";
+        if ($("btnPauseBroadcast")) $("btnPauseBroadcast").textContent = "⏸ إيقاف مؤقت";
+
+        showToast("🚀 بدء تشغيل البث التلقائي الآمن، يرجى السماح بالنوافذ المنبثقة (Pop-ups)", "success");
+        playSound("beep");
+        
+        // البدء بالنافذة الأولى فوراً
+        startNextBroadcastWindow();
+    });
+
+    on("btnPauseBroadcast", "click", function() {
+        if (!broadcastTimer && !broadcastIsPaused) return;
+        broadcastIsPaused = !broadcastIsPaused;
+        if (broadcastIsPaused) {
+            this.textContent = "▶ استئناف البث";
+            if ($("broadcastStatusTitle")) $("broadcastStatusTitle").textContent = "⏸ البث التلقائي متوقف مؤقتاً...";
+            if ($("broadcastPulseIcon")) $("broadcastPulseIcon").style.animation = "none";
+            showToast("تم إيقاف البث مؤقتاً ⏸", "warning");
+        } else {
+            this.textContent = "⏸ إيقاف مؤقت";
+            if ($("broadcastStatusTitle")) $("broadcastStatusTitle").textContent = "🚀 جاري تشغيل البث التلقائي المضاد للحظر (Anti-Ban)...";
+            if ($("broadcastPulseIcon")) $("broadcastPulseIcon").style.animation = "pulse 1.5s infinite";
+            showToast("تم استئناف البث التلقائي ▶", "success");
+        }
+    });
+
+    on("btnStopBroadcast", "click", function() {
+        endBroadcast(false);
+    });
+
     // Startup Sequence
     loadAll(); 
     ensureBase500(); 
