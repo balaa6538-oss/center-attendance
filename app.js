@@ -565,6 +565,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function applyPermissions() {
         const isAdmin = (currentUserRole === "admin");
+        if ($("currentUserBadgeText")) {
+            $("currentUserBadgeText").innerText = isAdmin ? (currentLang === "ar" ? "👑 مسؤول عام" : "👑 Admin") : (currentLang === "ar" ? "👥 مساعد" : "👥 Assistant");
+        }
         document.querySelectorAll(".adminOnly").forEach(el => {
             if(isAdmin) el.classList.remove("hidden"); 
             else el.classList.add("hidden"); 
@@ -1325,6 +1328,8 @@ document.addEventListener('DOMContentLoaded', function() {
             $("sidebarCollapseBtn").title = currentLang === "ar" ? "طي القائمة" : "Collapse Sidebar";
         }
         
+        applyPermissions();
+        
         // Sidebar doesn't need flex-direction change for RTL (handled by CSS logical properties)
         
         // السطر الجديد لتحديث كلمات جوجل درايف فوراً مع تغيير اللغة
@@ -1446,6 +1451,43 @@ document.addEventListener('DOMContentLoaded', function() {
 
     on("logoutBtn", "click", function() { localStorage.removeItem(K_AUTH); location.reload(); });
     on("togglePass", "click", function() { const p = $("pass"); if (p) p.type = p.type === "password" ? "text" : "password"; });
+
+    // User Profile Widget Listeners
+    on("userProfileToggleBtn", "click", function(e) {
+        if(e) e.stopPropagation();
+        if($("userProfileDropdown")) $("userProfileDropdown").classList.toggle("hidden");
+    });
+    document.addEventListener("click", function(e) {
+        if($("userProfileDropdown") && !$("userProfileDropdown").classList.contains("hidden")) {
+            if(!$("userProfileDropdown").contains(e.target) && e.target.id !== "userProfileToggleBtn" && !e.target.closest("#userProfileToggleBtn")) {
+                $("userProfileDropdown").classList.add("hidden");
+            }
+        }
+    });
+    on("quickSwitchRoleBtn", "click", function() {
+        if($("userProfileDropdown")) $("userProfileDropdown").classList.add("hidden");
+        if(currentUserRole === "admin") {
+            showToast(currentLang === 'ar' ? "أنت مسجل كمسؤول عام بالفعل 👑" : "Already logged in as Admin 👑", "success");
+        } else {
+            askAdminPass(function() {
+                currentUserRole = "admin"; localStorage.setItem(K_ROLE, "admin"); applyPermissions();
+                showToast(currentLang === 'ar' ? "تم التبديل لصلاحيات المسؤول 👑" : "Switched to Admin privileges 👑", "success");
+            });
+        }
+    });
+    on("quickGroupFeesBtn", "click", function() {
+        if($("userProfileDropdown")) $("userProfileDropdown").classList.add("hidden");
+        if($("groupFeesModal")) $("groupFeesModal").classList.remove("hidden");
+    });
+    on("quickExportBtn", "click", function() {
+        if($("userProfileDropdown")) $("userProfileDropdown").classList.add("hidden");
+        if(typeof exportColoredReport === "function") exportColoredReport();
+    });
+    on("quickBinBtn", "click", function() {
+        if($("userProfileDropdown")) $("userProfileDropdown").classList.add("hidden");
+        renderBinList(); if($("recycleBinModal")) $("recycleBinModal").classList.remove("hidden");
+    });
+
 
     on("customPassConfirm", "click", function() {
         if ($("customPassInput") && $("customPassInput").value === ADMIN_PASS) { 

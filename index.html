@@ -161,9 +161,58 @@
 
       <!-- TOPBAR -->
       <header class="topbar">
-        <div class="topbar-start">
-          <button id="mobileSidebarToggle" class="mobile-menu-btn">☰</button>
-          <div class="topbar-stats">
+        <div class="topbar-main-row" style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+          <div class="topbar-brand-mobile" style="display: flex; align-items: center; gap: 12px;">
+            <button id="mobileSidebarToggle" class="mobile-menu-btn" title="القائمة الجانبية">☰</button>
+            <span class="topbar-title-mobile" style="font-weight: bold; color: var(--primary); font-size: 1.1em; display: none;">مركز الإدارة</span>
+          </div>
+          
+          <div class="topbar-end" style="display: flex; align-items: center; gap: 12px; position: relative;">
+            <button id="topbarThemeToggle" class="topbar-icon-btn" title="تبديل الثيم">☀️</button>
+            
+            <!-- PREMIUM USER PROFILE BADGE & DROPDOWN -->
+            <div class="user-profile-widget">
+              <button id="userProfileToggleBtn" class="user-profile-btn" style="display: flex; align-items: center; gap: 8px; background: var(--bg-inset); border: 1px solid var(--primary); padding: 6px 14px; border-radius: 20px; cursor: pointer; color: var(--text-main); font-weight: bold; font-family: var(--font); box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15); transition: all 0.2s;">
+                <span class="user-avatar" style="font-size: 1.2em;">👤</span>
+                <span id="currentUserBadgeText" style="font-size: 0.9em;" data-i18n="role_admin">👑 مسؤول عام</span>
+                <span class="profile-chevron" style="font-size: 0.8em; color: var(--primary);">▼</span>
+              </button>
+              
+              <!-- THE QUICK ACTION DROPDOWN / DRAWER -->
+              <div id="userProfileDropdown" class="user-profile-dropdown hidden" style="position: absolute; top: 110%; inset-inline-end: 0; width: 280px; background: var(--bg-surface); border: 2px solid var(--primary); border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.3); padding: 16px; z-index: 9999; display: flex; flex-direction: column; gap: 12px;">
+                <div class="dropdown-header" style="border-bottom: 1px solid var(--border); padding-bottom: 10px; text-align: center;">
+                  <div style="font-size: 1.1em; font-weight: bold; color: var(--primary);">مرحباً بك في النظام</div>
+                  <div style="font-size: 0.85em; color: var(--success); margin-top: 4px;">🟢 متصل الآن (Active Session)</div>
+                </div>
+                
+                <div class="dropdown-quick-links" style="display: flex; flex-direction: column; gap: 8px;">
+                  <button id="quickSwitchRoleBtn" class="btn secondary" style="width: 100%; display: flex; align-items: center; gap: 10px; padding: 10px; font-weight: bold; text-align: start; justify-content: flex-start;">
+                    <span>👑</span> <span>التبديل لصلاحيات المسؤول</span>
+                  </button>
+                  <button id="quickGroupFeesBtn" class="btn secondary adminOnly" style="width: 100%; display: flex; align-items: center; gap: 10px; padding: 10px; font-weight: bold; text-align: start; justify-content: flex-start;">
+                    <span>⚙️</span> <span>إدارة الباقات والمصاريف</span>
+                  </button>
+                  <button id="quickExportBtn" class="btn secondary" style="width: 100%; display: flex; align-items: center; gap: 10px; padding: 10px; font-weight: bold; text-align: start; justify-content: flex-start;">
+                    <span>📊</span> <span>تصدير التقرير التحليلي</span>
+                  </button>
+                  <button id="quickBinBtn" class="btn secondary" style="width: 100%; display: flex; align-items: center; gap: 10px; padding: 10px; font-weight: bold; text-align: start; justify-content: flex-start;">
+                    <span>🗑️</span> <span>سلة المحذوفات</span>
+                  </button>
+                </div>
+                
+                <div style="border-top: 1px solid var(--border); margin: 4px 0;"></div>
+                
+                <button id="logoutBtn" class="btn danger" style="width: 100%; padding: 12px; font-weight: bold; font-size: 1em; display: flex; align-items: center; justify-content: center; gap: 8px;" data-i18n="btn_logout">
+                  <span>🚪</span> <span>تسجيل الخروج وقفل النظام</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STATS PILLS ROW -->
+        <div class="topbar-stats-wrapper" style="width: 100%; display: flex; justify-content: center; border-top: 1px solid var(--border); padding-top: 8px; margin-top: 8px;">
+          <div class="topbar-stats" style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; justify-content: center; width: 100%;">
             <span class="stat-pill clickable" id="openAllStudentsBtn">
               <span data-i18n="stat_students">👥 مسجلين:</span> <b id="totalStudentsCount">0</b>
             </span>
@@ -180,11 +229,8 @@
             </span>
           </div>
         </div>
-        <div class="topbar-end">
-          <button id="topbarThemeToggle" class="topbar-icon-btn" title="تبديل الثيم">☀️</button>
-          <button id="logoutBtn" class="btn danger" style="padding: 8px 18px; font-size: 0.9em;" data-i18n="btn_logout">خروج 🚪</button>
-        </div>
       </header>
+
 
       <!-- CONTENT BODY -->
       <div class="content-body">
