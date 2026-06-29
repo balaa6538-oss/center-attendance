@@ -211,7 +211,7 @@ a { color: var(--primary); text-decoration: none; }
   margin-bottom: 6px;
   background: transparent;
   border: none;
-  color: var(--text-secondary);
+  color: var(--primary);
   font-family: var(--font);
   font-size: 0.78em;
   font-weight: 700;
@@ -222,8 +222,12 @@ a { color: var(--primary); text-decoration: none; }
   text-align: start;
 }
 
-.nav-group-header:hover {
-  color: var(--text-primary);
+.nav-group.collapsed .nav-group-header {
+  color: var(--text-secondary);
+}
+
+.nav-group.collapsed .nav-group-header:hover {
+  color: var(--primary);
 }
 
 .nav-group-header .nav-group-title {
