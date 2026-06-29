@@ -326,14 +326,75 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function fireConfetti() {
-        const colors = ['#2ea44f', '#2f6bff', '#d69e2e', '#cf222e', '#9b59b6'];
-        for(let i = 0; i < 35; i++) {
-            const conf = document.createElement("div"); conf.className = "confetti";
+        if (!document.getElementById("confetti-styles")) {
+            const style = document.createElement("style");
+            style.id = "confetti-styles";
+            style.innerHTML = `
+            .confetti-particle {
+                position: fixed;
+                top: -20px;
+                z-index: 999999;
+                pointer-events: none;
+                animation: fall linear forwards;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            }
+            @keyframes fall {
+                0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+                100% { transform: translateY(105vh) rotate(720deg); opacity: 0; }
+            }
+            .celebration-popup {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%) scale(0);
+                background: linear-gradient(135deg, #1e3a8a, #2563eb);
+                color: #ffffff;
+                padding: 30px 50px;
+                border-radius: 20px;
+                box-shadow: 0 25px 50px -12px rgba(0,0,0,0.7), 0 0 30px rgba(251, 191, 36, 0.6);
+                border: 3px solid #fbbf24;
+                z-index: 9999999;
+                text-align: center;
+                animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, fadeOutToast 0.6s ease-in 3.5s forwards;
+            }
+            @keyframes popIn {
+                0% { transform: translate(-50%, -50%) scale(0); }
+                80% { transform: translate(-50%, -50%) scale(1.05); }
+                100% { transform: translate(-50%, -50%) scale(1); }
+            }
+            @keyframes fadeOutToast {
+                0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+                100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            }
+            `;
+            document.head.appendChild(style);
+        }
+
+        const popup = document.createElement("div");
+        popup.className = "celebration-popup";
+        popup.innerHTML = `
+            <div style="font-size: 3.8em; margin-bottom: 12px;">🏆🎉</div>
+            <h2 style="margin: 0; font-size: 2em; font-weight: 900; color: #fbbf24;">اكتمل سداد الباقة بالكامل!</h2>
+            <p style="margin: 12px 0 0 0; font-size: 1.2em; opacity: 0.95;">ألف مبروك .. أصبح حساب الطالب خالص السداد 100% ✅</p>
+        `;
+        document.body.appendChild(popup);
+        setTimeout(() => popup.remove(), 4200);
+
+        const colors = ['#2563eb', '#3b82f6', '#fbbf24', '#10b981', '#ffffff', '#f59e0b', '#60a5fa'];
+        for(let i = 0; i < 75; i++) {
+            const conf = document.createElement("div"); 
+            conf.className = "confetti-particle";
+            
+            const size = Math.floor(Math.random() * 12) + 8;
+            conf.style.width = size + "px";
+            conf.style.height = (Math.random() > 0.5 ? size : size * 1.5) + "px";
+            if(Math.random() > 0.6) conf.style.borderRadius = "50%";
+            
             conf.style.left = Math.random() * 100 + "vw"; 
             conf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-            conf.style.animationDuration = (Math.random() * 2 + 1) + "s"; 
+            conf.style.animationDuration = (Math.random() * 2.5 + 1.5) + "s"; 
             document.body.appendChild(conf);
-            setTimeout(() => conf.remove(), 3000);
+            setTimeout(() => conf.remove(), 4000);
         }
     }
 
