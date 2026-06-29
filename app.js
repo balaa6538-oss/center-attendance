@@ -248,8 +248,9 @@ document.addEventListener('DOMContentLoaded', function() {
         "eval_needs": { ar: "احتياجات السنتر أو المقترحات التي تم مناقشتها:", en: "Center Needs / Suggested Proposals:" },
         "eval_final_rate": { ar: "التقييم النهائي:", en: "Final Evaluation:" },
         "btn_save_eval": { ar: "حفظ التقييم الإداري 💾", en: "Save Evaluation 💾" },
-        "opt_cash": { ar: "💵 كاش / نقدي", en: "💵 Cash / Direct" },
-        "opt_wallet": { ar: "🟢 فودافون كاش / محفظة", en: "🟢 Vodafone Cash / Wallet" },
+        "opt_cash": { ar: "💵 كاش", en: "💵 Cash" },
+        "opt_instapay": { ar: "🟣 إنستاباي", en: "🟣 InstaPay" },
+        "opt_wallet": { ar: "🔴 فودافون كاش", en: "🔴 Vodafone Cash" },
         "lbl_pay_history": { ar: "📋 سجل دفعات الطالب المفصل:", en: "📋 Detailed Payments History:" },
         "txt_no_payments": { ar: "لا توجد دفعات مسجلة حتى الآن", en: "No payments recorded yet" },
         "notes_lock_msg": { ar: "يرجى اختيار أو البحث عن طالب أولاً لتفعيل الملاحظات", en: "Please select or search for a student first to enable notes" },
@@ -258,8 +259,8 @@ document.addEventListener('DOMContentLoaded', function() {
         "btn_del_note": { ar: "مسح الملحوظة", en: "Delete Note" },
         "btn_del_payment": { ar: "حذف الدفعة", en: "Delete Payment" },
         "txt_cash_old": { ar: "💵 كاش (رصيد سابق)", en: "💵 Cash (Prior Balance)" },
-        "badge_instapay": { ar: "📱 إنستاباي", en: "📱 Instapay" },
-        "badge_wallet": { ar: "🟢 فودافون كاش/محفظة", en: "🟢 Vodafone Cash / Wallet" },
+        "badge_instapay": { ar: "🟣 إنستاباي", en: "🟣 InstaPay" },
+        "badge_wallet": { ar: "🔴 فودافون كاش", en: "🔴 Vodafone Cash" },
         "badge_cash": { ar: "💵 كاش", en: "💵 Cash" },
         "prompt_edit_note": { ar: "✏️ تعديل نص الملحوظة:", en: "✏️ Edit note text:" },
         "confirm_empty_note": { ar: "⚠️ النص فارغ، هل تريد مسح الملحوظة؟", en: "⚠️ Text is empty, delete note?" },
@@ -339,9 +340,9 @@ document.addEventListener('DOMContentLoaded', function() {
         "vault_total": { ar: "إجمالي المحصل:", en: "Total Collected:" },
         "vault_exp": { ar: "المصروفات:", en: "Expenses:" },
         "vault_net": { ar: "الصافي بالخزينة:", en: "Net in Vault:" },
-        "vault_instapay": { ar: "📱 خزينة إنستاباي (InstaPay)", en: "📱 InstaPay Vault" },
+        "vault_instapay": { ar: "🟣 خزينة إنستاباي (InstaPay)", en: "🟣 InstaPay Vault" },
         "vault_act_total": { ar: "الرصيد الفعلي:", en: "Actual Balance:" },
-        "vault_wallet": { ar: "🟢 المحافظ الإلكترونية (فودافون كاش)", en: "🟢 Electronic Wallets (Vodafone Cash)" },
+        "vault_wallet": { ar: "🔴 فودافون كاش والمحافظ", en: "🔴 Vodafone Cash & Wallets" },
         "btn_print": { ar: "🖨️ طباعة (A4 / إيصال)", en: "🖨️ Print (A4 / Receipt)" },
         "btn_photo_mode": { ar: "📱 وضع التصوير بالهاتف", en: "📱 Mobile Photo Mode" },
         "btn_close_rec": { ar: "✖ إغلاق", en: "✖ Close" },
@@ -925,10 +926,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     let p = st.payments[i];
                     let m = p.method || "cash";
                     let mBadge = t("badge_cash");
-                    let badgeBg = "#eef2f5";
-                    let badgeColor = "#333";
-                    if (m === "instapay") { mBadge = t("badge_instapay"); badgeBg = "#e3f2fd"; badgeColor = "#0288d1"; }
-                    if (m === "wallet") { mBadge = t("badge_wallet"); badgeBg = "#e8f5e9"; badgeColor = "#2e7d32"; }
+                    let badgeBg = "#e8f5e9";
+                    let badgeColor = "#1b5e20";
+                    if (m === "instapay") { mBadge = t("badge_instapay"); badgeBg = "#f3e8ff"; badgeColor = "#6b21a8"; }
+                    if (m === "wallet") { mBadge = t("badge_wallet"); badgeBg = "#fee2e2"; badgeColor = "#991b1b"; }
                     
                     let delBtn = isAdmin ? `<button class="btn danger smallBtn iconOnly" style="padding:2px 6px; font-size:11px;" onclick="window.deleteStudentPayment(${i})" title="${t('btn_del_payment')}">🗑️</button>` : "";
                     
@@ -1831,8 +1832,8 @@ on("quickAttendId", "keypress", function(e) {
         const methodInp = $("newPaymentMethod");
         const method = methodInp ? methodInp.value : "cash";
         let methodName = "كاش 💵";
-        if (method === "instapay") methodName = "إنستاباي 📱";
-        if (method === "wallet") methodName = "فودافون كاش/محفظة 🟢";
+        if (method === "instapay") methodName = "إنستاباي 🟣";
+        if (method === "wallet") methodName = "فودافون كاش 🔴";
         
         const st = students[currentId];
         if ($("stName")) st.name = $("stName").value; 

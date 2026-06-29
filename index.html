@@ -306,11 +306,20 @@
                 <div class="payRow">
                   <span class="payLabel" data-i18n="lbl_total_paid">💰 إجمالي المدفوع:</span>
                   <input id="stTotalPaid" class="inp blurTarget" readonly style="font-weight:bold; color:var(--primary); max-width:120px; flex:1; text-align:center;">
-                  <select id="payMethodSel" class="inp" style="width:110px;">
-                    <option value="cash" data-i18n="opt_cash">💵 كاش / نقدي</option>
-                    <option value="wallet" data-i18n="opt_wallet">🟢 فودافون كاش / محفظة</option>
-                  </select>
-                  <button id="addPaymentBtn" class="btn success" data-i18n="btn_deposit">إيداع</button>
+                  <button id="correctPayBtn" class="btn warning smallBtn adminOnly" data-i18n="btn_discount">خصم</button>
+                </div>
+
+                <div class="payRow" style="margin-top:10px;">
+                  <span class="payLabel" data-i18n="lbl_new_pay">➕ دفعة جديدة:</span>
+                  <div class="row" style="flex:1;">
+                    <input id="newPaymentInput" type="number" class="inp" placeholder="المبلغ" data-i18n-placeholder="plc_amount">
+                    <select id="newPaymentMethod" class="inp" style="width:auto; font-size:0.88em;">
+                      <option value="cash" data-i18n="opt_cash">💵 كاش</option>
+                      <option value="instapay" data-i18n="opt_instapay">🟣 إنستاباي</option>
+                      <option value="wallet" data-i18n="opt_wallet">🔴 فودافون كاش</option>
+                    </select>
+                    <button id="addPaymentBtn" class="btn success" data-i18n="btn_deposit">إيداع</button>
+                  </div>
                 </div>
                 
                 <div id="remainingBox" class="remain-box remain-red">
@@ -462,8 +471,8 @@
                   <label class="lbl" data-i18n="sess_method_lbl">طريقة الدفع *</label>
                   <select id="sessStMethod" class="inp">
                     <option value="cash" data-i18n="opt_cash">💵 كاش</option>
-                    <option value="instapay" data-i18n="badge_instapay">📱 إنستاباي</option>
-                    <option value="wallet" data-i18n="badge_wallet">🟢 فودافون كاش / محفظة</option>
+                    <option value="instapay" data-i18n="opt_instapay">🟣 إنستاباي</option>
+                    <option value="wallet" data-i18n="opt_wallet">🔴 فودافون كاش</option>
                   </select>
                 </div>
               </div>
@@ -715,7 +724,7 @@
               </div>
 
               <div class="vault-card instapay-vault">
-                <div class="vault-header" data-i18n="vault_instapay">📱 خزينة إنستاباي (InstaPay)</div>
+                <div class="vault-header" data-i18n="vault_instapay">🟣 خزينة إنستاباي (InstaPay)</div>
                 <div class="vault-body">
                   <div class="vault-stat">
                     <span data-i18n="vault_today">تحصيل اليوم:</span>
@@ -723,13 +732,13 @@
                   </div>
                   <div class="vault-stat vault-net">
                     <span data-i18n="vault_act_total">الرصيد الفعلي:</span>
-                    <b class="text-primary"><span id="vaultInstapayTotal">0</span> ج</b>
+                    <b class="text-purple"><span id="vaultInstapayTotal">0</span> ج</b>
                   </div>
                 </div>
               </div>
 
               <div class="vault-card wallet-vault">
-                <div class="vault-header" data-i18n="vault_wallet">🟢 المحافظ الإلكترونية (فودافون كاش)</div>
+                <div class="vault-header" data-i18n="vault_wallet">🔴 فودافون كاش والمحافظ</div>
                 <div class="vault-body">
                   <div class="vault-stat">
                     <span data-i18n="vault_today">تحصيل اليوم:</span>
@@ -737,7 +746,7 @@
                   </div>
                   <div class="vault-stat vault-net">
                     <span data-i18n="vault_act_total">الرصيد الفعلي:</span>
-                    <b class="text-success"><span id="vaultWalletTotal">0</span> ج</b>
+                    <b class="text-danger"><span id="vaultWalletTotal">0</span> ج</b>
                   </div>
                 </div>
               </div>
