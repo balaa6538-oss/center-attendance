@@ -82,10 +82,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // ==========================================
     // 1. CONFIGURATION & AUTHENTICATION
     // ==========================================
-    const ADMIN_USER = "Admin"; 
-    const ADMIN_PASS = "####1111"; // باسورد الإدارة
-    const ASST_USER  = "User";  
-    const ASST_PASS  = "11112222"; // باسورد المساعد
+    // Passwords are now managed in Firebase under users/{manager_id}/settings
     
     const BASE_MIN_ID = 1; 
     const BASE_MAX_ID = 500; 
@@ -1858,39 +1855,65 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     if($("managerLoginBtn")) {
-        on("managerLoginBtn", "click", function() {
+        on("managerLoginBtn", "click", async function() {
             const u = $("managerUser") ? $("managerUser").value.trim() : "";
             const p = $("managerPass") ? $("managerPass").value.trim() : "";
+            if (!u || !p) return showToast("أدخل اسم المستخدم وكلمة المرور", "err");
             
-            // TODO: سيتم تغيير هذا للتحقق من فايربيز (Firebase) في الخطوة القادمة
-            if(u === ADMIN_USER && p === ADMIN_PASS) { 
-                localStorage.setItem(K_AUTH, "1"); 
-                localStorage.setItem(K_ROLE, "admin"); 
-                // Admin's username is their tenant ID
-                localStorage.setItem("ca_manager_id", u);
-                checkAuth(); 
-            } else { 
+            try {
+                const snapshot = await get(child(ref(database), `users/${u}/settings/info`));
+                if (snapshot.exists()) {
+                    const info = snapshot.val();
+                    if (info.password === p) {
+                        localStorage.setItem(K_AUTH, "1"); 
+                        localStorage.setItem(K_ROLE, "admin"); 
+                        localStorage.setItem("ca_manager_id", u);
+                        checkAuth(); 
+                        return;
+                    }
+                }
                 showToast(t("msg_err_pass") || "خطأ في بيانات الدخول", "err"); 
-                triggerShake("managerLoginBtn"); 
+                triggerShake("managerLoginBtn");
+            } catch (err) {
+                console.error(err);
+                showToast("فشل الاتصال بقاعدة البيانات. تأكد من الإنترنت.", "err");
             }
         });
     }
 
     if($("assistantLoginBtn")) {
-        on("assistantLoginBtn", "click", function() {
+        on("assistantLoginBtn", "click", async function() {
             const center = $("assistantCenterCode") ? $("assistantCenterCode").value.trim() : "";
             const u = $("assistantUser") ? $("assistantUser").value.trim() : "";
             const p = $("assistantPass") ? $("assistantPass").value.trim() : "";
+            if (!center || !u || !p) return showToast("أدخل الكود واسم المساعد وكلمة المرور", "err");
             
-            // TODO: سيتم تغيير هذا للتحقق من فايربيز
-            if (u.toLowerCase() === ASST_USER.toLowerCase() && p === ASST_PASS) { 
-                localStorage.setItem(K_AUTH, "1"); 
-                localStorage.setItem(K_ROLE, "assistant"); 
-                localStorage.setItem("ca_manager_id", center); // حفظ كود السنتر
-                checkAuth(); 
-            } else { 
+            try {
+                const snapshot = await get(child(ref(database), `users/${center}/settings/assistants`));
+                if (snapshot.exists()) {
+                    const assistants = snapshot.val();
+                    let found = false;
+                    for (let key in assistants) {
+                        if (assistants[key].username && assistants[key].password && 
+                            assistants[key].username.toLowerCase() === u.toLowerCase() && 
+                            assistants[key].password === p) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (found) {
+                        localStorage.setItem(K_AUTH, "1"); 
+                        localStorage.setItem(K_ROLE, "assistant"); 
+                        localStorage.setItem("ca_manager_id", center);
+                        checkAuth(); 
+                        return;
+                    }
+                }
                 showToast(t("msg_err_pass") || "خطأ في بيانات الدخول", "err"); 
-                triggerShake("assistantLoginBtn"); 
+                triggerShake("assistantLoginBtn");
+            } catch (err) {
+                console.error(err);
+                showToast("فشل الاتصال بقاعدة البيانات. تأكد من الإنترنت.", "err");
             }
         });
     }
@@ -1934,11 +1957,18 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
 
-    on("customPassConfirm", "click", function() {
-        if ($("customPassInput") && $("customPassInput").value === ADMIN_PASS) { 
-            if($("customPassModal")) $("customPassModal").classList.add("hidden"); 
-            if(passSuccessCallback) passSuccessCallback(); 
-        } else { showToast(t("msg_err_pass"), "err"); triggerShake("customPassInput"); }
+    on("customPassConfirm", "click", async function() {
+        const p = $("customPassInput") ? $("customPassInput").value.trim() : "";
+        if (!p) return showToast("أدخل كلمة المرور", "err");
+        try {
+            const snapshot = await get(child(ref(database), `users/${window.CURRENT_MANAGER_ID}/settings/info`));
+            if (snapshot.exists() && snapshot.val().password === p) {
+                if($("customPassModal")) $("customPassModal").classList.add("hidden"); 
+                if(passSuccessCallback) passSuccessCallback(); 
+            } else {
+                showToast(t("msg_err_pass") || "كلمة المرور غير صحيحة", "err"); triggerShake("customPassInput");
+            }
+        } catch (err) { showToast("فشل الاتصال", "err"); }
     });
 
     on("customPassCancel", "click", function() { if($("customPassModal")) $("customPassModal").classList.add("hidden"); });
