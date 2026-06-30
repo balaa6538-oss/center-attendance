@@ -2061,20 +2061,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 const snapshot = await get(child(ref(database), `users/${center}/settings/assistants`));
                 if (snapshot.exists()) {
                     const assistants = snapshot.val();
-                    let found = false;
+                    let foundUsername = "";
                     for (let key in assistants) {
-                        if (assistants[key].username && assistants[key].password && 
-                            sanitizeKey(assistants[key].username) === u && 
-                            assistants[key].password === p) {
-                            found = true;
+                        let uName = key;
+                        let pass = assistants[key];
+                        if (typeof assistants[key] === "object") {
+                            uName = assistants[key].username || key;
+                            pass = assistants[key].password;
+                        }
+                        if (sanitizeKey(uName) === u && pass === p) {
+                            foundUsername = uName;
                             break;
                         }
                     }
-                    if (found) {
+                    if (foundUsername) {
                         localStorage.setItem(K_AUTH, "1"); 
                         localStorage.setItem(K_ROLE, "assistant"); 
                         localStorage.setItem("ca_manager_id", center);
-                        localStorage.setItem("ca_current_username", assistants[key].username);
+                        localStorage.setItem("ca_current_username", foundUsername);
                         checkAuth(); 
                         return;
                     }
@@ -3322,13 +3326,19 @@ function updateDriveUI() {
                 const assistants = snapshot.val();
                 let html = "";
                 for (let key in assistants) {
+                    let uName = key;
+                    let pass = assistants[key];
+                    if (typeof assistants[key] === "object") {
+                        uName = assistants[key].username || key;
+                        pass = assistants[key].password;
+                    }
                     html += `
-                    <div class="item flexBetween" style="background: var(--bg-inset); border: 1px solid var(--border); padding: 10px 15px; border-radius: 8px; margin-bottom: 8px;">
+                    <div class="item flexBetween" style="background: var(--glass-bg); backdrop-filter: var(--glass-blur); border: var(--glass-border); padding: 16px 20px; border-radius: var(--radius); margin-bottom: 12px; transition: transform 0.3s; box-shadow: var(--shadow-sm);" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
                         <div>
-                            <b>${assistants[key].username}</b>
-                            <div class="muted" style="font-size: 0.85em;">كلمة المرور: ${assistants[key].password}</div>
+                            <b style="font-size: 1.1em; color: var(--text-primary);">${uName}</b>
+                            <div class="muted" style="font-size: 0.9em; margin-top: 4px; color: var(--text-secondary);">كلمة المرور: <span style="color: var(--primary); font-family: monospace;">${pass}</span></div>
                         </div>
-                        <button class="btn danger smallBtn iconOnly" onclick="window.deleteAssistant('${key}')">🗑️</button>
+                        <button class="btn danger smallBtn iconOnly" onclick="window.deleteAssistant('${key}')" style="box-shadow: none;">🗑️</button>
                     </div>`;
                 }
                 listEl.innerHTML = html;
