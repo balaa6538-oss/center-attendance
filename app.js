@@ -28,6 +28,8 @@ const database = getDatabase(app);
 let isFirebaseConnected = false;
 let hasUnsavedChanges = false; // Set to true when writing, false when write succeeds
 
+let wasOffline = false;
+
 function setupConnectionTracker() {
     const connectedRef = ref(database, '.info/connected');
     onValue(connectedRef, (snap) => {
@@ -40,9 +42,19 @@ function setupConnectionTracker() {
                 indicator.classList.add("online");
                 indicator.title = "متصل بالسحابة";
             }
+            if (wasOffline) {
+                if (typeof showToast === "function") {
+                    showToast(currentLang === 'ar' ? "عاد الاتصال بالإنترنت 🌐 جاري المزامنة التلقائية..." : "Connection Restored 🌐 Syncing...", "success");
+                }
+                if (hasUnsavedChanges) {
+                    setTimeout(() => { if (typeof saveAll === "function") saveAll(); }, 800);
+                }
+            }
+            wasOffline = false;
         } else {
             console.log("Firebase Disconnected 🔴");
             isFirebaseConnected = false;
+            wasOffline = true;
             if(indicator) {
                 indicator.classList.remove("online");
                 indicator.classList.add("offline");
@@ -53,10 +65,10 @@ function setupConnectionTracker() {
 
     // Warn user before closing if offline and there are potential unsaved changes
     window.addEventListener('beforeunload', (e) => {
-        if (!isFirebaseConnected) {
+        if (hasUnsavedChanges && !isFirebaseConnected) {
             // Cancel the event and show prompt
             e.preventDefault();
-            e.returnValue = 'تحذير: لا يوجد اتصال بالإنترنت، قد تفقد التعديلات الأخيرة التي لم ترفع للسيرفر!';
+            e.returnValue = 'تحذير: لا يوجد اتصال بالإنترنت، هناك بيانات لم يتم مزامنتها مع السحابة!';
             return e.returnValue;
         }
     });
@@ -727,6 +739,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // ==========================================
     function saveAll() {
         try {
+            hasUnsavedChanges = true;
             localStorage.setItem(K_STUDENTS, JSON.stringify(students));
             localStorage.setItem(K_ATT_BY_DATE, JSON.stringify(attByDate));
             localStorage.setItem(K_REVENUE, JSON.stringify(revenueByDate));
@@ -757,6 +770,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     'sessionStudents': sessionStudentsByDate,
                     'booklets': bookletsStock
                 }).then(() => {
+                    hasUnsavedChanges = false;
                     if (indicator) indicator.classList.remove("syncing");
                 }).catch(e => {
                     console.error("Firebase update error:", e);
@@ -770,6 +784,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function saveAttendanceOnly() {
         try {
+            hasUnsavedChanges = true;
             localStorage.setItem(K_STUDENTS, JSON.stringify(students));
             localStorage.setItem(K_ATT_BY_DATE, JSON.stringify(attByDate));
             updateTopStats();
@@ -791,6 +806,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     'sessionStudents': sessionStudentsByDate,
                     'booklets': bookletsStock
                 }).then(() => {
+                    hasUnsavedChanges = false;
                     if (indicator) indicator.classList.remove("syncing");
                 }).catch(e => {
                     console.error("Firebase update error:", e);
