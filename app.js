@@ -31,12 +31,23 @@ let hasUnsavedChanges = false; // Set to true when writing, false when write suc
 function setupConnectionTracker() {
     const connectedRef = ref(database, '.info/connected');
     onValue(connectedRef, (snap) => {
+        const indicator = document.getElementById("cloudSyncIndicator");
         if (snap.val() === true) {
             console.log("Firebase Connected! 🟢");
             isFirebaseConnected = true;
+            if(indicator) {
+                indicator.classList.remove("offline");
+                indicator.classList.add("online");
+                indicator.title = "متصل بالسحابة";
+            }
         } else {
             console.log("Firebase Disconnected 🔴");
             isFirebaseConnected = false;
+            if(indicator) {
+                indicator.classList.remove("online");
+                indicator.classList.add("offline");
+                indicator.title = "غير متصل بالسحابة";
+            }
         }
     });
 
@@ -705,11 +716,19 @@ document.addEventListener('DOMContentLoaded', function() {
             if (typeof renderReportsPage === "function") renderReportsPage();
 
             if (window.CURRENT_MANAGER_ID) {
+                const indicator = document.getElementById("cloudSyncIndicator");
+                if (indicator) indicator.classList.add("syncing");
+                
                 const dbRef = ref(database, `users/${window.CURRENT_MANAGER_ID}`);
                 update(dbRef, {
                     students, attByDate, revenueByDate, groupFees, expensesByDate,
                     deletedStudents, syllabusData, evalData, sessionStudentsByDate, bookletsStock
-                }).catch(e => console.error("Firebase update error:", e));
+                }).then(() => {
+                    if (indicator) indicator.classList.remove("syncing");
+                }).catch(e => {
+                    console.error("Firebase update error:", e);
+                    if (indicator) indicator.classList.remove("syncing");
+                });
             }
         } catch(e) { 
             showToast("الذاكرة ممتلئة، يرجى حذف الخلفية لتوفير مساحة", "err"); 
@@ -723,11 +742,19 @@ document.addEventListener('DOMContentLoaded', function() {
             updateTopStats();
 
             if (window.CURRENT_MANAGER_ID) {
+                const indicator = document.getElementById("cloudSyncIndicator");
+                if (indicator) indicator.classList.add("syncing");
+                
                 const dbRef = ref(database, `users/${window.CURRENT_MANAGER_ID}`);
                 update(dbRef, {
                     students, attByDate, revenueByDate, groupFees, expensesByDate,
                     deletedStudents, syllabusData, evalData, sessionStudentsByDate, bookletsStock
-                }).catch(e => console.error("Firebase update error:", e));
+                }).then(() => {
+                    if (indicator) indicator.classList.remove("syncing");
+                }).catch(e => {
+                    console.error("Firebase update error:", e);
+                    if (indicator) indicator.classList.remove("syncing");
+                });
             }
         } catch(e) { 
             showToast("الذاكرة ممتلئة، يرجى حذف الخلفية لتوفير مساحة", "err"); 
