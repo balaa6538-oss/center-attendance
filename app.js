@@ -155,8 +155,16 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Push all current local state to the new path
             await update(dbRef, {
-                students, attByDate, revenueByDate, groupFees, expensesByDate,
-                deletedStudents, syllabusData, evalData, sessionStudentsByDate, bookletsStock
+                'students': students,
+                'deletedStudents': deletedStudents,
+                'attendance': attByDate,
+                'finances/revenue': revenueByDate,
+                'finances/expenses': expensesByDate,
+                'packages': groupFees,
+                'syllabus': syllabusData,
+                'evaluations': evalData,
+                'sessionStudents': sessionStudentsByDate,
+                'booklets': bookletsStock
             });
             
             localStorage.setItem("ca_migrated", "true");
@@ -738,8 +746,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 const dbRef = ref(database, `users/${window.CURRENT_MANAGER_ID}`);
                 update(dbRef, {
-                    students, attByDate, revenueByDate, groupFees, expensesByDate,
-                    deletedStudents, syllabusData, evalData, sessionStudentsByDate, bookletsStock
+                    'students': students,
+                    'attendance': attByDate,
+                    'finances/revenue': revenueByDate,
+                    'packages': groupFees,
+                    'finances/expenses': expensesByDate,
+                    'deletedStudents': deletedStudents,
+                    'syllabus': syllabusData,
+                    'evaluations': evalData,
+                    'sessionStudents': sessionStudentsByDate,
+                    'booklets': bookletsStock
                 }).then(() => {
                     if (indicator) indicator.classList.remove("syncing");
                 }).catch(e => {
@@ -764,8 +780,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 const dbRef = ref(database, `users/${window.CURRENT_MANAGER_ID}`);
                 update(dbRef, {
-                    students, attByDate, revenueByDate, groupFees, expensesByDate,
-                    deletedStudents, syllabusData, evalData, sessionStudentsByDate, bookletsStock
+                    'students': students,
+                    'attendance': attByDate,
+                    'finances/revenue': revenueByDate,
+                    'packages': groupFees,
+                    'finances/expenses': expensesByDate,
+                    'deletedStudents': deletedStudents,
+                    'syllabus': syllabusData,
+                    'evaluations': evalData,
+                    'sessionStudents': sessionStudentsByDate,
+                    'booklets': bookletsStock
                 }).then(() => {
                     if (indicator) indicator.classList.remove("syncing");
                 }).catch(e => {
@@ -788,15 +812,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (snapshot.exists()) {
                         const data = snapshot.val();
                     students = data.students || {};
-                    revenueByDate = data.revenueByDate || {};
-                    expensesByDate = data.expensesByDate || {};
-                    attByDate = data.attByDate || {};
-                    groupFees = data.groupFees || {};
                     deletedStudents = data.deletedStudents || {};
-                    syllabusData = data.syllabusData || [];
-                    evalData = data.evalData || {};
-                    sessionStudentsByDate = data.sessionStudentsByDate || {};
-                    bookletsStock = data.bookletsStock || {};
+                    attByDate = data.attendance || {};
+                    revenueByDate = data.finances?.revenue || {};
+                    expensesByDate = data.finances?.expenses || {};
+                    groupFees = data.packages || {};
+                    syllabusData = data.syllabus || [];
+                    evalData = data.evaluations || {};
+                    sessionStudentsByDate = data.sessionStudents || {};
+                    bookletsStock = data.booklets || {};
                     fromFirebase = true;
                     
                     localStorage.setItem(K_STUDENTS, JSON.stringify(students));
@@ -2944,16 +2968,16 @@ function updateDriveUI() {
                     
                     const dbRef = ref(database, `users/${window.CURRENT_MANAGER_ID}`);
                     await update(dbRef, {
-                        students: JSON.parse(backupData[K_STUDENTS] || "{}"),
-                        attByDate: JSON.parse(backupData[K_ATT_BY_DATE] || "{}"),
-                        revenueByDate: JSON.parse(backupData[K_REVENUE] || "{}"),
-                        groupFees: JSON.parse(backupData[K_GROUP_FEES] || "{}"),
-                        expensesByDate: JSON.parse(backupData[K_EXPENSES] || "{}"),
-                        deletedStudents: JSON.parse(backupData[K_DELETED] || "{}"),
-                        syllabusData: JSON.parse(backupData[K_SYLLABUS] || "[]"),
-                        evalData: JSON.parse(backupData[K_EVAL] || "{}"),
-                        sessionStudentsByDate: JSON.parse(backupData[K_SESSION_STUDENTS] || "{}"),
-                        bookletsStock: JSON.parse(backupData[K_BOOKLETS] || "{}")
+                        'students': JSON.parse(backupData[K_STUDENTS] || "{}"),
+                        'attendance': JSON.parse(backupData[K_ATT_BY_DATE] || "{}"),
+                        'finances/revenue': JSON.parse(backupData[K_REVENUE] || "{}"),
+                        'packages': JSON.parse(backupData[K_GROUP_FEES] || "{}"),
+                        'finances/expenses': JSON.parse(backupData[K_EXPENSES] || "{}"),
+                        'deletedStudents': JSON.parse(backupData[K_DELETED] || "{}"),
+                        'syllabus': JSON.parse(backupData[K_SYLLABUS] || "[]"),
+                        'evaluations': JSON.parse(backupData[K_EVAL] || "{}"),
+                        'sessionStudents': JSON.parse(backupData[K_SESSION_STUDENTS] || "{}"),
+                        'booklets': JSON.parse(backupData[K_BOOKLETS] || "{}")
                     });
                 }
                 
