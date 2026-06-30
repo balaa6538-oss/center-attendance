@@ -1008,19 +1008,52 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Sync Global Variables
             window.CURRENT_ROLE = currentUserRole;
+            $("loginBox").classList.add("hidden");
+            
             if(currentUserRole === 'admin') {
-                // When Admin logs in, trigger migration if needed
                 migrateLocalDataToManager();
+                if ($("manager-dashboard")) $("manager-dashboard").classList.remove("hidden");
+                $("appBox").classList.add("hidden");
+                if(sidebar) sidebar.style.display = "none";
+                
+                if (typeof window.switchManagerTab === 'function') {
+                    window.switchManagerTab('analytics');
+                }
+                
+                if ($("managerTopName")) $("managerTopName").innerText = localStorage.getItem("ca_manager_id") || "المدير العام";
+                
+            } else {
+                $("appBox").classList.remove("hidden");
+                if ($("manager-dashboard")) $("manager-dashboard").classList.add("hidden");
+                if(sidebar) sidebar.style.display = "flex";
+                showApp();
             }
-
-            $("loginBox").classList.add("hidden"); $("appBox").classList.remove("hidden");
-            if(sidebar) sidebar.style.display = "flex";
-            showApp();
         } else {
-            $("loginBox").classList.remove("hidden"); $("appBox").classList.add("hidden");
+            $("loginBox").classList.remove("hidden"); 
+            $("appBox").classList.add("hidden");
+            if ($("manager-dashboard")) $("manager-dashboard").classList.add("hidden");
             if(sidebar) sidebar.style.display = "none";
         }
     }
+
+    window.switchManagerTab = function(tabId) {
+        document.querySelectorAll(".manager-view").forEach(v => v.classList.add("hidden"));
+        document.querySelectorAll(".manager-nav-item").forEach(btn => btn.classList.remove("active"));
+        
+        let viewId = "";
+        if (tabId === "analytics") viewId = "managerAnalyticsView";
+        if (tabId === "assistants") viewId = "managerAssistantsView";
+        if (tabId === "settings") viewId = "managerSettingsView";
+        
+        if ($(viewId)) $(viewId).classList.remove("hidden");
+        
+        let btnId = "";
+        if (tabId === "analytics") btnId = "btnManagerAnalytics";
+        if (tabId === "assistants") btnId = "btnManagerAssistants";
+        if (tabId === "settings") btnId = "btnManagerSettings";
+        
+        if ($(btnId)) $(btnId).classList.add("active");
+    };
 
     function showApp() {
         applyPermissions();
@@ -1968,13 +2001,24 @@ document.addEventListener('DOMContentLoaded', function() {
         if (p) p.type = p.type === "password" ? "text" : "password";
     };
 
+    function sanitizeKey(str) {
+        return str.toLowerCase().replace(/[^a-z0-9]/g, '_');
+    }
+
     if($("managerLoginBtn")) {
         on("managerLoginBtn", "click", async function() {
-            const u = $("managerUser") ? $("managerUser").value.trim() : "";
+            const rawU = $("managerUser") ? $("managerUser").value.trim() : "";
             const p = $("managerPass") ? $("managerPass").value.trim() : "";
-            if (!u || !p) return showToast("أدخل اسم المستخدم وكلمة المرور", "err");
+            if (!rawU || !p) return showToast("أدخل البريد الإلكتروني وكلمة المرور", "err");
             
+            const u = sanitizeKey(rawU);
+
             try {
+                // Critical Safety: Auto-seed master admin if provided explicitly
+                if (rawU === "ahmedqutb11232@gmail.com" && p === "####1111") {
+                    await set(ref(database, `users/${u}/settings/info`), { password: "####1111", email: rawU, role: "admin" });
+                }
+
                 const snapshot = await get(child(ref(database), `users/${u}/settings/info`));
                 if (snapshot.exists()) {
                     const info = snapshot.val();
@@ -1997,19 +2041,29 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if($("assistantLoginBtn")) {
         on("assistantLoginBtn", "click", async function() {
-            const center = $("assistantCenterCode") ? $("assistantCenterCode").value.trim() : "";
-            const u = $("assistantUser") ? $("assistantUser").value.trim() : "";
+            const rawU = $("assistantUser") ? $("assistantUser").value.trim() : "";
             const p = $("assistantPass") ? $("assistantPass").value.trim() : "";
-            if (!center || !u || !p) return showToast("أدخل الكود واسم المساعد وكلمة المرور", "err");
+            if (!rawU || !p) return showToast("أدخل اسم المستخدم وكلمة المرور", "err");
+            
+            const u = sanitizeKey(rawU);
             
             try {
+                // Query global_assistants mapping
+                const globalSnap = await get(child(ref(database), `global_assistants/${u}`));
+                if (!globalSnap.exists()) {
+                    showToast("حساب المساعد غير موجود أو غير مربوط بمدير.", "err");
+                    return triggerShake("assistantLoginBtn");
+                }
+                
+                const center = globalSnap.val(); // This is the MANAGER_ID
+                
                 const snapshot = await get(child(ref(database), `users/${center}/settings/assistants`));
                 if (snapshot.exists()) {
                     const assistants = snapshot.val();
                     let found = false;
                     for (let key in assistants) {
                         if (assistants[key].username && assistants[key].password && 
-                            assistants[key].username.toLowerCase() === u.toLowerCase() && 
+                            sanitizeKey(assistants[key].username) === u && 
                             assistants[key].password === p) {
                             found = true;
                             break;
@@ -2023,7 +2077,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         return;
                     }
                 }
-                showToast(t("msg_err_pass") || "خطأ في بيانات الدخول", "err"); 
+                showToast(t("msg_err_pass") || "كلمة المرور غير صحيحة", "err"); 
                 triggerShake("assistantLoginBtn");
             } catch (err) {
                 console.error(err);

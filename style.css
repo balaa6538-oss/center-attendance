@@ -1079,6 +1079,10 @@ tr:hover td { background: var(--bg-hover); }
 }
 
 /* ── 17. LOGIN ── */
+.perspective-container {
+  perspective: 1200px;
+}
+
 .login-wrapper {
   min-height: 100vh;
   display: flex;
@@ -1088,18 +1092,70 @@ tr:hover td { background: var(--bg-hover); }
   padding: 20px;
 }
 
+.login-flip-container {
+  width: 100%;
+  max-width: 420px;
+  position: relative;
+  transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transform-style: preserve-3d;
+}
+
+.login-flip-container.flipped {
+  transform: rotateY(180deg);
+}
+
 .login-card {
   background: var(--bg-surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 40px 36px;
-  max-width: 420px;
   width: 100%;
   box-shadow: var(--shadow-lg);
-  border-top: 4px solid transparent;
-  border-image: var(--gradient) 1;
-  border-image-slice: 1;
-  animation: fadeInUp 0.5s ease;
+  backface-visibility: hidden;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.flip-front {
+  position: relative;
+  z-index: 2;
+  transform: rotateY(0deg);
+}
+
+.flip-back {
+  transform: rotateY(180deg);
+}
+
+.premium-manager-login {
+  background: linear-gradient(145deg, #0f172a, #1e293b);
+  border: 1px solid #d4af37;
+  color: #fff;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+}
+.premium-manager-login .lbl { color: #d4af37; }
+.premium-manager-login h1 {
+  background: linear-gradient(135deg, #FFD700, #DAA520);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.premium-manager-login .inp {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(212,175,55,0.3);
+  color: #fff;
+}
+.premium-manager-login .inp:focus { border-color: #d4af37; }
+.premium-manager-login .text-btn { color: #d4af37 !important; }
+
+.assistant-clean-login {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+}
+.dark-mode .assistant-clean-login {
+  background: #1e293b;
+  border-color: #334155;
 }
 
 .login-logo-area {
@@ -1114,64 +1170,13 @@ tr:hover td { background: var(--bg-hover); }
 }
 .login-logo-area h1 {
   font-size: 1.6em;
-  background: var(--gradient);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
   margin-bottom: 4px;
 }
 .login-logo-area .muted { font-size: 0.9em; color: var(--text-secondary); }
 
-.login-tabs {
-  display: flex;
-  background: var(--bg-inset);
-  border-radius: var(--radius-sm);
-  padding: 4px;
-  margin-bottom: 24px;
-  border: 1px solid var(--border);
-}
-.login-tab-btn {
-  flex: 1;
-  padding: 10px;
-  border: none;
-  background: transparent;
-  color: var(--text-secondary);
-  font-family: var(--font);
-  font-weight: 700;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: 0.3s;
-}
-.login-tab-btn.active {
-  background: var(--gradient);
-  color: #fff;
-  box-shadow: 0 4px 10px rgba(37,99,235,0.3);
-}
 .login-form-area {
-  display: none;
-  animation: fadeInUp 0.4s ease;
-}
-.login-form-area.active {
   display: block;
 }
-.login-card .btn.primary {
-  height: 50px;
-  font-size: 1.1em;
-  position: relative;
-  overflow: hidden;
-}
-.login-card .btn.primary::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  inset-inline-start: -100%;
-  width: 50%;
-  height: 100%;
-  background: linear-gradient(to right, transparent, rgba(255,255,255,0.2), transparent);
-  transform: skewX(-25deg);
-  animation: loginShine 4s infinite;
-}
-@keyframes loginShine { 0% { left: -100%; } 25%, 100% { left: 200%; } }
 
 .login-wrapper.hidden { display: none !important; }
 
@@ -1633,4 +1638,102 @@ body.flash-green::after { box-shadow: inset 0 0 25px 8px rgba(16,185,129,0.5); t
 
 @keyframes spinCloud {
   100% { transform: rotate(360deg); }
+}
+
+/* ── 22. MANAGER DASHBOARD SAAS ── */
+.manager-layout {
+  display: flex;
+  min-height: 100vh;
+  background: #0f172a;
+  color: #f8fafc;
+  font-family: var(--font);
+}
+.manager-sidebar {
+  width: 280px;
+  background: #1e293b;
+  border-left: 1px solid #334155;
+  display: flex;
+  flex-direction: column;
+}
+.manager-sidebar-header {
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  border-bottom: 1px solid #334155;
+}
+.manager-logo {
+  width: 45px;
+  height: 45px;
+  border-radius: 12px;
+  border: 2px solid #d4af37;
+}
+.manager-brand {
+  font-size: 1.4em;
+  font-weight: 800;
+  color: #d4af37;
+  letter-spacing: 0.5px;
+}
+.manager-menu {
+  flex: 1;
+  padding: 20px 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.manager-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  background: transparent;
+  border: none;
+  border-radius: 10px;
+  color: #cbd5e1;
+  font-size: 1.05em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s ease;
+  text-align: right;
+}
+.manager-nav-item:hover {
+  background: rgba(212, 175, 55, 0.1);
+  color: #d4af37;
+}
+.manager-nav-item.active {
+  background: #d4af37;
+  color: #0f172a;
+}
+.manager-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.manager-topbar {
+  height: 75px;
+  background: #1e293b;
+  border-bottom: 1px solid #334155;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 30px;
+}
+.manager-topbar h2 {
+  font-size: 1.3em;
+  color: #f1f5f9;
+}
+.manager-user-info {
+  background: #334155;
+  padding: 8px 15px;
+  border-radius: 20px;
+  font-size: 0.9em;
+  border: 1px solid #475569;
+}
+.manager-workspace {
+  flex: 1;
+  overflow-y: auto;
+  background: #0f172a;
+}
+.manager-view.hidden {
+  display: none;
 }
