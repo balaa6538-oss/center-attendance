@@ -10,7 +10,7 @@
    ============================================================================= */
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
+import { getDatabase, ref, set, get, child, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
 
 const firebaseConfig = { 
     apiKey: "AIzaSyCIEfTmssuOHlRw2sbVs4KUOnmoCKxBGfQ", 
@@ -25,18 +25,32 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 
-function testFirebaseConnection() {
-    const testRef = ref(database, 'test/connection');
-    set(testRef, {
-        message: "Hello",
-        timestamp: Date.now()
-    }).then(() => {
-        console.log("Firebase Connected!");
-    }).catch((error) => {
-        console.error("Firebase Connection Error:", error);
+let isFirebaseConnected = false;
+let hasUnsavedChanges = false; // Set to true when writing, false when write succeeds
+
+function setupConnectionTracker() {
+    const connectedRef = ref(database, '.info/connected');
+    onValue(connectedRef, (snap) => {
+        if (snap.val() === true) {
+            console.log("Firebase Connected! 🟢");
+            isFirebaseConnected = true;
+        } else {
+            console.log("Firebase Disconnected 🔴");
+            isFirebaseConnected = false;
+        }
+    });
+
+    // Warn user before closing if offline and there are potential unsaved changes
+    window.addEventListener('beforeunload', (e) => {
+        if (!isFirebaseConnected) {
+            // Cancel the event and show prompt
+            e.preventDefault();
+            e.returnValue = 'تحذير: لا يوجد اتصال بالإنترنت، قد تفقد التعديلات الأخيرة التي لم ترفع للسيرفر!';
+            return e.returnValue;
+        }
     });
 }
-testFirebaseConnection();
+setupConnectionTracker();
 
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -1695,22 +1709,67 @@ document.addEventListener('DOMContentLoaded', function() {
     // ==========================================
     // 14. BINDINGS & EVENT LISTENERS
     // ==========================================
-    on("loginBtn", "click", function() {
-        const u = $("user") ? $("user").value.trim() : "";
-        const p = $("pass") ? $("pass").value.trim() : "";
-        
-        if(u === ADMIN_USER && p === ADMIN_PASS) { 
-            localStorage.setItem(K_AUTH, "1"); localStorage.setItem(K_ROLE, "admin"); checkAuth(); 
-        } else if (u.toLowerCase() === ASST_USER.toLowerCase() && p === ASST_PASS) { 
-            localStorage.setItem(K_AUTH, "1"); localStorage.setItem(K_ROLE, "assistant"); checkAuth(); 
-        } else { 
-            showToast(t("msg_err_pass"), "err"); 
-            triggerShake("loginBtn"); // إضافة اهتزاز لزرار الدخول
+    // Global functions for the HTML onclick handlers
+    window.switchLoginTab = function(tab) {
+        if(tab === 'manager') {
+            $("tabManagerLogin").classList.add("active");
+            $("tabAssistantLogin").classList.remove("active");
+            $("managerLoginForm").classList.remove("hidden");
+            $("managerLoginForm").classList.add("active");
+            $("assistantLoginForm").classList.add("hidden");
+            $("assistantLoginForm").classList.remove("active");
+        } else {
+            $("tabAssistantLogin").classList.add("active");
+            $("tabManagerLogin").classList.remove("active");
+            $("assistantLoginForm").classList.remove("hidden");
+            $("assistantLoginForm").classList.add("active");
+            $("managerLoginForm").classList.add("hidden");
+            $("managerLoginForm").classList.remove("active");
         }
-    });
+    };
 
-    on("logoutBtn", "click", function() { localStorage.removeItem(K_AUTH); location.reload(); });
-    on("togglePass", "click", function() { const p = $("pass"); if (p) p.type = p.type === "password" ? "text" : "password"; });
+    window.togglePassword = function(inputId) {
+        const p = $(inputId);
+        if (p) p.type = p.type === "password" ? "text" : "password";
+    };
+
+    if($("managerLoginBtn")) {
+        on("managerLoginBtn", "click", function() {
+            const u = $("managerUser") ? $("managerUser").value.trim() : "";
+            const p = $("managerPass") ? $("managerPass").value.trim() : "";
+            
+            // TODO: سيتم تغيير هذا للتحقق من فايربيز (Firebase) في الخطوة القادمة
+            if(u === ADMIN_USER && p === ADMIN_PASS) { 
+                localStorage.setItem(K_AUTH, "1"); 
+                localStorage.setItem(K_ROLE, "admin"); 
+                checkAuth(); 
+            } else { 
+                showToast(t("msg_err_pass") || "خطأ في بيانات الدخول", "err"); 
+                triggerShake("managerLoginBtn"); 
+            }
+        });
+    }
+
+    if($("assistantLoginBtn")) {
+        on("assistantLoginBtn", "click", function() {
+            const center = $("assistantCenterCode") ? $("assistantCenterCode").value.trim() : "";
+            const u = $("assistantUser") ? $("assistantUser").value.trim() : "";
+            const p = $("assistantPass") ? $("assistantPass").value.trim() : "";
+            
+            // TODO: سيتم تغيير هذا للتحقق من فايربيز
+            if (u.toLowerCase() === ASST_USER.toLowerCase() && p === ASST_PASS) { 
+                localStorage.setItem(K_AUTH, "1"); 
+                localStorage.setItem(K_ROLE, "assistant"); 
+                localStorage.setItem("ca_manager_id", center); // حفظ كود السنتر
+                checkAuth(); 
+            } else { 
+                showToast(t("msg_err_pass") || "خطأ في بيانات الدخول", "err"); 
+                triggerShake("assistantLoginBtn"); 
+            }
+        });
+    }
+
+    on("logoutBtn", "click", function() { localStorage.removeItem(K_AUTH); localStorage.removeItem("ca_manager_id"); location.reload(); });
 
     // User Profile Widget Listeners
     on("userProfileToggleBtn", "click", function(e) {

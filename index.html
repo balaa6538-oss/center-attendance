@@ -43,16 +43,40 @@
       <div class="login-logo-area">
         <img src="icon-192.png" alt="Studify" class="login-logo">
         <h1 data-i18n="login_title">Studify</h1>
-        <p class="muted" data-i18n="login_desc">الدخول للمسؤول فقط</p>
+        <p class="muted" data-i18n="login_desc">مرحباً بك في نظام الإدارة</p>
       </div>
-      <label class="lbl">Username</label>
-      <input id="user" class="inp" type="text" placeholder="Admin / User">
-      <label class="lbl">Password</label>
-      <div class="passWrap">
-        <input id="pass" class="inp" type="password" placeholder="Password">
-        <button id="togglePass" class="eyeBtn" type="button">👁️</button>
+
+      <!-- تبويبات تسجيل الدخول -->
+      <div class="login-tabs">
+        <button class="login-tab-btn active" id="tabManagerLogin" onclick="switchLoginTab('manager')" type="button">دخول كمدير</button>
+        <button class="login-tab-btn" id="tabAssistantLogin" onclick="switchLoginTab('assistant')" type="button">دخول كمساعد</button>
       </div>
-      <button id="loginBtn" class="btn primary full-btn" data-i18n="login_btn">دخول</button>
+
+      <!-- فورم المدير -->
+      <div id="managerLoginForm" class="login-form-area active">
+        <label class="lbl">اسم المستخدم أو الإيميل (مدير)</label>
+        <input id="managerUser" class="inp" type="text" placeholder="Manager ID / Email">
+        <label class="lbl">كلمة المرور</label>
+        <div class="passWrap">
+          <input id="managerPass" class="inp" type="password" placeholder="Password">
+          <button id="toggleManagerPass" class="eyeBtn" type="button" onclick="togglePassword('managerPass')">👁️</button>
+        </div>
+        <button id="managerLoginBtn" class="btn primary full-btn">دخول الإدارة</button>
+      </div>
+
+      <!-- فورم المساعد -->
+      <div id="assistantLoginForm" class="login-form-area hidden">
+        <label class="lbl">كود السنتر (Manager ID)</label>
+        <input id="assistantCenterCode" class="inp" type="text" placeholder="Center Code / Manager Username">
+        <label class="lbl">اسم المستخدم (مساعد)</label>
+        <input id="assistantUser" class="inp" type="text" placeholder="Assistant Username">
+        <label class="lbl">كلمة المرور</label>
+        <div class="passWrap">
+          <input id="assistantPass" class="inp" type="password" placeholder="Password">
+          <button id="toggleAssistantPass" class="eyeBtn" type="button" onclick="togglePassword('assistantPass')">👁️</button>
+        </div>
+        <button id="assistantLoginBtn" class="btn success full-btn">دخول المساعد</button>
+      </div>
     </div>
   </div>
 
