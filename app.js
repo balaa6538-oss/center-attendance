@@ -2088,7 +2088,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    on("logoutBtn", "click", function() { localStorage.removeItem(K_AUTH); localStorage.removeItem("ca_manager_id"); location.reload(); });
+    window.logout = function() {
+        localStorage.removeItem(K_AUTH);
+        localStorage.removeItem(K_ROLE);
+        localStorage.removeItem("ca_manager_id");
+        localStorage.removeItem("ca_current_username");
+        location.reload();
+    };
+
+    if($("logoutBtn")) on("logoutBtn", "click", window.logout);
+    if($("managerLogoutBtn")) on("managerLogoutBtn", "click", window.logout);
 
     // User Profile Widget Listeners
     on("userProfileToggleBtn", "click", function(e) {
