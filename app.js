@@ -83,10 +83,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const K_NOTEBOOK     = "ca_notebook_v1";
     const K_GROUP_FEES   = "ca_group_fees_v1";
     const K_EXPENSES     = "ca_expenses_v1";
-    const K_SYLLABUS     = "ca_syllabus_v1"; // مفتاح حفظ المنهج
+    const K_SYLLABUS     = "ca_syllabus_v1"; 
     const K_EVAL         = "ca_eval_form_v1";
     const K_SESSION_STUDENTS = "ca_session_students_v1";
     const K_BOOKLETS     = "ca_booklets_v1";
+
+    // GLOBAL TENANT STATE
+    window.CURRENT_MANAGER_ID = localStorage.getItem("ca_manager_id") || "";
+    window.CURRENT_ROLE = localStorage.getItem(K_ROLE) || "";
 
     // ==========================================
     // 2. GLOBAL SYSTEM STATE
@@ -104,13 +108,35 @@ document.addEventListener('DOMContentLoaded', function() {
     let bookletsStock    = {};
     
     let currentId        = null;
-    let currentUserRole  = "admin";
+    let currentUserRole  = window.CURRENT_ROLE || "admin";
     let currentPage      = 1;
     let currentFilteredList = [];
     let recentScans      = [];
     let isRevHidden      = false;
     let passSuccessCallback = null;
     let currentLang      = localStorage.getItem(K_LANG) || "ar";
+
+    // Data Migration Function
+    async function migrateLocalDataToManager() {
+        if (window.CURRENT_ROLE !== 'admin' || !window.CURRENT_MANAGER_ID) return;
+        if (localStorage.getItem("ca_migrated") === "true") return;
+
+        try {
+            console.log("Migrating local data to new multi-tenant structure...");
+            const dbRef = ref(database, `users/${window.CURRENT_MANAGER_ID}`);
+            
+            // Push all current local state to the new path
+            await update(dbRef, {
+                students, attByDate, revenueByDate, groupFees, expensesByDate,
+                deletedStudents, syllabusData, evalData, sessionStudentsByDate, bookletsStock
+            });
+            
+            localStorage.setItem("ca_migrated", "true");
+            console.log("Migration Successful! Data is now isolated under manager:", window.CURRENT_MANAGER_ID);
+        } catch (e) {
+            console.error("Migration failed:", e);
+        }
+    }
 
     // ==========================================
     // 3. THE COMPREHENSIVE DICTIONARY
@@ -678,11 +704,13 @@ document.addEventListener('DOMContentLoaded', function() {
             updateTopStats(); updateFinanceSummary(); renderCharts();
             if (typeof renderReportsPage === "function") renderReportsPage();
 
-            const dbRef = ref(database, 'studentsData');
-            set(dbRef, {
-                students, attByDate, revenueByDate, groupFees, expensesByDate,
-                deletedStudents, syllabusData, evalData, sessionStudentsByDate, bookletsStock
-            }).catch(e => console.error("Firebase save error:", e));
+            if (window.CURRENT_MANAGER_ID) {
+                const dbRef = ref(database, `users/${window.CURRENT_MANAGER_ID}`);
+                update(dbRef, {
+                    students, attByDate, revenueByDate, groupFees, expensesByDate,
+                    deletedStudents, syllabusData, evalData, sessionStudentsByDate, bookletsStock
+                }).catch(e => console.error("Firebase update error:", e));
+            }
         } catch(e) { 
             showToast("الذاكرة ممتلئة، يرجى حذف الخلفية لتوفير مساحة", "err"); 
         }
@@ -694,11 +722,13 @@ document.addEventListener('DOMContentLoaded', function() {
             localStorage.setItem(K_ATT_BY_DATE, JSON.stringify(attByDate));
             updateTopStats();
 
-            const dbRef = ref(database, 'studentsData');
-            set(dbRef, {
-                students, attByDate, revenueByDate, groupFees, expensesByDate,
-                deletedStudents, syllabusData, evalData, sessionStudentsByDate, bookletsStock
-            }).catch(e => console.error("Firebase save error:", e));
+            if (window.CURRENT_MANAGER_ID) {
+                const dbRef = ref(database, `users/${window.CURRENT_MANAGER_ID}`);
+                update(dbRef, {
+                    students, attByDate, revenueByDate, groupFees, expensesByDate,
+                    deletedStudents, syllabusData, evalData, sessionStudentsByDate, bookletsStock
+                }).catch(e => console.error("Firebase update error:", e));
+            }
         } catch(e) { 
             showToast("الذاكرة ممتلئة، يرجى حذف الخلفية لتوفير مساحة", "err"); 
         }
@@ -708,10 +738,11 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             let fromFirebase = false;
             try {
-                const dbRef = ref(database);
-                const snapshot = await get(child(dbRef, 'studentsData'));
-                if (snapshot.exists()) {
-                    const data = snapshot.val();
+                if (window.CURRENT_MANAGER_ID) {
+                    const dbRef = ref(database);
+                    const snapshot = await get(child(dbRef, `users/${window.CURRENT_MANAGER_ID}`));
+                    if (snapshot.exists()) {
+                        const data = snapshot.val();
                     students = data.students || {};
                     revenueByDate = data.revenueByDate || {};
                     expensesByDate = data.expensesByDate || {};
@@ -735,6 +766,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     localStorage.setItem(K_SESSION_STUDENTS, JSON.stringify(sessionStudentsByDate));
                     localStorage.setItem(K_BOOKLETS, JSON.stringify(bookletsStock));
                     console.log("Data loaded successfully from Firebase");
+                    }
                 }
             } catch(e) {
                 console.error("Firebase load failed, falling back to local storage:", e);
@@ -793,6 +825,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const sidebar = document.querySelector('.sidebar');
         if(localStorage.getItem(K_AUTH) === "1") {
             currentUserRole = localStorage.getItem(K_ROLE) || "admin";
+            
+            // Sync Global Variables
+            window.CURRENT_ROLE = currentUserRole;
+            if(currentUserRole === 'admin') {
+                // When Admin logs in, trigger migration if needed
+                migrateLocalDataToManager();
+            }
+
             $("loginBox").classList.add("hidden"); $("appBox").classList.remove("hidden");
             if(sidebar) sidebar.style.display = "flex";
             showApp();
@@ -1742,6 +1782,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if(u === ADMIN_USER && p === ADMIN_PASS) { 
                 localStorage.setItem(K_AUTH, "1"); 
                 localStorage.setItem(K_ROLE, "admin"); 
+                // Admin's username is their tenant ID
+                localStorage.setItem("ca_manager_id", u);
                 checkAuth(); 
             } else { 
                 showToast(t("msg_err_pass") || "خطأ في بيانات الدخول", "err"); 
