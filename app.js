@@ -9,6 +9,36 @@
    - Premium UX: Error Shake, Edge Flash, Hold-To-Delete
    ============================================================================= */
 
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
+
+const firebaseConfig = { 
+    apiKey: "AIzaSyCIEfTmssuOHlRw2sbVs4KUOnmoCKxBGfQ", 
+    authDomain: "studify-88e15.firebaseapp.com", 
+    databaseURL: "https://studify-88e15-default-rtdb.firebaseio.com", 
+    projectId: "studify-88e15", 
+    storageBucket: "studify-88e15.appspot.com", 
+    messagingSenderId: "192529425530", 
+    appId: "1:192529425530:web:f633acfc3736b3d28607c3" 
+};
+
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
+
+function testFirebaseConnection() {
+    const testRef = ref(database, 'test/connection');
+    set(testRef, {
+        message: "Hello",
+        timestamp: Date.now()
+    }).then(() => {
+        console.log("Firebase Connected!");
+    }).catch((error) => {
+        console.error("Firebase Connection Error:", error);
+    });
+}
+testFirebaseConnection();
+
+
 document.addEventListener('DOMContentLoaded', function() {
     console.log("V-PRO MAX Engine: Initializing System...");
 
