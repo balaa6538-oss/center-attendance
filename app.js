@@ -3335,12 +3335,12 @@ function updateDriveUI() {
                         pass = assistants[key].password;
                     }
                     html += `
-                    <div class="item flexBetween" style="background: var(--glass-bg); backdrop-filter: var(--glass-blur); border: var(--glass-border); padding: 16px 20px; border-radius: var(--radius); margin-bottom: 12px; transition: transform 0.3s; box-shadow: var(--shadow-sm);" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                    <div class="item flexBetween" style="background: var(--bg-inset); border: 1px solid var(--border); padding: 10px 15px; border-radius: 8px; margin-bottom: 8px;">
                         <div>
-                            <b style="font-size: 1.1em; color: var(--text-primary);">${uName}</b>
-                            <div class="muted" style="font-size: 0.9em; margin-top: 4px; color: var(--text-secondary);">كلمة المرور: <span style="color: var(--primary); font-family: monospace;">${pass}</span></div>
+                            <b>${uName}</b>
+                            <div class="muted" style="font-size: 0.85em;">كلمة المرور: ${pass}</div>
                         </div>
-                        <button class="btn danger smallBtn iconOnly" onclick="window.deleteAssistant('${key}')" style="box-shadow: none;">🗑️</button>
+                        <button class="btn danger smallBtn iconOnly" onclick="window.deleteAssistant('${key}')">🗑️</button>
                     </div>`;
                 }
                 listEl.innerHTML = html;
