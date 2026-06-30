@@ -2933,11 +2933,34 @@ function updateDriveUI() {
             if (data.files && data.files.length > 0) {
                 const fileRes = await fetch(`https://www.googleapis.com/drive/v3/files/${data.files[0].id}?alt=media`, { headers: { 'Authorization': `Bearer ${accessToken}` } });
                 const backupData = await fileRes.json();
+                
+                // 1. Save to LocalStorage
                 for (let key in backupData) { localStorage.setItem(key, backupData[key]); }
+                
+                // 2. Push to Firebase if manager is logged in
+                if (window.CURRENT_MANAGER_ID) {
+                    const indicator = document.getElementById("cloudSyncIndicator");
+                    if (indicator) indicator.classList.add("syncing");
+                    
+                    const dbRef = ref(database, `users/${window.CURRENT_MANAGER_ID}`);
+                    await update(dbRef, {
+                        students: JSON.parse(backupData[K_STUDENTS] || "{}"),
+                        attByDate: JSON.parse(backupData[K_ATT_BY_DATE] || "{}"),
+                        revenueByDate: JSON.parse(backupData[K_REVENUE] || "{}"),
+                        groupFees: JSON.parse(backupData[K_GROUP_FEES] || "{}"),
+                        expensesByDate: JSON.parse(backupData[K_EXPENSES] || "{}"),
+                        deletedStudents: JSON.parse(backupData[K_DELETED] || "{}"),
+                        syllabusData: JSON.parse(backupData[K_SYLLABUS] || "[]"),
+                        evalData: JSON.parse(backupData[K_EVAL] || "{}"),
+                        sessionStudentsByDate: JSON.parse(backupData[K_SESSION_STUDENTS] || "{}"),
+                        bookletsStock: JSON.parse(backupData[K_BOOKLETS] || "{}")
+                    });
+                }
+                
                 showToast(currentLang === 'ar' ? "تم استرجاع البيانات بنجاح، سيتم إعادة التحميل..." : "Data restored successfully. Restarting...");
                 setTimeout(() => location.reload(), 1500);
             } else { showToast(currentLang === 'ar' ? "لم يتم العثور على نسخة احتياطية في الدرايف" : "No backup found in Drive", "err"); }
-        } catch (err) { showToast(currentLang === 'ar' ? "فشل الاسترجاع، تأكد من الاتصال بالنت" : "Restore failed, check connection", "err"); }
+        } catch (err) { console.error(err); showToast(currentLang === 'ar' ? "فشل الاسترجاع، تأكد من الاتصال بالنت" : "Restore failed, check connection", "err"); }
     });
 // ==========================================
     // 17.8. SHIFT MANAGER LOGIC
