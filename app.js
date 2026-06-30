@@ -10,7 +10,7 @@
    ============================================================================= */
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
+import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
 
 const firebaseConfig = { 
     apiKey: "AIzaSyCIEfTmssuOHlRw2sbVs4KUOnmoCKxBGfQ", 
@@ -663,6 +663,12 @@ document.addEventListener('DOMContentLoaded', function() {
             localStorage.setItem(K_BOOKLETS, JSON.stringify(bookletsStock));
             updateTopStats(); updateFinanceSummary(); renderCharts();
             if (typeof renderReportsPage === "function") renderReportsPage();
+
+            const dbRef = ref(database, 'studentsData');
+            set(dbRef, {
+                students, attByDate, revenueByDate, groupFees, expensesByDate,
+                deletedStudents, syllabusData, evalData, sessionStudentsByDate, bookletsStock
+            }).catch(e => console.error("Firebase save error:", e));
         } catch(e) { 
             showToast("الذاكرة ممتلئة، يرجى حذف الخلفية لتوفير مساحة", "err"); 
         }
@@ -673,23 +679,66 @@ document.addEventListener('DOMContentLoaded', function() {
             localStorage.setItem(K_STUDENTS, JSON.stringify(students));
             localStorage.setItem(K_ATT_BY_DATE, JSON.stringify(attByDate));
             updateTopStats();
+
+            const dbRef = ref(database, 'studentsData');
+            set(dbRef, {
+                students, attByDate, revenueByDate, groupFees, expensesByDate,
+                deletedStudents, syllabusData, evalData, sessionStudentsByDate, bookletsStock
+            }).catch(e => console.error("Firebase save error:", e));
         } catch(e) { 
             showToast("الذاكرة ممتلئة، يرجى حذف الخلفية لتوفير مساحة", "err"); 
         }
     }
 
-    function loadAll() {
+    async function loadAll() {
         try {
-            students       = JSON.parse(localStorage.getItem(K_STUDENTS) || "{}");
-            revenueByDate  = JSON.parse(localStorage.getItem(K_REVENUE) || "{}");
-            expensesByDate = JSON.parse(localStorage.getItem(K_EXPENSES) || "{}");
-            attByDate      = JSON.parse(localStorage.getItem(K_ATT_BY_DATE) || "{}");
-            groupFees      = JSON.parse(localStorage.getItem(K_GROUP_FEES) || "{}");
-            deletedStudents= JSON.parse(localStorage.getItem(K_DELETED) || "{}");
-            syllabusData   = JSON.parse(localStorage.getItem(K_SYLLABUS) || "[]");
-            evalData       = JSON.parse(localStorage.getItem(K_EVAL) || "{}");
-            sessionStudentsByDate = JSON.parse(localStorage.getItem(K_SESSION_STUDENTS) || "{}");
-            bookletsStock  = JSON.parse(localStorage.getItem(K_BOOKLETS) || "{}");
+            let fromFirebase = false;
+            try {
+                const dbRef = ref(database);
+                const snapshot = await get(child(dbRef, 'studentsData'));
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    students = data.students || {};
+                    revenueByDate = data.revenueByDate || {};
+                    expensesByDate = data.expensesByDate || {};
+                    attByDate = data.attByDate || {};
+                    groupFees = data.groupFees || {};
+                    deletedStudents = data.deletedStudents || {};
+                    syllabusData = data.syllabusData || [];
+                    evalData = data.evalData || {};
+                    sessionStudentsByDate = data.sessionStudentsByDate || {};
+                    bookletsStock = data.bookletsStock || {};
+                    fromFirebase = true;
+                    
+                    localStorage.setItem(K_STUDENTS, JSON.stringify(students));
+                    localStorage.setItem(K_ATT_BY_DATE, JSON.stringify(attByDate));
+                    localStorage.setItem(K_REVENUE, JSON.stringify(revenueByDate));
+                    localStorage.setItem(K_GROUP_FEES, JSON.stringify(groupFees)); 
+                    localStorage.setItem(K_EXPENSES, JSON.stringify(expensesByDate));
+                    localStorage.setItem(K_DELETED, JSON.stringify(deletedStudents));
+                    localStorage.setItem(K_SYLLABUS, JSON.stringify(syllabusData));
+                    localStorage.setItem(K_EVAL, JSON.stringify(evalData));
+                    localStorage.setItem(K_SESSION_STUDENTS, JSON.stringify(sessionStudentsByDate));
+                    localStorage.setItem(K_BOOKLETS, JSON.stringify(bookletsStock));
+                    console.log("Data loaded successfully from Firebase");
+                }
+            } catch(e) {
+                console.error("Firebase load failed, falling back to local storage:", e);
+            }
+
+            if (!fromFirebase) {
+                students       = JSON.parse(localStorage.getItem(K_STUDENTS) || "{}");
+                revenueByDate  = JSON.parse(localStorage.getItem(K_REVENUE) || "{}");
+                expensesByDate = JSON.parse(localStorage.getItem(K_EXPENSES) || "{}");
+                attByDate      = JSON.parse(localStorage.getItem(K_ATT_BY_DATE) || "{}");
+                groupFees      = JSON.parse(localStorage.getItem(K_GROUP_FEES) || "{}");
+                deletedStudents= JSON.parse(localStorage.getItem(K_DELETED) || "{}");
+                syllabusData   = JSON.parse(localStorage.getItem(K_SYLLABUS) || "[]");
+                evalData       = JSON.parse(localStorage.getItem(K_EVAL) || "{}");
+                sessionStudentsByDate = JSON.parse(localStorage.getItem(K_SESSION_STUDENTS) || "{}");
+                bookletsStock  = JSON.parse(localStorage.getItem(K_BOOKLETS) || "{}");
+                console.log("Data loaded from local storage");
+            }
             
             if($("evalCenterName")) $("evalCenterName").value = evalData.centerName || "";
             if($("evalManager")) $("evalManager").value = evalData.manager || "";
@@ -3684,17 +3733,20 @@ function updateDriveUI() {
     });
 
     // Startup Sequence
-    loadAll(); 
-    ensureBase500(); 
-    checkAuth(); 
-    applyLanguage(); 
-    checkDailyBackup();
-    setTimeout(checkQR, 500);
+    async function initSystem() {
+        await loadAll(); 
+        ensureBase500(); 
+        checkAuth(); 
+        applyLanguage(); 
+        checkDailyBackup();
+        setTimeout(checkQR, 500);
 
-    // مزامنة صامتة عند فتح البرنامج في يوم جديد
-    if (localStorage.getItem("last_cloud_sync_date") !== nowDateStr()) {
-        setTimeout(() => { 
-            if (accessToken) backupToDrive(false); 
-        }, 8000);
+        // مزامنة صامتة عند فتح البرنامج في يوم جديد
+        if (localStorage.getItem("last_cloud_sync_date") !== nowDateStr()) {
+            setTimeout(() => { 
+                if (typeof accessToken !== "undefined" && accessToken) backupToDrive(false); 
+            }, 8000);
+        }
     }
+    initSystem();
 });
