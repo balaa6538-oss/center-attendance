@@ -143,13 +143,14 @@ document.addEventListener('DOMContentLoaded', function() {
             if (target.id === 'searchAny') document.getElementById("searchBtn")?.click();
             else if (target.id === 'openId') document.getElementById("openIdBtn")?.click();
             else if (target.id === 'quickAttendId') document.getElementById("quickAttendBtn")?.click();
-            else if (target.id === 'newId' || target.id === 'stName' || target.id === 'stPhone') document.getElementById("saveBtn")?.click();
-            else if (target.id === 'newPaymentInput') document.getElementById("payBtn")?.click();
+            else if (target.id === 'newId') document.getElementById("addNewBtn")?.click();
+            else if (target.id === 'stName' || target.id === 'stPhone') document.getElementById("saveStudentBtn")?.click();
+            else if (target.id === 'newPaymentInput') document.getElementById("addPaymentBtn")?.click();
             else if (target.id === 'sessStName' || target.id === 'sessStPhone' || target.id === 'sessStAmount') document.getElementById("saveSessionStBtn")?.click();
             else if (target.id === 'managerUser' || target.id === 'managerPass') document.getElementById("managerLoginBtn")?.click();
             else if (target.id === 'assistantCenterCode' || target.id === 'assistantUser' || target.id === 'assistantPass') document.getElementById("assistantLoginBtn")?.click();
-            else if (target.id === 'customPassInput') document.getElementById("customPassConfirmBtn")?.click();
-            else if (target.id === 'tableSearchInp') target.blur(); // Live search just needs blur to dismiss mobile keyboard
+            else if (target.id === 'customPassInput') document.getElementById("customPassConfirm")?.click();
+            else if (target.id === 'tableSearchInp') target.blur(); 
         }
     });
 
@@ -1208,6 +1209,18 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 remBox.className = "remain-box remain-red";
                 remBox.innerHTML = `${t("lbl_remaining")} <span id="stRemainingAmt">${remain}</span> ج`;
+            }
+        }
+
+        st.debt = remain > 0 ? remain : 0;
+        
+        const debtWarning = $("debtWarningContainer");
+        if (debtWarning) {
+            if (st.debt > 0) {
+                $("debtAmountDisplay").innerText = st.debt;
+                debtWarning.classList.remove("hidden");
+            } else {
+                debtWarning.classList.add("hidden");
             }
         }
 
@@ -2278,6 +2291,27 @@ on("quickAttendId", "keypress", function(e) {
 
     on("unmarkTodayBtn", "click", function() { 
         if(currentId) { removeAttendance(currentId, nowDateStr()); updateStudentUI(currentId); renderReport(nowDateStr()); }
+    });
+
+    on("payDebtBtn", "click", function() {
+        if(!currentId) return;
+        const st = students[currentId];
+        if(!st || !st.debt) return;
+        
+        let v = st.debt;
+        st.paid = (st.paid || 0) + v;
+        if (!st.payments) st.payments = [];
+        st.payments.push({ date: nowDateStr(), amount: v, method: "cash" });
+        
+        const today = nowDateStr();
+        if (!revenueByDate[today]) revenueByDate[today] = 0;
+        revenueByDate[today] += v;
+        
+        st.debt = 0;
+        if (typeof logAction === "function") logAction("تسديد مديونية", `تم تسديد كامل مديونية الطالب ${st.name || currentId} بقيمة ${v} ج كاش`);
+        
+        saveAll(); updateStudentUI(currentId);
+        fireConfetti(); playSound("money"); showToast("تم سداد المديونية بالكامل ✅");
     });
 
     on("addPaymentBtn", "click", function() {
