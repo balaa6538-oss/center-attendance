@@ -2026,6 +2026,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         localStorage.setItem(K_AUTH, "1"); 
                         localStorage.setItem(K_ROLE, "admin"); 
                         localStorage.setItem("ca_manager_id", u);
+                        localStorage.setItem("ca_current_username", "المدير");
                         checkAuth(); 
                         return;
                     }
@@ -2073,6 +2074,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         localStorage.setItem(K_AUTH, "1"); 
                         localStorage.setItem(K_ROLE, "assistant"); 
                         localStorage.setItem("ca_manager_id", center);
+                        localStorage.setItem("ca_current_username", assistants[key].username);
                         checkAuth(); 
                         return;
                     }
@@ -3255,63 +3257,120 @@ function updateDriveUI() {
         } catch (err) { console.error(err); showToast(currentLang === 'ar' ? "فشل الاسترجاع، تأكد من الاتصال بالنت" : "Restore failed, check connection", "err"); }
     });
 // ==========================================
-    // 17.8. SHIFT MANAGER LOGIC
+    // 17.8. ASSISTANT MANAGEMENT (SAAS)
     // ==========================================
-    let shiftManagers = JSON.parse(localStorage.getItem("ca_shift_managers") || "[]");
-    let currentManager = localStorage.getItem("ca_current_manager") || "";
+    let currentManager = localStorage.getItem("ca_current_username") || "المدير";
 
-    if($("currentShiftManagerName")) $("currentShiftManagerName").innerText = currentManager || "....";
+    if($("currentShiftManagerName")) $("currentShiftManagerName").innerText = currentManager;
 
-    window.renderManagersList = function() {
-        const list = $("managersList"); if(!list) return;
-        let html = "";
-        for(let i=0; i<shiftManagers.length; i++) {
-            let m = shiftManagers[i];
-            let isSelected = (m === currentManager);
-            html += `
-            <div class="item flexBetween" style="margin-bottom:8px; border: 1px solid ${isSelected ? 'var(--success)' : '#ddd'}; background: ${isSelected ? '#e8f5e9' : '#fff'};">
-                <div style="flex:1; cursor:pointer;" onclick="window.selectManager('${m}')">
-                    <b>أ/ ${m}</b> ${isSelected ? '✔️' : ''}
-                </div>
-                <button class="btn danger smallBtn iconOnly" onclick="window.deleteManager('${m}')">🗑️</button>
-            </div>`;
-        }
-        list.innerHTML = html || `<div class="mutedCenter">لا يوجد أسماء، أضف اسماً جديداً.</div>`;
-    };
-
-    on("openShiftManagerBtn", "click", function() {
-        window.renderManagersList();
-        if($("shiftManagerModal")) $("shiftManagerModal").classList.remove("hidden");
-    });
-
-    on("addManagerBtn", "click", function() {
-        let val = $("newManagerInp").value.trim();
-        if(val && !shiftManagers.includes(val)) {
-            shiftManagers.push(val);
-            localStorage.setItem("ca_shift_managers", JSON.stringify(shiftManagers));
-            $("newManagerInp").value = "";
-            window.renderManagersList();
-        }
-    });
-
-    window.selectManager = function(name) {
-        currentManager = name;
-        localStorage.setItem("ca_current_manager", currentManager);
-        if($("currentShiftManagerName")) $("currentShiftManagerName").innerText = currentManager;
-        window.renderManagersList();
-        setTimeout(() => { if($("shiftManagerModal")) $("shiftManagerModal").classList.add("hidden"); }, 300);
-    };
-
-    window.deleteManager = function(name) {
-        if(confirm(currentLang==='ar' ? `هل أنت متأكد من حذف (أ/ ${name})؟` : `Delete ${name}?`)) {
-            shiftManagers = shiftManagers.filter(m => m !== name);
-            localStorage.setItem("ca_shift_managers", JSON.stringify(shiftManagers));
-            if(currentManager === name) {
-                currentManager = ""; localStorage.removeItem("ca_current_manager");
-                if($("currentShiftManagerName")) $("currentShiftManagerName").innerText = "....";
+    if ($("addNewAsstBtn")) {
+        on("addNewAsstBtn", "click", async function() {
+            const rawAsstU = $("newAsstUsername") ? $("newAsstUsername").value.trim() : "";
+            const asstP = $("newAsstPassword") ? $("newAsstPassword").value.trim() : "";
+            
+            if (!rawAsstU || !asstP) {
+                return showToast("أدخل اسم المستخدم وكلمة المرور", "err");
             }
-            window.renderManagersList();
+            
+            const asstU = sanitizeKey(rawAsstU);
+            const managerId = localStorage.getItem("ca_manager_id");
+            if (!managerId) return showToast("يجب أن تكون مديراً لإضافة مساعدين.", "err");
+            
+            try {
+                // 1. Save to Manager's node
+                await set(ref(database, `users/${managerId}/settings/assistants/${asstU}`), {
+                    username: rawAsstU,
+                    password: asstP,
+                    created_at: new Date().toISOString()
+                });
+                
+                // 2. Save to global mapping
+                await set(ref(database, `global_assistants/${asstU}`), managerId);
+                
+                showToast("تم إنشاء حساب المساعد بنجاح ✅", "success");
+                
+                $("newAsstUsername").value = "";
+                $("newAsstPassword").value = "";
+                
+                fetchManagerAssistants();
+            } catch (err) {
+                console.error(err);
+                showToast("فشل إنشاء الحساب. تأكد من اتصال الإنترنت.", "err");
+            }
+        });
+    }
+
+    async function fetchManagerAssistants() {
+        const listEl = $("managerAssistantsList");
+        if (!listEl) return;
+        
+        const managerId = localStorage.getItem("ca_manager_id");
+        if (!managerId) return;
+        
+        try {
+            const snapshot = await get(child(ref(database), `users/${managerId}/settings/assistants`));
+            if (snapshot.exists()) {
+                const assistants = snapshot.val();
+                let html = "";
+                for (let key in assistants) {
+                    html += `
+                    <div class="item flexBetween" style="background: var(--bg-inset); border: 1px solid var(--border); padding: 10px 15px; border-radius: 8px; margin-bottom: 8px;">
+                        <div>
+                            <b>${assistants[key].username}</b>
+                            <div class="muted" style="font-size: 0.85em;">كلمة المرور: ${assistants[key].password}</div>
+                        </div>
+                        <button class="btn danger smallBtn iconOnly" onclick="window.deleteAssistant('${key}')">🗑️</button>
+                    </div>`;
+                }
+                listEl.innerHTML = html;
+            } else {
+                listEl.innerHTML = `<div class="mutedCenter">لا يوجد مساعدين مسجلين.</div>`;
+            }
+        } catch (err) {
+            console.error(err);
+            listEl.innerHTML = `<div class="mutedCenter">فشل جلب قائمة المساعدين.</div>`;
         }
+    }
+
+    window.deleteAssistant = async function(asstKey) {
+        if (!confirm(currentLang === 'ar' ? `هل أنت متأكد من حذف المساعد نهائياً؟` : `Delete assistant?`)) return;
+        
+        const managerId = localStorage.getItem("ca_manager_id");
+        try {
+            // Delete from manager node
+            await set(ref(database, `users/${managerId}/settings/assistants/${asstKey}`), null);
+            // Delete from global mapping
+            await set(ref(database, `global_assistants/${asstKey}`), null);
+            
+            showToast("تم حذف المساعد ✅", "success");
+            fetchManagerAssistants();
+        } catch (err) {
+            console.error(err);
+            showToast("فشل في حذف المساعد.", "err");
+        }
+    };
+    
+    // Auto-fetch if admin switches to assistants tab
+    window.switchManagerTab = function(tabId) {
+        document.querySelectorAll(".manager-view").forEach(v => v.classList.add("hidden"));
+        document.querySelectorAll(".manager-nav-item").forEach(btn => btn.classList.remove("active"));
+        
+        let viewId = "";
+        if (tabId === "analytics") viewId = "managerAnalyticsView";
+        if (tabId === "assistants") {
+            viewId = "managerAssistantsView";
+            fetchManagerAssistants();
+        }
+        if (tabId === "settings") viewId = "managerSettingsView";
+        
+        if ($(viewId)) $(viewId).classList.remove("hidden");
+        
+        let btnId = "";
+        if (tabId === "analytics") btnId = "btnManagerAnalytics";
+        if (tabId === "assistants") btnId = "btnManagerAssistants";
+        if (tabId === "settings") btnId = "btnManagerSettings";
+        
+        if ($(btnId)) $(btnId).classList.add("active");
     };
     // ==========================================
     // 18. INITIALIZATION (START ENGINE)
