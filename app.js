@@ -1058,6 +1058,12 @@ document.addEventListener('DOMContentLoaded', function() {
     function showApp() {
         applyPermissions();
         if($("reportDate")) $("reportDate").value = nowDateStr();
+        
+        // Fix for Shift Manager Display Name
+        if ($("currentShiftManagerName")) {
+            $("currentShiftManagerName").innerText = localStorage.getItem("ca_current_username") || (currentUserRole === "admin" ? "المدير" : "مساعد");
+        }
+        
         renderReport(nowDateStr());
         updateTopStats();
         populatePackages();
@@ -1070,15 +1076,14 @@ document.addEventListener('DOMContentLoaded', function() {
         if ($("currentUserBadgeText")) {
             $("currentUserBadgeText").innerText = isAdmin ? (currentLang === "ar" ? "👑 مسؤول عام" : "👑 Admin") : (currentLang === "ar" ? "👥 مساعد" : "👥 Assistant");
         }
+        
+        // TEMPORARILY: Give Assistant full permissions (don't hide anything)
         document.querySelectorAll(".adminOnly").forEach(el => {
-            if (el.classList.contains("tab-section")) return;
-            if(isAdmin) el.classList.remove("hidden"); 
-            else el.classList.add("hidden"); 
+            el.classList.remove("hidden"); 
         });
-        if(!isAdmin) {
-            if($("deleteStudentBtn")) $("deleteStudentBtn").classList.add("hidden");
-            if($("correctPayBtn")) $("correctPayBtn").classList.add("hidden");
-        }
+        
+        if($("deleteStudentBtn")) $("deleteStudentBtn").classList.remove("hidden");
+        if($("correctPayBtn")) $("correctPayBtn").classList.remove("hidden");
     }
 
     function askAdminPass(cb) {
