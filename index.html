@@ -1234,7 +1234,17 @@
         </button>
       </nav>
       <div class="manager-sidebar-footer" style="padding: 20px;">
-        <button id="managerLogoutBtn" class="btn danger full-btn" onclick="logout()">تسجيل الخروج</button>
+        <script>
+          function forceLogout() {
+            localStorage.removeItem("ca_auth_v2");
+            localStorage.removeItem("ca_role_v1");
+            localStorage.removeItem("ca_manager_id");
+            localStorage.removeItem("ca_current_username");
+            localStorage.removeItem("ca_current_manager");
+            window.location.reload();
+          }
+        </script>
+        <button id="managerLogoutBtn" class="btn danger full-btn" onclick="forceLogout()">تسجيل الخروج</button>
       </div>
     </aside>
 
