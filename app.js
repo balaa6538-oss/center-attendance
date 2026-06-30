@@ -127,6 +127,23 @@ document.addEventListener('DOMContentLoaded', function() {
     let passSuccessCallback = null;
     let currentLang      = localStorage.getItem(K_LANG) || "ar";
 
+    // Global Enter Key Handler for Inputs
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            const target = e.target;
+            if (target.id === 'searchAny') document.getElementById("searchBtn")?.click();
+            else if (target.id === 'openId') document.getElementById("openIdBtn")?.click();
+            else if (target.id === 'quickAttendId') document.getElementById("quickAttendBtn")?.click();
+            else if (target.id === 'newId' || target.id === 'stName' || target.id === 'stPhone') document.getElementById("saveBtn")?.click();
+            else if (target.id === 'newPaymentInput') document.getElementById("payBtn")?.click();
+            else if (target.id === 'sessStName' || target.id === 'sessStPhone' || target.id === 'sessStAmount') document.getElementById("saveSessionStBtn")?.click();
+            else if (target.id === 'managerUser' || target.id === 'managerPass') document.getElementById("managerLoginBtn")?.click();
+            else if (target.id === 'assistantCenterCode' || target.id === 'assistantUser' || target.id === 'assistantPass') document.getElementById("assistantLoginBtn")?.click();
+            else if (target.id === 'customPassInput') document.getElementById("customPassConfirmBtn")?.click();
+            else if (target.id === 'tableSearchInp') target.blur(); // Live search just needs blur to dismiss mobile keyboard
+        }
+    });
+
     // Data Migration Function
     async function migrateLocalDataToManager() {
         if (window.CURRENT_ROLE !== 'admin' || !window.CURRENT_MANAGER_ID) return;
