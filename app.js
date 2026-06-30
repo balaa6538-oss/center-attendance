@@ -2205,6 +2205,7 @@ on("quickAttendId", "keypress", function(e) {
         }
         
         const res = addAttendance(id, nowDateStr());
+        if (res.ok) playSound("pop"); else playSound("error");
         showToast(res.msg, res.ok ? "success" : "warning");
         updateStudentUI(id); updateTopStats(); 
         idInp.value = ""; idInp.focus();
@@ -2281,6 +2282,7 @@ on("quickAttendId", "keypress", function(e) {
         if ($("stClass")) s.className = $("stClass").value; 
         if ($("stPhone")) s.phone = $("stPhone").value;
         if (typeof logAction === "function") logAction("تعديل بيانات الطالب", `تم تعديل بيانات الطالب ${s.name || currentId}`);
+        playSound("click");
         saveAll(); showToast(t("msg_saved")); updateStudentUI(currentId);
         
         let sClass = s.className ? s.className.trim() : "";
@@ -3793,6 +3795,7 @@ function updateDriveUI() {
                 if (scannedId && students[String(scannedId)]) {
                     window.switchTab('Home');
                     let res = addAttendance(scannedId, nowDateStr());
+                    if (res.ok) playSound("pop"); else playSound("error");
                     showToast(res.msg, res.ok ? "success" : "warning");
                     updateStudentUI(scannedId);
                     updateTopStats();
