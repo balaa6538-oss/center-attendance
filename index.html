@@ -44,9 +44,9 @@
       <!-- FRONT: MANAGER LOGIN -->
       <div class="login-card flip-front premium-manager-login">
         <div class="login-logo-area">
-          <img src="icon-192.png" alt="Studify Manager" class="login-logo">
-          <h1 data-i18n="login_title_manager">بوابة المدير (SaaS)</h1>
-          <p class="muted" data-i18n="login_desc_manager">نظام الإدارة المركزي المتقدم</p>
+          <img src="icon-192.png" alt="Studify" class="login-logo">
+          <h1 data-i18n="login_title_manager">لوحة التحكم</h1>
+          <p class="muted" data-i18n="login_desc_manager">نظام متكامل لإدارة المركز</p>
         </div>
         <div id="managerLoginForm" class="login-form-area active">
           <label class="lbl">البريد الإلكتروني (المدير)</label>
@@ -56,10 +56,13 @@
             <input id="managerPass" class="inp" type="password" placeholder="Password">
             <button id="toggleManagerPass" class="eyeBtn" type="button" onclick="togglePassword('managerPass')">👁️</button>
           </div>
-          <button id="managerLoginBtn" class="btn primary full-btn" style="background: linear-gradient(135deg, #FFD700, #DAA520); color: #000; font-weight: bold; font-size: 1.1em; border: none; box-shadow: 0 4px 15px rgba(218,165,32,0.4);">دخول الإدارة 👑</button>
+          <button id="managerLoginBtn" class="btn primary full-btn" style="font-weight: bold; font-size: 1.05em; margin-top: 6px;">تسجيل الدخول</button>
         </div>
         <div class="switch-login-type" style="text-align: center; margin-top: 20px;">
-          <button type="button" class="text-btn" style="background: none; border: none; color: var(--text-secondary); text-decoration: underline; cursor: pointer; font-size: 0.9em;" onclick="document.getElementById('loginFlipContainer').classList.add('flipped')">تسجيل الدخول كمساعد ➡️</button>
+          <button type="button" class="switch-link-btn" onclick="document.getElementById('loginFlipContainer').classList.add('flipped')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            الدخول كمساعد
+          </button>
         </div>
       </div>
 
@@ -77,10 +80,13 @@
             <input id="assistantPass" class="inp" type="password" placeholder="Password">
             <button id="toggleAssistantPass" class="eyeBtn" type="button" onclick="togglePassword('assistantPass')">👁️</button>
           </div>
-          <button id="assistantLoginBtn" class="btn success full-btn" style="font-size: 1.1em; font-weight: bold; margin-top: 15px;">دخول المساعد 🚀</button>
+          <button id="assistantLoginBtn" class="btn success full-btn" style="font-size: 1.05em; font-weight: bold; margin-top: 15px;">تسجيل الدخول</button>
         </div>
         <div class="switch-login-type" style="text-align: center; margin-top: 20px;">
-          <button type="button" class="text-btn" style="background: none; border: none; color: var(--text-secondary); text-decoration: underline; cursor: pointer; font-size: 0.9em;" onclick="document.getElementById('loginFlipContainer').classList.remove('flipped')">⬅️ الرجوع لبوابة المدير</button>
+          <button type="button" class="switch-link-btn" onclick="document.getElementById('loginFlipContainer').classList.remove('flipped')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+            الرجوع للمدير
+          </button>
         </div>
       </div>
 
@@ -1248,29 +1254,47 @@
     </div>
   </div>
 
-  <!-- ============ MANAGER DASHBOARD (SaaS) ============ -->
+  <!-- ============ MANAGER DASHBOARD ============ -->
   <div id="manager-dashboard" class="manager-layout hidden">
     <!-- Manager Sidebar -->
     <aside class="manager-sidebar">
       <div class="manager-sidebar-header">
-        <img src="icon-192.png" alt="Studify SaaS" class="manager-logo">
-        <span class="manager-brand">Manager SaaS</span>
+        <img src="icon-192.png" alt="Studify" class="manager-logo">
+        <div>
+          <span class="manager-brand">Studify</span>
+          <span class="manager-brand-sub">لوحة التحكم</span>
+        </div>
       </div>
       <nav class="manager-menu">
-        <button id="btnManagerAnalytics" class="manager-nav-item active" onclick="switchManagerTab('analytics')">
-          <span class="nav-icon">📈</span>
-          <span class="nav-text">التقارير المالية</span>
+        <div class="manager-nav-section">التقارير</div>
+        <button id="btnManagerDailyReport" class="manager-nav-item active" onclick="switchManagerTab('dailyReport')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span>التقرير اليومي</span>
         </button>
+        <button id="btnManagerTermReport" class="manager-nav-item" onclick="switchManagerTab('termReport')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          <span>تقرير الترم</span>
+        </button>
+        <div class="manager-nav-section">الإدارة</div>
         <button id="btnManagerAssistants" class="manager-nav-item" onclick="switchManagerTab('assistants')">
-          <span class="nav-icon">👥</span>
-          <span class="nav-text">إدارة المساعدين</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span>إدارة المساعدين</span>
+        </button>
+        <button id="btnManagerPermissions" class="manager-nav-item" onclick="switchManagerTab('permissions')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <span>الصلاحيات</span>
+        </button>
+        <button id="btnManagerDecisions" class="manager-nav-item" onclick="switchManagerTab('decisions')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          <span>طلبات القرارات</span>
+          <span id="managerDecisionsBadge" class="hidden" style="margin-inline-start:auto; background:var(--danger); color:#fff; font-size:0.72em; font-weight:700; padding:2px 7px; border-radius:10px;">0</span>
         </button>
         <button id="btnManagerSettings" class="manager-nav-item" onclick="switchManagerTab('settings')">
-          <span class="nav-icon">⚙️</span>
-          <span class="nav-text">إعدادات متقدمة</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span>الإعدادات المتقدمة</span>
         </button>
       </nav>
-      <div class="manager-sidebar-footer" style="padding: 20px;">
+      <div class="manager-sidebar-footer" style="padding: 16px;">
         <script>
           function forceLogout() {
             localStorage.removeItem("ca_auth_v2");
@@ -1281,53 +1305,233 @@
             window.location.reload();
           }
         </script>
-        <button id="managerLogoutBtn" class="btn danger full-btn" onclick="forceLogout()">تسجيل الخروج</button>
+        <button id="managerLogoutBtn" class="btn danger full-btn" onclick="forceLogout()" style="display:flex; align-items:center; justify-content:center; gap:8px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          تسجيل الخروج
+        </button>
       </div>
     </aside>
 
     <!-- Manager Content -->
     <main class="manager-content">
       <header class="manager-topbar">
-        <h2>لوحة تحكم الإدارة العليا</h2>
-        <div class="manager-user-info">
-          <span>مرحباً، <strong id="managerTopName">المدير العام</strong></span>
+        <h2 class="manager-topbar-title" id="managerPageTitle">التقرير اليومي</h2>
+        <div class="manager-topbar-right">
+          <span class="manager-user-badge">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-inline-end:5px;"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+            <span id="managerTopName">المدير</span>
+          </span>
         </div>
       </header>
 
-      <div class="manager-workspace" id="managerWorkspace" style="padding: 30px;">
-        <!-- Views will be injected or toggled here -->
-        <div id="managerAnalyticsView" class="manager-view">
-          <h3>الإحصائيات والتقارير المالية 📈</h3>
-          <p class="muted">الواجهة قيد البناء والتطوير. سيتم نقل كافة أدوات التحليل המالي والاشتراكات والديون إلى هنا.</p>
+      <div class="manager-workspace" id="managerWorkspace">
+
+        <!-- ====== DAILY REPORT ====== -->
+        <div id="managerDailyReportView" class="manager-view">
+          <div class="manager-stats-grid" id="managerDailyStatsGrid">
+            <div class="manager-stat-card" style="--stat-color: var(--success); --stat-bg: var(--bg-success-subtle);">
+              <div class="manager-stat-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <div class="manager-stat-value" id="mgrDailyAttendCount">—</div>
+              <div class="manager-stat-label">طلاب حضروا اليوم</div>
+            </div>
+            <div class="manager-stat-card" style="--stat-color: var(--primary);">
+              <div class="manager-stat-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              </div>
+              <div class="manager-stat-value" id="mgrDailyRevenue">—</div>
+              <div class="manager-stat-label">الإيراد (ج)</div>
+            </div>
+            <div class="manager-stat-card" style="--stat-color: var(--danger); --stat-bg: var(--bg-danger-subtle);">
+              <div class="manager-stat-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+              </div>
+              <div class="manager-stat-value" id="mgrDailyAbsent">—</div>
+              <div class="manager-stat-label">غياب اليوم</div>
+            </div>
+            <div class="manager-stat-card" style="--stat-color: var(--warning); --stat-bg: var(--bg-warning-subtle);">
+              <div class="manager-stat-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              </div>
+              <div class="manager-stat-value" id="mgrDailyExpenses">—</div>
+              <div class="manager-stat-label">مصروفات (ج)</div>
+            </div>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px; flex-wrap:wrap;">
+            <h3 class="manager-section-title" style="margin-bottom:0;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              تقرير يوم:
+            </h3>
+            <input type="date" id="mgrDailyDate" class="inp" style="width:auto; max-width:180px;">
+          </div>
+          <div id="mgrDailyReportBody" style="background:var(--bg-surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; min-height:120px;">
+            <div class="mutedCenter">اختر التاريخ لعرض التقرير</div>
+          </div>
         </div>
-        
+
+        <!-- ====== TERM REPORT ====== -->
+        <div id="managerTermReportView" class="manager-view hidden">
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px; flex-wrap:wrap;">
+            <h3 class="manager-section-title" style="margin-bottom:0;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              تقرير الترم المالي
+            </h3>
+            <input type="text" id="mgrTermSearch" class="inp" placeholder="بحث بالاسم..." style="flex:1; max-width:250px;">
+            <select id="mgrTermClass" class="inp" style="width:auto; max-width:160px;">
+              <option value="">كل المجموعات</option>
+            </select>
+          </div>
+          <!-- Summary Row -->
+          <div class="manager-stats-grid" id="mgrTermSummary" style="margin-bottom:20px;">
+            <div class="manager-stat-card" style="--stat-color:var(--primary);">
+              <div class="manager-stat-value" id="mgrTermTotalStudents">—</div>
+              <div class="manager-stat-label">إجمالي الطلاب</div>
+            </div>
+            <div class="manager-stat-card" style="--stat-color:var(--success);--stat-bg:var(--bg-success-subtle);">
+              <div class="manager-stat-value" id="mgrTermTotalRevenue">—</div>
+              <div class="manager-stat-label">إجمالي الإيراد (ج)</div>
+            </div>
+            <div class="manager-stat-card" style="--stat-color:var(--danger);--stat-bg:var(--bg-danger-subtle);">
+              <div class="manager-stat-value" id="mgrTermTotalDebt">—</div>
+              <div class="manager-stat-label">إجمالي الديون (ج)</div>
+            </div>
+          </div>
+          <div style="overflow-x:auto; background:var(--bg-surface); border:1px solid var(--border); border-radius:var(--radius);">
+            <table style="width:100%; border-collapse:collapse; font-size:0.9em;" id="mgrTermTable">
+              <thead>
+                <tr style="background:var(--bg-inset); text-align:start;">
+                  <th style="padding:12px 16px; font-weight:700; color:var(--text-secondary); white-space:nowrap;">الطالب</th>
+                  <th style="padding:12px 16px; font-weight:700; color:var(--text-secondary);">المجموعة</th>
+                  <th style="padding:12px 16px; font-weight:700; color:var(--text-secondary);">الباقة</th>
+                  <th style="padding:12px 16px; font-weight:700; color:var(--text-secondary);">المدفوع</th>
+                  <th style="padding:12px 16px; font-weight:700; color:var(--text-secondary);">الدين</th>
+                  <th style="padding:12px 16px; font-weight:700; color:var(--text-secondary);">الحضور</th>
+                  <th style="padding:12px 16px; font-weight:700; color:var(--text-secondary);">إجراء</th>
+                </tr>
+              </thead>
+              <tbody id="mgrTermTableBody">
+                <tr><td colspan="7" class="mutedCenter" style="padding:20px;">جاري التحميل...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ====== ASSISTANT MANAGEMENT ====== -->
         <div id="managerAssistantsView" class="manager-view hidden">
-          <h3>إدارة حسابات المساعدين 👥</h3>
-          <p class="muted">قم بإنشاء حسابات المساعدين ليتمكنوا من تسجيل الدخول للوحة العمليات اليومية.</p>
-          
-          <div style="background: var(--bg-surface); padding: 20px; border-radius: 12px; border: 1px solid var(--border); margin-top: 15px; max-width: 600px;">
-            <h4 style="margin-bottom: 15px;">➕ إضافة مساعد جديد</h4>
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
+            <h3 class="manager-section-title" style="margin-bottom:0;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              إدارة المساعدين
+            </h3>
+            <button id="showAddAsstModalBtn" class="btn primary" style="display:flex; align-items:center; gap:8px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              إضافة مساعد
+            </button>
+          </div>
+
+          <!-- Add Assistant Form (collapsible) -->
+          <div id="addAsstFormPanel" class="hidden" style="background:var(--bg-surface); border:1px solid var(--border); border-radius:var(--radius-sm); padding:20px; margin-bottom:20px;">
+            <h4 style="margin-bottom:14px; font-size:0.95em; color:var(--text-primary);">بيانات المساعد الجديد</h4>
             <div class="row">
-              <input type="text" id="newAsstUsername" class="inp" placeholder="اسم المستخدم (مثال: Lila)">
-              <input type="password" id="newAsstPassword" class="inp" placeholder="كلمة المرور (مثال: 5555)">
-              <button id="addNewAsstBtn" class="btn success">حفظ المساعد</button>
+              <input type="text" id="newAsstUsername" class="inp" placeholder="اسم المستخدم">
+              <input type="password" id="newAsstPassword" class="inp" placeholder="كلمة المرور">
+              <button id="addNewAsstBtn" class="btn success" style="white-space:nowrap;">حفظ</button>
+              <button type="button" class="btn secondary" onclick="document.getElementById('addAsstFormPanel').classList.add('hidden')" style="white-space:nowrap;">إلغاء</button>
             </div>
           </div>
-          
-          <div style="margin-top: 30px; max-width: 600px;">
-            <h4 style="margin-bottom: 10px;">📋 المساعدون المسجلون</h4>
-            <div id="managerAssistantsList" style="background: var(--bg-surface); padding: 15px; border-radius: 12px; border: 1px solid var(--border); min-height: 100px;">
-              <div class="mutedCenter">جاري التحميل...</div>
+
+          <div id="managerAssistantsList">
+            <div class="mutedCenter">جاري التحميل...</div>
+          </div>
+        </div>
+
+        <!-- ====== PERMISSIONS ====== -->
+        <div id="managerPermissionsView" class="manager-view hidden">
+          <h3 class="manager-section-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            صلاحيات المساعد
+          </h3>
+          <p class="muted" style="margin-bottom:20px; font-size:0.9em;">العناصر المقفلة تظهر للمساعد مع أيقونة قفل ورسالة "مقفل من المدير" دون إخفائها.</p>
+          <div class="permissions-grid" id="permissionsGrid">
+            <!-- Injected by JS -->
+          </div>
+        </div>
+
+        <!-- ====== DECISIONS / REQUESTS ====== -->
+        <div id="managerDecisionsView" class="manager-view hidden">
+          <h3 class="manager-section-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            طلبات القرارات
+          </h3>
+          <div id="managerRequestsList">
+            <div class="mutedCenter">لا توجد طلبات معلقة</div>
+          </div>
+
+          <!-- Direct Discount by Manager -->
+          <div class="manager-direct-discount">
+            <h4 style="margin-bottom:14px; font-size:0.95em;">خصم مباشر من المدير</h4>
+            <div class="row" style="flex-wrap:wrap;">
+              <input type="text" id="mgrDirectStudentId" class="inp" placeholder="ID الطالب" style="max-width:120px;">
+              <input type="number" id="mgrDirectAmount" class="inp" placeholder="المبلغ (ج)" style="max-width:120px;">
+              <input type="text" id="mgrDirectReason" class="inp" placeholder="السبب" style="flex:1;">
+              <button id="mgrApplyDirectDiscountBtn" class="btn warning" style="white-space:nowrap;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                تطبيق خصم
+              </button>
             </div>
           </div>
         </div>
-        
+
+        <!-- ====== SETTINGS ====== -->
         <div id="managerSettingsView" class="manager-view hidden">
-          <h3>الإعدادات المتقدمة ⚙️</h3>
-          <p class="muted">إعدادات السنتر، قواعد البيانات، والنسخ الاحتياطي.</p>
+          <h3 class="manager-section-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            الإعدادات المتقدمة
+          </h3>
+          <div style="background:var(--bg-surface); border:1px solid var(--border); border-radius:var(--radius-sm); padding:20px; max-width:500px;">
+            <p class="muted" style="font-size:0.9em;">هنا يمكنك ضبط إعدادات السنتر وقواعد البيانات والنسخ الاحتياطي.</p>
+            <div style="margin-top:16px; display:flex; flex-direction:column; gap:12px;">
+              <div class="flexBetween" style="background:var(--bg-inset); padding:14px; border-radius:var(--radius-sm);">
+                <span style="font-weight:600; font-size:0.9em;">معرف المركز (Manager ID)</span>
+                <code id="mgrSettingsManagerId" style="font-size:0.85em; color:var(--primary); background:var(--bg-body); padding:4px 10px; border-radius:6px;">—</code>
+              </div>
+              <div class="flexBetween" style="background:var(--bg-inset); padding:14px; border-radius:var(--radius-sm);">
+                <span style="font-weight:600; font-size:0.9em;">إعادة تعيين المزامنة</span>
+                <button class="btn danger smallBtn" onclick="localStorage.removeItem('last_cloud_sync_date'); showToast && showToast('تم الإعادة ✅', 'success');">إعادة التعيين</button>
+              </div>
+            </div>
+          </div>
         </div>
+
       </div>
     </main>
+  </div>
+
+  <!-- ====== MODAL: Discount Request (from Assistant) ====== -->
+  <div id="discountRequestModal" class="modal hidden">
+    <div class="modalContent" style="max-width:420px;">
+      <h3 style="margin-bottom:16px; display:flex; align-items:center; gap:10px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        طلب خصم / إعفاء
+      </h3>
+      <input type="hidden" id="discReqStudentId">
+      <div id="discReqStudentName" style="font-weight:700; margin-bottom:12px; padding:10px; background:var(--bg-inset); border-radius:8px;">—</div>
+      <label class="lbl">نوع الطلب</label>
+      <select id="discReqType" class="inp">
+        <option value="discount">خصم جزئي</option>
+        <option value="exemption">إعفاء كامل</option>
+      </select>
+      <label class="lbl" style="margin-top:12px;">المبلغ المقترح (ج) — اتركه 0 للإعفاء الكامل</label>
+      <input type="number" id="discReqAmount" class="inp" placeholder="0" min="0">
+      <label class="lbl" style="margin-top:12px;">السبب</label>
+      <input type="text" id="discReqReason" class="inp" placeholder="اكتب سبب الطلب...">
+      <div class="row" style="margin-top:18px; justify-content:flex-end;">
+        <button class="btn secondary" onclick="document.getElementById('discountRequestModal').classList.add('hidden')">إلغاء</button>
+        <button id="submitDiscountRequestBtn" class="btn primary">إرسال الطلب للمدير</button>
+      </div>
+    </div>
   </div>
 
   <!-- Firebase SDK -->

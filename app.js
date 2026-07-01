@@ -1033,7 +1033,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if(sidebar) sidebar.style.display = "none";
                 
                 if (typeof window.switchManagerTab === 'function') {
-                    window.switchManagerTab('analytics');
+                    window.switchManagerTab('dailyReport');
                 }
                 
                 if ($("managerTopName")) $("managerTopName").innerText = localStorage.getItem("ca_manager_id") || "المدير العام";
@@ -1055,20 +1055,30 @@ document.addEventListener('DOMContentLoaded', function() {
     window.switchManagerTab = function(tabId) {
         document.querySelectorAll(".manager-view").forEach(v => v.classList.add("hidden"));
         document.querySelectorAll(".manager-nav-item").forEach(btn => btn.classList.remove("active"));
-        
-        let viewId = "";
-        if (tabId === "analytics") viewId = "managerAnalyticsView";
-        if (tabId === "assistants") viewId = "managerAssistantsView";
-        if (tabId === "settings") viewId = "managerSettingsView";
-        
-        if ($(viewId)) $(viewId).classList.remove("hidden");
-        
-        let btnId = "";
-        if (tabId === "analytics") btnId = "btnManagerAnalytics";
-        if (tabId === "assistants") btnId = "btnManagerAssistants";
-        if (tabId === "settings") btnId = "btnManagerSettings";
-        
-        if ($(btnId)) $(btnId).classList.add("active");
+
+        const tabMap = {
+            dailyReport:  { view: "managerDailyReportView",  btn: "btnManagerDailyReport",  title: "التقرير اليومي" },
+            termReport:   { view: "managerTermReportView",   btn: "btnManagerTermReport",   title: "تقرير الترم" },
+            assistants:   { view: "managerAssistantsView",   btn: "btnManagerAssistants",   title: "إدارة المساعدين" },
+            permissions:  { view: "managerPermissionsView",  btn: "btnManagerPermissions",  title: "صلاحيات المساعد" },
+            decisions:    { view: "managerDecisionsView",    btn: "btnManagerDecisions",    title: "طلبات القرارات" },
+            settings:     { view: "managerSettingsView",     btn: "btnManagerSettings",     title: "الإعدادات المتقدمة" },
+        };
+
+        const tab = tabMap[tabId] || tabMap["dailyReport"];
+        if ($(tab.view)) $(tab.view).classList.remove("hidden");
+        if ($(tab.btn)) $(tab.btn).classList.add("active");
+        if ($("managerPageTitle")) $("managerPageTitle").textContent = tab.title;
+
+        if (tabId === "assistants") fetchManagerAssistants();
+        if (tabId === "permissions") renderPermissionsPanel();
+        if (tabId === "decisions") fetchManagerRequests();
+        if (tabId === "dailyReport") renderManagerDailyReport(nowDateStr());
+        if (tabId === "termReport") renderManagerTermReport();
+        if (tabId === "settings") {
+            const mid = localStorage.getItem("ca_manager_id") || "—";
+            if ($("mgrSettingsManagerId")) $("mgrSettingsManagerId").textContent = mid;
+        }
     };
 
     function showApp() {
@@ -3356,6 +3366,8 @@ function updateDriveUI() {
         const managerId = localStorage.getItem("ca_manager_id");
         if (!managerId) return;
         
+        listEl.innerHTML = `<div class="mutedCenter">جاري التحميل...</div>`;
+        
         try {
             const snapshot = await get(child(ref(database), `users/${managerId}/settings/assistants`));
             if (snapshot.exists()) {
@@ -3363,23 +3375,33 @@ function updateDriveUI() {
                 let html = "";
                 for (let key in assistants) {
                     let uName = key;
-                    let pass = assistants[key];
+                    let pass  = assistants[key];
                     if (typeof assistants[key] === "object") {
                         uName = assistants[key].username || key;
-                        pass = assistants[key].password;
+                        pass  = assistants[key].password;
                     }
+                    const initial = (uName[0] || "?").toUpperCase();
+                    const createdAt = (assistants[key] && assistants[key].created_at)
+                        ? new Date(assistants[key].created_at).toLocaleDateString("ar-EG", { day: "numeric", month: "short", year: "numeric" })
+                        : "—";
                     html += `
-                    <div class="item flexBetween" style="background: var(--bg-inset); border: 1px solid var(--border); padding: 10px 15px; border-radius: 8px; margin-bottom: 8px;">
-                        <div>
-                            <b>${uName}</b>
-                            <div class="muted" style="font-size: 0.85em;">كلمة المرور: ${pass}</div>
+                    <div class="assistant-card">
+                        <div class="assistant-avatar">${initial}</div>
+                        <div class="assistant-info">
+                            <div class="assistant-name">${uName}</div>
+                            <div class="assistant-sub">كلمة المرور: ${pass} &nbsp;•&nbsp; تاريخ الإنشاء: ${createdAt}</div>
                         </div>
-                        <button class="btn danger smallBtn iconOnly" onclick="window.deleteAssistant('${key}')">🗑️</button>
+                        <div class="assistant-actions">
+                            <button class="btn danger smallBtn" onclick="window.deleteAssistant('${key}')" style="display:flex;align-items:center;gap:5px;">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                                حذف
+                            </button>
+                        </div>
                     </div>`;
                 }
-                listEl.innerHTML = html;
+                listEl.innerHTML = html || `<div class="mutedCenter">لا يوجد مساعدين مسجلين.</div>`;
             } else {
-                listEl.innerHTML = `<div class="mutedCenter">لا يوجد مساعدين مسجلين.</div>`;
+                listEl.innerHTML = `<div class="mutedCenter">لا يوجد مساعدين مسجلين بعد.</div>`;
             }
         } catch (err) {
             console.error(err);
@@ -3387,16 +3409,14 @@ function updateDriveUI() {
         }
     }
 
+
     window.deleteAssistant = async function(asstKey) {
         if (!confirm(currentLang === 'ar' ? `هل أنت متأكد من حذف المساعد نهائياً؟` : `Delete assistant?`)) return;
         
         const managerId = localStorage.getItem("ca_manager_id");
         try {
-            // Delete from manager node
             await set(ref(database, `users/${managerId}/settings/assistants/${asstKey}`), null);
-            // Delete from global mapping
             await set(ref(database, `global_assistants/${asstKey}`), null);
-            
             showToast("تم حذف المساعد ✅", "success");
             fetchManagerAssistants();
         } catch (err) {
@@ -3405,28 +3425,603 @@ function updateDriveUI() {
         }
     };
     
-    // Auto-fetch if admin switches to assistants tab
-    window.switchManagerTab = function(tabId) {
-        document.querySelectorAll(".manager-view").forEach(v => v.classList.add("hidden"));
-        document.querySelectorAll(".manager-nav-item").forEach(btn => btn.classList.remove("active"));
-        
-        let viewId = "";
-        if (tabId === "analytics") viewId = "managerAnalyticsView";
-        if (tabId === "assistants") {
-            viewId = "managerAssistantsView";
-            fetchManagerAssistants();
+    // (switchManagerTab defined earlier - section 5)
+
+    // ==========================================
+    // 17.9. MANAGER: DAILY REPORT
+    // ==========================================
+    function renderManagerDailyReport(d) {
+        if ($("mgrDailyDate")) $("mgrDailyDate").value = d;
+        const ids     = attByDate[d] || [];
+        const rev     = revenueByDate[d] || 0;
+        const expArr  = expensesByDate[d] || [];
+        const totalSt = Object.keys(students).length;
+        let totalExp  = 0; expArr.forEach(e => totalExp += (e.amount || 0));
+
+        if ($("mgrDailyAttendCount")) $("mgrDailyAttendCount").textContent = ids.length;
+        if ($("mgrDailyRevenue"))     $("mgrDailyRevenue").textContent     = rev;
+        if ($("mgrDailyAbsent"))      $("mgrDailyAbsent").textContent      = Math.max(0, totalSt - ids.length);
+        if ($("mgrDailyExpenses"))    $("mgrDailyExpenses").textContent    = totalExp;
+
+        const body = $("mgrDailyReportBody");
+        if (!body) return;
+        if (ids.length === 0 && expArr.length === 0) {
+            body.innerHTML = `<div class="mutedCenter">لا يوجد بيانات لهذا اليوم</div>`;
+            return;
         }
-        if (tabId === "settings") viewId = "managerSettingsView";
-        
-        if ($(viewId)) $(viewId).classList.remove("hidden");
-        
-        let btnId = "";
-        if (tabId === "analytics") btnId = "btnManagerAnalytics";
-        if (tabId === "assistants") btnId = "btnManagerAssistants";
-        if (tabId === "settings") btnId = "btnManagerSettings";
-        
-        if ($(btnId)) $(btnId).classList.add("active");
+        // Group by class
+        let groups = {};
+        ids.forEach(id => {
+            const st = students[id];
+            const cls = (st && st.className) ? st.className.trim() : "عام";
+            if (!groups[cls]) groups[cls] = { count: 0, revenue: 0 };
+            groups[cls].count++;
+            if (st && st.paid !== undefined) {
+                const req = groupFees[cls] ? toInt(groupFees[cls]) : 0;
+                if (req > 0) groups[cls].revenue += req;
+            }
+        });
+        let html = "";
+        for (let g in groups) {
+            const gColor = getTagColor(g);
+            html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-inline-start:4px solid ${gColor};background:var(--bg-inset);border-radius:8px;margin-bottom:8px;">
+                <span style="font-weight:700;color:${gColor};">${g}</span>
+                <span style="font-weight:600;">${groups[g].count} طالب</span>
+            </div>`;
+        }
+        if (expArr.length > 0) {
+            html += `<div style="margin-top:14px;"><h4 style="color:var(--danger);margin-bottom:8px;">المصروفات</h4>`;
+            expArr.forEach(e => {
+                html += `<div style="display:flex;justify-content:space-between;padding:8px 12px;background:var(--bg-danger-subtle);border-radius:6px;margin-bottom:6px;font-size:0.9em;">
+                    <span>${e.reason || "غير محدد"}</span>
+                    <span style="color:var(--danger);font-weight:700;">${e.amount} ج</span>
+                </div>`;
+            });
+            html += `</div>`;
+        }
+        body.innerHTML = html;
+    }
+
+    if ($("mgrDailyDate")) {
+        $("mgrDailyDate").addEventListener("change", e => renderManagerDailyReport(e.target.value));
+    }
+
+    // ==========================================
+    // 17.10. MANAGER: TERM REPORT
+    // ==========================================
+    function renderManagerTermReport() {
+        const search   = ($("mgrTermSearch") ? $("mgrTermSearch").value.toLowerCase() : "");
+        const clsFilter= ($("mgrTermClass") ? $("mgrTermClass").value : "");
+        const tbody    = $("mgrTermTableBody");
+        const clsSel   = $("mgrTermClass");
+
+        // populate class filter
+        if (clsSel) {
+            const existing = [...clsSel.options].map(o => o.value);
+            const classes  = [...new Set(Object.values(students).map(s => s.className || "عام"))];
+            classes.forEach(c => {
+                if (!existing.includes(c)) {
+                    const opt = document.createElement("option");
+                    opt.value = c; opt.textContent = c;
+                    clsSel.appendChild(opt);
+                }
+            });
+        }
+
+        let rows = [], totalRev = 0, totalDebt = 0;
+        Object.values(students).forEach(st => {
+            if (!st || !st.name) return;
+            if (search && !st.name.toLowerCase().includes(search)) return;
+            const cls  = (st.className || "عام").trim();
+            if (clsFilter && cls !== clsFilter) return;
+            const req  = groupFees[cls] ? toInt(groupFees[cls]) : 0;
+            const paid = st.paid || 0;
+            const debt = req > 0 ? Math.max(0, req - paid) : 0;
+            const attCount = Object.values(attByDate).reduce((n, ids) => n + (ids.includes(String(st.id)) ? 1 : 0), 0);
+            totalRev  += paid;
+            totalDebt += debt;
+            rows.push({ st, cls, req, paid, debt, attCount });
+        });
+
+        if ($("mgrTermTotalStudents")) $("mgrTermTotalStudents").textContent = rows.length;
+        if ($("mgrTermTotalRevenue"))  $("mgrTermTotalRevenue").textContent  = totalRev;
+        if ($("mgrTermTotalDebt"))     $("mgrTermTotalDebt").textContent     = totalDebt;
+
+        if (!tbody) return;
+        if (rows.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" class="mutedCenter" style="padding:20px;">لا يوجد طلاب</td></tr>`;
+            return;
+        }
+        const gColor = c => getTagColor ? getTagColor(c) : "#888";
+        tbody.innerHTML = rows.map(r => `
+            <tr style="border-bottom:1px solid var(--border); transition:background 0.2s;" onmouseover="this.style.background='var(--bg-inset)'" onmouseout="this.style.background=''"">
+                <td style="padding:10px 16px;font-weight:600;">${r.st.name}</td>
+                <td style="padding:10px 16px;"><span style="background:${gColor(r.cls)}22;color:${gColor(r.cls)};padding:3px 8px;border-radius:5px;font-size:0.82em;font-weight:700;">${r.cls}</span></td>
+                <td style="padding:10px 16px;">${r.req > 0 ? r.req + " ج" : "—"}</td>
+                <td style="padding:10px 16px;color:var(--success);font-weight:700;">${r.paid > 0 ? r.paid + " ج" : "—"}</td>
+                <td style="padding:10px 16px;color:${r.debt > 0 ? 'var(--danger)' : 'var(--success)'};font-weight:700;">${r.debt > 0 ? r.debt + " ج" : "✓"}</td>
+                <td style="padding:10px 16px;">${r.attCount}</td>
+                <td style="padding:10px 16px;">
+                    <button class="btn primary smallBtn" onclick="window.extOpen('${r.st.id}')">فتح</button>
+                </td>
+            </tr>`).join("");
+    }
+
+    if ($("mgrTermSearch")) $("mgrTermSearch").addEventListener("input", renderManagerTermReport);
+    if ($("mgrTermClass"))  $("mgrTermClass").addEventListener("change", renderManagerTermReport);
+
+    // ==========================================
+    // 17.11. MANAGER: PERMISSIONS SYSTEM
+    // ==========================================
+    const PERMISSIONS_DEFS = [
+        { key: "show_revenue",           label: "إظهار الإيراد اليومي",         desc: "يسمح للمساعد برؤية إيراد اليوم في الشريط العلوي" },
+        { key: "can_add_student",        label: "إضافة طالب جديد",              desc: "يسمح للمساعد بإضافة طلاب جديدين للنظام" },
+        { key: "can_manage_packages",    label: "إدارة الباقات والأسعار",        desc: "يسمح للمساعد بتعديل الباقات والأسعار" },
+        { key: "can_view_reports",       label: "الوصول لصفحة التقارير",         desc: "يسمح للمساعد بفتح صفحة التقارير اليومية" },
+        { key: "can_access_marketing",   label: "أدوات التسويق",                desc: "يسمح للمساعد بفتح صفحة أدوات التسويق" },
+        { key: "can_access_session_students", label: "طلاب الحصة",             desc: "يسمح للمساعد بفتح صفحة طلاب الحصة" },
+        { key: "can_request_discount",   label: "طلب خصم / إعفاء",             desc: "يسمح للمساعد بإرسال طلب خصم للمدير لمراجعته" },
+    ];
+
+    // Default: all permissions ON
+    let currentPermissions = {};
+    PERMISSIONS_DEFS.forEach(p => currentPermissions[p.key] = true);
+
+    async function loadPermissions() {
+        const mid = localStorage.getItem("ca_manager_id");
+        if (!mid || !isFirebaseConnected) return;
+        try {
+            const snap = await get(child(ref(database), `users/${mid}/settings/permissions`));
+            if (snap.exists()) {
+                const saved = snap.val();
+                PERMISSIONS_DEFS.forEach(p => {
+                    if (saved[p.key] !== undefined) currentPermissions[p.key] = saved[p.key];
+                });
+            }
+        } catch(e) { console.error("Load permissions error:", e); }
+    }
+
+    async function savePermissionsToFirebase() {
+        const mid = localStorage.getItem("ca_manager_id");
+        if (!mid || !isFirebaseConnected) return;
+        try {
+            await update(ref(database, `users/${mid}/settings/permissions`), currentPermissions);
+            showToast("تم حفظ الصلاحيات ✅", "success");
+            // Send notification to assistants
+            const msgId = Date.now();
+            await update(ref(database, `users/${mid}/assistant_messages/${msgId}`), {
+                title: "تحديث الصلاحيات",
+                body: "قام المدير بتحديث صلاحياتك. بعض الميزات قد تكون تغيرت.",
+                type: "feature_toggle",
+                timestamp: msgId,
+                read: false
+            });
+        } catch(e) { console.error("Save permissions error:", e); showToast("فشل حفظ الصلاحيات", "err"); }
+    }
+
+    function renderPermissionsPanel() {
+        const grid = $("permissionsGrid");
+        if (!grid) return;
+        grid.innerHTML = PERMISSIONS_DEFS.map(p => `
+            <div class="permission-card">
+                <div class="permission-info">
+                    <div class="permission-title">${p.label}</div>
+                    <div class="permission-desc">${p.desc}</div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="perm_${p.key}" ${currentPermissions[p.key] ? "checked" : ""} onchange="window.onPermissionToggle('${p.key}', this.checked)">
+                    <span class="toggle-track"></span>
+                </label>
+            </div>`).join("");
+    }
+
+    window.onPermissionToggle = function(key, val) {
+        currentPermissions[key] = val;
+        savePermissionsToFirebase();
+        applyPermissionsToAssistantUI();
     };
+
+    function applyPermissionsToAssistantUI() {
+        if (window.CURRENT_ROLE === "admin") return; // Manager sees everything
+        // Revenue visibility
+        const revPill = document.querySelector(".stat-pill.adminOnly");
+        if (revPill) {
+            if (!currentPermissions.show_revenue) {
+                revPill.style.filter = "blur(5px)";
+                revPill.style.pointerEvents = "none";
+            } else {
+                revPill.style.filter = "";
+                revPill.style.pointerEvents = "";
+            }
+        }
+        // Tab locks
+        const tabLockMap = {
+            can_view_reports:         { tabId: "secReports", btnId: "btnTabReports" },
+            can_access_marketing:     { tabId: "secMarketing", btnId: "btnTabMarketing" },
+            can_access_session_students: { tabId: "secSessionStudents", btnId: "btnTabSessionStudents" },
+        };
+        Object.entries(tabLockMap).forEach(([key, { tabId, btnId }]) => {
+            const btn = $(btnId);
+            if (!btn) return;
+            if (!currentPermissions[key]) {
+                btn.classList.add("locked-feature");
+                // Add or update locked badge
+                let badge = btn.querySelector(".locked-badge");
+                if (!badge) {
+                    badge = document.createElement("span");
+                    badge.className = "locked-badge";
+                    badge.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> مقفل من المدير`;
+                    btn.appendChild(badge);
+                }
+                btn.onclick = function(e) {
+                    e.stopPropagation();
+                    showToast("هذه الميزة مقفلة من قبل المدير 🔒", "warning");
+                };
+            } else {
+                btn.classList.remove("locked-feature");
+                const badge = btn.querySelector(".locked-badge");
+                if (badge) badge.remove();
+                btn.onclick = null; // Restore original handler
+            }
+        });
+        // Add student lock
+        const addStBtn = $("addStudentBtn") || document.querySelector("[data-action='addStudent']");
+        if (addStBtn && !currentPermissions.can_add_student) {
+            addStBtn.classList.add("locked-feature");
+        } else if (addStBtn) {
+            addStBtn.classList.remove("locked-feature");
+        }
+    }
+
+    // Load permissions for assistant on startup
+    if (window.CURRENT_ROLE !== "admin" && window.CURRENT_MANAGER_ID && isFirebaseConnected) {
+        (async () => {
+            await loadPermissions();
+            applyPermissionsToAssistantUI();
+            // Also listen for real-time updates
+            const permRef = ref(database, `users/${window.CURRENT_MANAGER_ID}/settings/permissions`);
+            onValue(permRef, snap => {
+                if (snap.exists()) {
+                    const saved = snap.val();
+                    PERMISSIONS_DEFS.forEach(p => {
+                        if (saved[p.key] !== undefined) currentPermissions[p.key] = saved[p.key];
+                    });
+                    applyPermissionsToAssistantUI();
+                }
+            });
+        })();
+    }
+    // Load for manager too (to show current state in panel)
+    if (window.CURRENT_ROLE === "admin" && window.CURRENT_MANAGER_ID && isFirebaseConnected) {
+        loadPermissions();
+    }
+
+    // ==========================================
+    // 17.12. MANAGER: DECISION REQUESTS INBOX
+    // ==========================================
+    async function fetchManagerRequests() {
+        const listEl = $("managerRequestsList");
+        if (!listEl) return;
+        const mid = localStorage.getItem("ca_manager_id");
+        if (!mid) return;
+        listEl.innerHTML = `<div class="mutedCenter">جاري التحميل...</div>`;
+        try {
+            const snap = await get(child(ref(database), `users/${mid}/requests`));
+            const badge = $("managerDecisionsBadge");
+            if (snap.exists()) {
+                const reqs = snap.val();
+                let pending = [], html = "";
+                for (let id in reqs) {
+                    const r = reqs[id];
+                    if (r.status === "pending") pending.push({ id, ...r });
+                }
+                if (badge) {
+                    if (pending.length > 0) { badge.textContent = pending.length; badge.classList.remove("hidden"); }
+                    else badge.classList.add("hidden");
+                }
+                if (pending.length === 0) {
+                    listEl.innerHTML = `<div class="mutedCenter">لا توجد طلبات معلقة</div>`;
+                    return;
+                }
+                pending.forEach(r => {
+                    const date = new Date(r.timestamp).toLocaleString("ar-EG");
+                    const typeLabel = r.type === "exemption" ? "إعفاء كامل" : `خصم ${r.amount} ج`;
+                    html += `<div class="decision-card">
+                        <div class="decision-card-info">
+                            <div class="decision-student-name">${r.studentName || r.studentId}</div>
+                            <div class="decision-meta">${typeLabel} • طلب من: ${r.requestedBy || "مساعد"} • ${date}</div>
+                            <div class="decision-meta" style="margin-top:4px;">السبب: ${r.reason || "—"}</div>
+                        </div>
+                        <div class="decision-amount">${r.type === "exemption" ? "إعفاء" : r.amount + " ج"}</div>
+                        <div class="decision-actions">
+                            <button class="btn success smallBtn" onclick="window.approveRequest('${r.id}')">قبول</button>
+                            <button class="btn danger smallBtn" onclick="window.rejectRequest('${r.id}')">رفض</button>
+                        </div>
+                    </div>`;
+                });
+                listEl.innerHTML = html;
+            } else {
+                if (badge) badge.classList.add("hidden");
+                listEl.innerHTML = `<div class="mutedCenter">لا توجد طلبات معلقة</div>`;
+            }
+        } catch(e) {
+            console.error(e);
+            listEl.innerHTML = `<div class="mutedCenter">فشل جلب الطلبات</div>`;
+        }
+    }
+
+    window.approveRequest = async function(reqId) {
+        const mid = localStorage.getItem("ca_manager_id");
+        if (!mid) return;
+        try {
+            const snap = await get(child(ref(database), `users/${mid}/requests/${reqId}`));
+            if (!snap.exists()) return;
+            const r = snap.val();
+
+            // Apply the discount/exemption
+            const stId = String(r.studentId);
+            if (students[stId]) {
+                if (r.type === "exemption") {
+                    const cls = (students[stId].className || "").trim();
+                    students[stId].paid = groupFees[cls] ? toInt(groupFees[cls]) : students[stId].paid;
+                } else if (r.type === "discount") {
+                    const cls = (students[stId].className || "").trim();
+                    const req = groupFees[cls] ? toInt(groupFees[cls]) : 0;
+                    const discounted = Math.max(0, req - toInt(r.amount));
+                    students[stId].paid = Math.max(students[stId].paid || 0, discounted > 0 ? req - toInt(r.amount) : 0);
+                }
+                saveAll();
+            }
+
+            // Mark request as approved
+            await update(ref(database, `users/${mid}/requests/${reqId}`), { status: "approved" });
+
+            // Notify assistant
+            const msgId = Date.now();
+            await update(ref(database, `users/${mid}/assistant_messages/${msgId}`), {
+                title: "✅ تمت الموافقة على طلبك",
+                body: `وافق المدير على ${r.type === "exemption" ? "إعفاء" : "خصم " + r.amount + " ج"} للطالب ${r.studentName || r.studentId}. السبب: ${r.reason || "—"}`,
+                type: "discount_approved",
+                timestamp: msgId,
+                read: false
+            });
+
+            showToast("تمت الموافقة وتطبيق الخصم ✅", "success");
+            fetchManagerRequests();
+        } catch(e) {
+            console.error(e);
+            showToast("فشل تنفيذ الطلب", "err");
+        }
+    };
+
+    window.rejectRequest = async function(reqId) {
+        const mid = localStorage.getItem("ca_manager_id");
+        if (!mid) return;
+        try {
+            const snap = await get(child(ref(database), `users/${mid}/requests/${reqId}`));
+            if (!snap.exists()) return;
+            const r = snap.val();
+            await update(ref(database, `users/${mid}/requests/${reqId}`), { status: "rejected" });
+
+            // Notify assistant
+            const msgId = Date.now();
+            await update(ref(database, `users/${mid}/assistant_messages/${msgId}`), {
+                title: "❌ تم رفض طلبك",
+                body: `رفض المدير طلب ${r.type === "exemption" ? "الإعفاء" : "الخصم " + r.amount + " ج"} للطالب ${r.studentName || r.studentId}.`,
+                type: "discount_rejected",
+                timestamp: msgId,
+                read: false
+            });
+
+            showToast("تم رفض الطلب", "warning");
+            fetchManagerRequests();
+        } catch(e) {
+            console.error(e);
+            showToast("فشل في الرفض", "err");
+        }
+    };
+
+    // Direct discount by manager
+    if ($("mgrApplyDirectDiscountBtn")) {
+        on("mgrApplyDirectDiscountBtn", "click", async function() {
+            const stId   = $("mgrDirectStudentId") ? $("mgrDirectStudentId").value.trim() : "";
+            const amount = $("mgrDirectAmount")    ? toInt($("mgrDirectAmount").value) : 0;
+            const reason = $("mgrDirectReason")    ? $("mgrDirectReason").value.trim() : "";
+            if (!stId || !students[stId]) return showToast("الطالب غير موجود", "err");
+            const cls = (students[stId].className || "").trim();
+            const req = groupFees[cls] ? toInt(groupFees[cls]) : 0;
+            if (amount > 0 && req > 0) {
+                students[stId].paid = Math.max(students[stId].paid || 0, req - amount);
+            } else if (amount === 0 && req > 0) {
+                students[stId].paid = req; // Full exemption
+            }
+            saveAll();
+            if ($("mgrDirectStudentId")) $("mgrDirectStudentId").value = "";
+            if ($("mgrDirectAmount")) $("mgrDirectAmount").value = "";
+            if ($("mgrDirectReason")) $("mgrDirectReason").value = "";
+            showToast(`تم تطبيق الخصم على ${students[stId].name} ✅`, "success");
+        });
+    }
+
+    // ==========================================
+    // 17.13. ASSISTANT: SEND DISCOUNT REQUEST
+    // ==========================================
+    window.openDiscountRequestModal = function(studentId) {
+        const st = students[String(studentId)];
+        if (!st) return;
+        if (!currentPermissions.can_request_discount) {
+            showToast("إرسال طلبات الخصم مقفل من المدير 🔒", "warning");
+            return;
+        }
+        if ($("discReqStudentId")) $("discReqStudentId").value = studentId;
+        if ($("discReqStudentName")) $("discReqStudentName").textContent = `${st.name} (ID: ${studentId})`;
+        if ($("discReqAmount")) $("discReqAmount").value = "";
+        if ($("discReqReason")) $("discReqReason").value = "";
+        if ($("discountRequestModal")) $("discountRequestModal").classList.remove("hidden");
+    };
+
+    if ($("submitDiscountRequestBtn")) {
+        on("submitDiscountRequestBtn", "click", async function() {
+            const stId   = $("discReqStudentId") ? $("discReqStudentId").value : "";
+            const type   = $("discReqType")      ? $("discReqType").value : "discount";
+            const amount = $("discReqAmount")    ? toInt($("discReqAmount").value) : 0;
+            const reason = $("discReqReason")    ? $("discReqReason").value.trim() : "";
+            const mid    = localStorage.getItem("ca_manager_id") || window.CURRENT_MANAGER_ID;
+            const st     = students[String(stId)];
+            if (!st || !mid) return showToast("حدث خطأ، تأكد من الاتصال", "err");
+            if (!reason) return showToast("من فضلك اكتب سبب الطلب", "err");
+            const reqId = Date.now();
+            try {
+                await update(ref(database, `users/${mid}/requests/${reqId}`), {
+                    studentId: stId,
+                    studentName: st.name,
+                    type,
+                    amount,
+                    reason,
+                    requestedBy: localStorage.getItem("ca_current_username") || "مساعد",
+                    timestamp: reqId,
+                    status: "pending"
+                });
+                if ($("discountRequestModal")) $("discountRequestModal").classList.add("hidden");
+                showToast("تم إرسال الطلب للمدير ✅", "success");
+            } catch(e) {
+                console.error(e);
+                showToast("فشل إرسال الطلب، تأكد من الاتصال", "err");
+            }
+        });
+    }
+
+    // ==========================================
+    // 17.14. ASSISTANT MESSAGES INBOX
+    // ==========================================
+    let assistantMessages = [];
+    let lastReadMsgTime = toInt(localStorage.getItem("ca_last_read_msg") || "0");
+
+    function fetchAssistantMessages() {
+        const mid = window.CURRENT_MANAGER_ID;
+        if (!mid || !isFirebaseConnected || window.CURRENT_ROLE === "admin") return;
+        const msgsRef = ref(database, `users/${mid}/assistant_messages`);
+        onValue(msgsRef, snap => {
+            assistantMessages = [];
+            if (snap.exists()) {
+                const data = snap.val();
+                for (let id in data) assistantMessages.push({ id, ...data[id] });
+                assistantMessages.sort((a, b) => b.timestamp - a.timestamp);
+            }
+            updateAssistantMsgBadge();
+        });
+    }
+
+    function updateAssistantMsgBadge() {
+        const badge = $("notificationsBadge");
+        const unread = assistantMessages.filter(m => !m.read && m.timestamp > lastReadMsgTime).length;
+        if (badge) {
+            if (unread > 0) { badge.textContent = unread; badge.classList.remove("hidden"); }
+            else badge.classList.add("hidden");
+        }
+    }
+
+    // Override notifications dropdown content for assistants: show tabs (Activity Log + Messages)
+    function renderAssistantNotifDropdown() {
+        const listEl = $("notificationsList");
+        if (!listEl) return;
+        if (window.CURRENT_ROLE === "admin") return; // Admins keep the original activity log view
+
+        // Inject tabs if not already
+        const dropdown = $("notificationsDropdown");
+        if (dropdown && !dropdown.querySelector(".msg-tabs")) {
+            const tabsDiv = document.createElement("div");
+            tabsDiv.className = "msg-tabs";
+            tabsDiv.innerHTML = `
+                <button class="msg-tab-btn active" id="msgTabMessages" onclick="window.switchMsgTab('messages')">الرسائل</button>
+                <button class="msg-tab-btn" id="msgTabActivity" onclick="window.switchMsgTab('activity')">سجل العمليات</button>`;
+            dropdown.insertBefore(tabsDiv, listEl);
+        }
+
+        renderAssistantMessages();
+    }
+
+    window.switchMsgTab = function(tab) {
+        document.querySelectorAll(".msg-tab-btn").forEach(b => b.classList.remove("active"));
+        if (tab === "messages") {
+            if ($("msgTabMessages")) $("msgTabMessages").classList.add("active");
+            renderAssistantMessages();
+        } else {
+            if ($("msgTabActivity")) $("msgTabActivity").classList.add("active");
+            // Re-render activity log in listEl
+            window.fetchActivityLog && window.fetchActivityLog();
+        }
+    };
+
+    function renderAssistantMessages() {
+        const listEl = $("notificationsList");
+        if (!listEl) return;
+        if (assistantMessages.length === 0) {
+            listEl.innerHTML = `<div style="text-align:center;color:#888;padding:10px;">لا توجد رسائل</div>`;
+            return;
+        }
+        listEl.innerHTML = assistantMessages.slice(0, 20).map(m => {
+            const isUnread = !m.read;
+            const date = new Date(m.timestamp).toLocaleString("ar-EG", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+            const color = m.type === "discount_approved" ? "var(--success)" : m.type === "discount_rejected" ? "var(--danger)" : "var(--primary)";
+            return `<div style="padding:10px;border-radius:8px;background:${isUnread ? "rgba(37,99,235,0.08)" : "transparent"};border-inline-start:3px solid ${isUnread ? color : "var(--border)"};font-size:0.88em;cursor:pointer;" onclick="window.markMsgRead('${m.id}')">
+                <div style="font-weight:700;margin-bottom:3px;color:${color};">${m.title}</div>
+                <div style="color:var(--text-primary);opacity:0.85;margin-bottom:4px;">${m.body}</div>
+                <div style="font-size:0.78em;color:#888;">${date}</div>
+            </div>`;
+        }).join("");
+        // Mark as read after viewing
+        lastReadMsgTime = Date.now();
+        localStorage.setItem("ca_last_read_msg", lastReadMsgTime.toString());
+        updateAssistantMsgBadge();
+    }
+
+    window.markMsgRead = async function(msgId) {
+        const mid = window.CURRENT_MANAGER_ID;
+        if (!mid) return;
+        try { await update(ref(database, `users/${mid}/assistant_messages/${msgId}`), { read: true }); }
+        catch(e) { console.error(e); }
+    };
+
+    // Hook: when notifications dropdown opens, render properly
+    on("notificationsToggleBtn", "click", function() {
+        setTimeout(() => {
+            if (window.CURRENT_ROLE !== "admin") renderAssistantNotifDropdown();
+        }, 50);
+    });
+
+    // Fetch messages for assistant on startup
+    if (window.CURRENT_ROLE !== "admin") fetchAssistantMessages();
+
+    // showAddAsstModal button
+    if ($("showAddAsstModalBtn")) {
+        on("showAddAsstModalBtn", "click", function() {
+            const panel = $("addAsstFormPanel");
+            if (panel) panel.classList.toggle("hidden");
+        });
+    }
+
+    // ==========================================
+    // AUTO-FETCH: Decisions badge on dashboard load
+    // ==========================================
+    if (window.CURRENT_ROLE === "admin" && isFirebaseConnected) {
+        const mid = localStorage.getItem("ca_manager_id");
+        if (mid) {
+            const reqRef = ref(database, `users/${mid}/requests`);
+            onValue(reqRef, snap => {
+                const badge = $("managerDecisionsBadge");
+                if (!badge) return;
+                let pendingCount = 0;
+                if (snap.exists()) {
+                    const reqs = snap.val();
+                    for (let id in reqs) if (reqs[id].status === "pending") pendingCount++;
+                }
+                if (pendingCount > 0) { badge.textContent = pendingCount; badge.classList.remove("hidden"); }
+                else badge.classList.add("hidden");
+            });
+        }
+    }
+
     // ==========================================
     // 18. INITIALIZATION (START ENGINE)
     // ==========================================
