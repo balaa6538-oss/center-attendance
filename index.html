@@ -145,6 +145,46 @@
             </div>
           </div>
         </div>
+
+        <!-- 3. TOOLS & MARKETING -->
+        <div class="nav-group collapsed">
+          <button class="nav-group-header" onclick="toggleNavGroup(this)" type="button">
+            <span class="nav-group-title" data-i18n="grp_tools">أدوات وتسويق</span>
+            <svg class="chevron-icon" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+          <div class="nav-group-items-wrapper">
+            <div class="nav-group-items">
+              <button id="btnTabBooklets" class="nav-item adminOnly">
+                <span class="nav-icon">📚</span>
+                <span class="nav-text" data-i18n="nav_booklets">مخزون المذكرات</span>
+              </button>
+              <button id="btnTabMarketing" class="nav-item adminOnly">
+                <span class="nav-icon">🚀</span>
+                <span class="nav-text" data-i18n="nav_marketing">حملات التسويق</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. SYSTEM -->
+        <div class="nav-group collapsed">
+          <button class="nav-group-header" onclick="toggleNavGroup(this)" type="button">
+            <span class="nav-group-title" data-i18n="grp_system">إعدادات النظام</span>
+            <svg class="chevron-icon" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+          <div class="nav-group-items-wrapper">
+            <div class="nav-group-items">
+              <button id="btnTabAdmin" class="nav-item adminOnly needs-backup">
+                <span class="nav-icon">⚙️</span>
+                <span class="nav-text" data-i18n="nav_settings">الإعدادات</span>
+              </button>
+            </div>
+          </div>
+        </div>
       </nav>
 
       <div class="sidebar-footer">
