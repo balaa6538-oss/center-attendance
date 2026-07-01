@@ -3266,21 +3266,20 @@ function updateDriveUI() {
                 const fileRes = await fetch(`https://www.googleapis.com/drive/v3/files/${data.files[0].id}?alt=media`, { headers: { 'Authorization': `Bearer ${accessToken}` } });
                 const backupData = await fileRes.json();
                 
-                // PRESERVE SESSION VARIABLES
-                const cachedManagerId = localStorage.getItem("ca_manager_id");
-                const cachedRole = localStorage.getItem("ca_role_v1");
-                const cachedUsername = localStorage.getItem("ca_current_username");
-                const cachedDriveToken = localStorage.getItem("drive_token");
+                // Selective Merge: Extract ONLY business data from backup
+                const businessKeys = [
+                    K_STUDENTS, K_EXTRA_IDS, K_ATT_BY_DATE, K_REVENUE, 
+                    K_DELETED, K_NOTEBOOK, K_GROUP_FEES, K_EXPENSES, 
+                    K_SYLLABUS, K_EVAL, K_SESSION_STUDENTS, K_BOOKLETS
+                ];
+                
+                // Keep the current localStorage session keys completely intact
+                businessKeys.forEach(key => {
+                    if (backupData[key] !== undefined) {
+                        localStorage.setItem(key, backupData[key]);
+                    }
+                });
 
-                // 1. Save to LocalStorage
-                for (let key in backupData) { localStorage.setItem(key, backupData[key]); }
-                
-                // RESTORE SESSION VARIABLES
-                if (cachedManagerId) localStorage.setItem("ca_manager_id", cachedManagerId);
-                if (cachedRole) localStorage.setItem("ca_role_v1", cachedRole);
-                if (cachedUsername) localStorage.setItem("ca_current_username", cachedUsername);
-                if (cachedDriveToken) localStorage.setItem("drive_token", cachedDriveToken);
-                
                 // 2. Push to Firebase if manager is logged in
                 if (window.CURRENT_MANAGER_ID) {
                     const indicator = document.getElementById("cloudSyncIndicator");
