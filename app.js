@@ -1095,7 +1095,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // TEMPORARILY: Give Assistant full permissions (don't hide anything)
         document.querySelectorAll(".adminOnly").forEach(el => {
-            el.classList.remove("hidden"); 
+            if (!el.classList.contains("tab-section")) {
+                el.classList.remove("hidden"); 
+            }
         });
         
         if($("deleteStudentBtn")) $("deleteStudentBtn").classList.remove("hidden");
