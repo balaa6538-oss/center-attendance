@@ -3266,8 +3266,20 @@ function updateDriveUI() {
                 const fileRes = await fetch(`https://www.googleapis.com/drive/v3/files/${data.files[0].id}?alt=media`, { headers: { 'Authorization': `Bearer ${accessToken}` } });
                 const backupData = await fileRes.json();
                 
+                // PRESERVE SESSION VARIABLES
+                const cachedManagerId = localStorage.getItem("ca_manager_id");
+                const cachedRole = localStorage.getItem("ca_role_v1");
+                const cachedUsername = localStorage.getItem("ca_current_username");
+                const cachedDriveToken = localStorage.getItem("drive_token");
+
                 // 1. Save to LocalStorage
                 for (let key in backupData) { localStorage.setItem(key, backupData[key]); }
+                
+                // RESTORE SESSION VARIABLES
+                if (cachedManagerId) localStorage.setItem("ca_manager_id", cachedManagerId);
+                if (cachedRole) localStorage.setItem("ca_role_v1", cachedRole);
+                if (cachedUsername) localStorage.setItem("ca_current_username", cachedUsername);
+                if (cachedDriveToken) localStorage.setItem("drive_token", cachedDriveToken);
                 
                 // 2. Push to Firebase if manager is logged in
                 if (window.CURRENT_MANAGER_ID) {
