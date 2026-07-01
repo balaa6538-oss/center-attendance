@@ -78,6 +78,20 @@ setupConnectionTracker();
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log("V-PRO MAX Engine: Initializing System...");
+    
+    // Sync UI with Mute State
+    if($("muteSoundsToggle")) $("muteSoundsToggle").checked = window.isMuted;
+    if($("soundIcon")) $("soundIcon").innerText = window.isMuted ? "🔇" : "🔊";
+
+    if ($("toggleSoundsBtn")) {
+        $("toggleSoundsBtn").addEventListener("click", function() {
+            window.isMuted = !window.isMuted;
+            localStorage.setItem("ca_muted", window.isMuted ? "1" : "0");
+            if($("muteSoundsToggle")) $("muteSoundsToggle").checked = window.isMuted;
+            if($("soundIcon")) $("soundIcon").innerText = window.isMuted ? "🔇" : "🔊";
+            if (!window.isMuted) playSound("click");
+        });
+    }
 
     // ==========================================
     // 1. CONFIGURATION & AUTHENTICATION
@@ -731,8 +745,10 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => conf.remove(), 4000);
         }
     }
+    window.isMuted = (localStorage.getItem("ca_muted") === "1");
 
     function playSound(type) {
+        if (window.isMuted) return;
         try {
             const ctx = new (window.AudioContext || window.webkitAudioContext)();
             const osc = ctx.createOscillator(); const gain = ctx.createGain();
