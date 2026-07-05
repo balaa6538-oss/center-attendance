@@ -1971,11 +1971,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
     window.deleteSyllabus = function(index) {
         let confirmMsg = currentLang === 'ar' ? "⚠️ متأكد من حذف هذا الدرس من المنهج؟" : "⚠️ Are you sure you want to delete this lesson?";
-        if(confirm(confirmMsg)) {
-            syllabusData.splice(index, 1);
-            saveAll();
-            renderSyllabus();
-        }
+        Swal.fire({
+            title: 'تأكيد الحذف',
+            text: confirmMsg,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: currentLang === 'ar' ? 'نعم، احذف' : 'Yes, delete',
+            cancelButtonText: currentLang === 'ar' ? 'إلغاء' : 'Cancel'
+        }).then((result) => {
+            if(result.isConfirmed) {
+                syllabusData.splice(index, 1);
+                saveAll();
+                renderSyllabus();
+            }
+        });
     };
 
     on("saveSyllabusBtn", "click", function() {
@@ -2468,49 +2477,71 @@ on("quickAttendId", "keypress", function(e) {
         let st = students[currentId];
         if(!st || !st.payments || !st.payments[index]) return;
         
-        if(!confirm(currentLang === 'ar' ? "⚠️ متأكد من حذف هذه الدفعة نهائياً؟" : "⚠️ Are you sure you want to delete this payment?")) return;
-        
-        let p = st.payments[index];
-        st.paid = Math.max(0, st.paid - p.amount);
-        
-        if (revenueByDate[p.date]) {
-            revenueByDate[p.date] = Math.max(0, revenueByDate[p.date] - p.amount);
-        }
-        
-        st.payments.splice(index, 1);
-        
-        saveAll(); 
-        updateStudentUI(currentId); 
-        renderReport(nowDateStr()); 
-        renderCharts();
-        showToast(currentLang === 'ar' ? "تم حذف الدفعة وتعديل الحساب ✅" : "Payment deleted ✅", "warning");
+        let msg = currentLang === 'ar' ? "⚠️ متأكد من حذف هذه الدفعة نهائياً؟" : "⚠️ Are you sure you want to delete this payment?";
+        Swal.fire({
+            title: 'تأكيد الحذف',
+            text: msg,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: currentLang === 'ar' ? 'نعم، احذف' : 'Yes, delete',
+            cancelButtonText: currentLang === 'ar' ? 'إلغاء' : 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                let p = st.payments[index];
+                st.paid = Math.max(0, st.paid - p.amount);
+                
+                if (revenueByDate[p.date]) {
+                    revenueByDate[p.date] = Math.max(0, revenueByDate[p.date] - p.amount);
+                }
+                
+                st.payments.splice(index, 1);
+                
+                saveAll(); 
+                updateStudentUI(currentId); 
+                renderReport(nowDateStr()); 
+                renderCharts();
+                if (typeof showToast === "function") showToast(currentLang === 'ar' ? "تم حذف الدفعة وتعديل الحساب ✅" : "Payment deleted ✅", "warning");
+            }
+        });
     };
 
     on("correctPayBtn", "click", function() {
         if(!currentId) return; 
-        const v = toInt(prompt(currentLang==='ar' ? "قيمة الخصم:" : "Deduct amount:")); if(!v) return;
-        let st = students[currentId];
-        st.paid = Math.max(0, st.paid - v);
-        const today = nowDateStr();
-        revenueByDate[today] = Math.max(0, (revenueByDate[today] || 0) - v);
-        
-        if(st.payments && st.payments.length > 0) {
-            let remToDeduct = v;
-            for(let j = st.payments.length - 1; j >= 0; j--) {
-                if(st.payments[j].date === today) {
-                    if(st.payments[j].amount <= remToDeduct) {
-                        remToDeduct -= st.payments[j].amount;
-                        st.payments.splice(j, 1);
-                    } else {
-                        st.payments[j].amount -= remToDeduct;
-                        remToDeduct = 0;
-                        break;
+        Swal.fire({
+            title: currentLang === 'ar' ? 'قيمة الخصم' : 'Deduct amount',
+            input: 'number',
+            inputAttributes: { min: 1 },
+            showCancelButton: true,
+            confirmButtonText: currentLang === 'ar' ? 'خصم' : 'Deduct',
+            cancelButtonText: currentLang === 'ar' ? 'إلغاء' : 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed && result.value) {
+                const v = toInt(result.value);
+                if(!v) return;
+                let st = students[currentId];
+                st.paid = Math.max(0, st.paid - v);
+                const today = nowDateStr();
+                revenueByDate[today] = Math.max(0, (revenueByDate[today] || 0) - v);
+                
+                if(st.payments && st.payments.length > 0) {
+                    let remToDeduct = v;
+                    for(let j = st.payments.length - 1; j >= 0; j--) {
+                        if(st.payments[j].date === today) {
+                            if(st.payments[j].amount <= remToDeduct) {
+                                remToDeduct -= st.payments[j].amount;
+                                st.payments.splice(j, 1);
+                            } else {
+                                st.payments[j].amount -= remToDeduct;
+                                remToDeduct = 0;
+                                break;
+                            }
+                        }
                     }
                 }
+                
+                saveAll(); showToast(t("msg_discount"), "warning"); updateStudentUI(currentId); renderReport(nowDateStr()); renderCharts();
             }
-        }
-        
-        saveAll(); showToast(t("msg_discount"), "warning"); updateStudentUI(currentId); renderReport(nowDateStr()); renderCharts();
+        });
     });
 
     window.renderStudentNotes = function(id) {
@@ -2570,34 +2601,65 @@ on("quickAttendId", "keypress", function(e) {
                     editableText = match[2];
                 }
                 
-                let newText = prompt(t("prompt_edit_note"), editableText);
-                if (newText !== null) {
-                    if (newText.trim() === "") {
-                        if (confirm(t("confirm_empty_note"))) {
-                            allLines.splice(idx, 1);
+                Swal.fire({
+                    title: t("prompt_edit_note"),
+                    input: 'textarea',
+                    inputValue: editableText,
+                    showCancelButton: true,
+                    confirmButtonText: currentLang === 'ar' ? 'حفظ' : 'Save',
+                    cancelButtonText: currentLang === 'ar' ? 'إلغاء' : 'Cancel'
+                }).then((res) => {
+                    if (res.isConfirmed && res.value !== null) {
+                        let newText = res.value;
+                        if (newText.trim() === "") {
+                            Swal.fire({
+                                title: 'تأكيد الحذف',
+                                text: t("confirm_empty_note"),
+                                icon: 'warning',
+                                showCancelButton: true,
+                                confirmButtonText: currentLang === 'ar' ? 'نعم، احذف' : 'Yes, delete',
+                                cancelButtonText: currentLang === 'ar' ? 'إلغاء' : 'Cancel'
+                            }).then((delRes) => {
+                                if (delRes.isConfirmed) {
+                                    allLines.splice(idx, 1);
+                                    students[currentId].notes = allLines.join("\n");
+                                    saveAll();
+                                    renderStudentNotes(currentId);
+                                    if(typeof showToast === "function") showToast(t("msg_note_deleted"), "warning");
+                                }
+                            });
+                        } else {
+                            allLines[idx] = existingDate ? `[${existingDate}] : ${newText.trim()}` : newText.trim();
+                            students[currentId].notes = allLines.join("\n");
+                            saveAll();
+                            renderStudentNotes(currentId);
+                            if (typeof showToast === "function") showToast(t("msg_note_edited"), "success");
                         }
-                    } else {
-                        allLines[idx] = existingDate ? `[${existingDate}] : ${newText.trim()}` : newText.trim();
                     }
-                    students[currentId].notes = allLines.join("\n");
-                    saveAll();
-                    renderStudentNotes(currentId);
-                    showToast(t("msg_note_edited"), "success");
-                }
+                });
             };
         });
         
         container.querySelectorAll(".delete-note-btn").forEach(btn => {
             btn.onclick = function() {
                 let idx = toInt(this.getAttribute("data-index"));
-                if (confirm(t("confirm_del_note"))) {
-                    let allLines = (students[currentId].notes || "").split("\n").filter(l => l.trim() !== "");
-                    allLines.splice(idx, 1);
-                    students[currentId].notes = allLines.join("\n");
-                    saveAll();
-                    renderStudentNotes(currentId);
-                    showToast(t("msg_note_deleted"), "warning");
-                }
+                Swal.fire({
+                    title: 'تأكيد الحذف',
+                    text: t("confirm_del_note"),
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: currentLang === 'ar' ? 'نعم، احذف' : 'Yes, delete',
+                    cancelButtonText: currentLang === 'ar' ? 'إلغاء' : 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        let allLines = (students[currentId].notes || "").split("\n").filter(l => l.trim() !== "");
+                        allLines.splice(idx, 1);
+                        students[currentId].notes = allLines.join("\n");
+                        saveAll();
+                        renderStudentNotes(currentId);
+                        if(typeof showToast === "function") showToast(t("msg_note_deleted"), "warning");
+                    }
+                });
             };
         });
     };
@@ -2672,10 +2734,20 @@ on("quickAttendId", "keypress", function(e) {
         document.querySelectorAll(".delete-pkg-btn").forEach(btn => {
             btn.onclick = function() {
                 let g = this.getAttribute("data-group");
-                if(confirm("⚠️ متأكد من حذف هذه الباقة من السيستم؟")) {
-                    delete groupFees[g];
-                    saveAll(); renderGroupFeesModal(); populatePackages(); showToast("تم الحذف");
-                }
+                Swal.fire({
+                    title: 'تأكيد الحذف',
+                    text: "⚠️ متأكد من حذف هذه الباقة من السيستم؟",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'نعم، احذف',
+                    cancelButtonText: 'إلغاء'
+                }).then((res) => {
+                    if (res.isConfirmed) {
+                        delete groupFees[g];
+                        saveAll(); renderGroupFeesModal(); populatePackages(); 
+                        if(typeof showToast==="function") showToast("تم الحذف");
+                    }
+                });
             }
         });
     }
@@ -2716,10 +2788,16 @@ on("quickAttendId", "keypress", function(e) {
             }
         }
         
-        saveAll(); 
-        populatePackages(); 
-        if ($("groupFeesModal")) $("groupFeesModal").classList.add("hidden"); 
-        showToast(t("msg_saved"));
+         let warnMsg = currentLang==='ar' ? 'تحذير: سيتم استبدال البيانات الحالية بالكامل' : 'Warning: Overwrite current data?';
+        const confirmRes = await Swal.fire({
+            title: 'تأكيد الاستيراد',
+            text: warnMsg,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'نعم، استبدل',
+            cancelButtonText: 'إلغاء'
+        });
+        if(!confirmRes.isConfirmed) return;
         if(currentId) updateStudentUI(currentId);
     });
 
@@ -2994,29 +3072,44 @@ on("importExcelInput", "change", async function(e) {
             delBtn.classList.remove("holding");
             
             const targetId = currentId; const st = students[targetId]; const backup = JSON.parse(JSON.stringify(st));
-            let deducted = 0; 
-            if(st.paid > 0 && confirm(currentLang==='ar' ? 'خصم مدفوعاته من إيراد اليوم؟' : 'Deduct from revenue?')) deducted = st.paid;
             
-            const today = nowDateStr();
-            revenueByDate[today] = (revenueByDate[today] || 0) - deducted;
-            deletedStudents[targetId] = backup; 
-            students[targetId] = makeEmptyStudent(targetId);
-            
-            if(targetId > BASE_MAX_ID) { 
-                delete students[targetId]; 
-                let newExtra = [];
-                for(let i=0; i<extraIds.length; i++) { if (extraIds[i] !== targetId) newExtra.push(extraIds[i]); }
-                extraIds = newExtra;
+            const doDelete = (deducted) => {
+                const today = nowDateStr();
+                revenueByDate[today] = (revenueByDate[today] || 0) - deducted;
+                deletedStudents[targetId] = backup; 
+                students[targetId] = makeEmptyStudent(targetId);
+                
+                if(targetId > BASE_MAX_ID) { 
+                    delete students[targetId]; 
+                    let newExtra = [];
+                    for(let i=0; i<extraIds.length; i++) { if (extraIds[i] !== targetId) newExtra.push(extraIds[i]); }
+                    extraIds = newExtra;
+                }
+                if (typeof logAction === "function") logAction("حذف طالب", `نقل الطالب ${backup.name || targetId} إلى سلة المحذوفات`);
+                saveAll(); updateStudentUI(null); window.switchTab('Home');
+                
+                showUndoToast(t("msg_deleted"), function() {
+                    if (typeof logAction === "function") logAction("استرجاع طالب", `تم استرجاع الطالب ${backup.name || targetId}`);
+                    students[targetId] = backup; delete deletedStudents[targetId];
+                    revenueByDate[nowDateStr()] = (revenueByDate[nowDateStr()] || 0) + deducted;
+                    saveAll(); window.extOpen(targetId); renderReport(nowDateStr()); renderCharts(); showToast(t("msg_undo"));
+                });
+            };
+
+            if(st.paid > 0) {
+                Swal.fire({
+                    title: 'تأكيد الخصم',
+                    text: currentLang==='ar' ? 'خصم مدفوعاته من إيراد اليوم؟' : 'Deduct from revenue?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: currentLang==='ar' ? 'نعم، اخصم' : 'Yes, deduct',
+                    cancelButtonText: currentLang==='ar' ? 'لا تخصم' : 'No'
+                }).then((res) => {
+                    doDelete(res.isConfirmed ? st.paid : 0);
+                });
+            } else {
+                doDelete(0);
             }
-            if (typeof logAction === "function") logAction("حذف طالب", `نقل الطالب ${backup.name || targetId} إلى سلة المحذوفات`);
-            saveAll(); updateStudentUI(null); window.switchTab('Home');
-            
-            showUndoToast(t("msg_deleted"), function() {
-                if (typeof logAction === "function") logAction("استرجاع طالب", `تم استرجاع الطالب ${backup.name || targetId}`);
-                students[targetId] = backup; delete deletedStudents[targetId];
-                revenueByDate[nowDateStr()] = (revenueByDate[nowDateStr()] || 0) + deducted;
-                saveAll(); window.extOpen(targetId); renderReport(nowDateStr()); renderCharts(); showToast(t("msg_undo"));
-            });
         }, 1000); // ثانيتين ضغط متواصل
     }
 
@@ -3089,17 +3182,35 @@ on("importExcelInput", "change", async function(e) {
     on("resetTermBtn", "click", function() {
         askAdminPass(function() {
             let msg = currentLang==='ar' ? "تصفير فلوس وغياب الترم بالكامل للجميع؟" : "Reset all fees and attendance?";
-            if(confirm(msg)) {
-                for(let k in students) { students[k].paid = 0; students[k].attendanceDates = []; }
-                attByDate = {}; revenueByDate = {}; expensesByDate = {}; saveAll(); location.reload();
-            }
+            Swal.fire({
+                title: 'تأكيد التصفير',
+                text: msg,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'نعم، صفر',
+                cancelButtonText: 'إلغاء'
+            }).then((res) => {
+                if(res.isConfirmed) {
+                    for(let k in students) { students[k].paid = 0; students[k].attendanceDates = []; }
+                    attByDate = {}; revenueByDate = {}; expensesByDate = {}; saveAll(); location.reload();
+                }
+            });
         });
     });
 
     on("resetBtn", "click", function() {
         askAdminPass(function() {
             let msg = currentLang==='ar' ? "مسح شامل وإعادة ضبط المصنع للسيستم بالكامل؟" : "Factory Reset the whole system?";
-            if(confirm(msg)) { localStorage.clear(); location.reload(); }
+            Swal.fire({
+                title: 'تأكيد ضبط المصنع',
+                text: msg,
+                icon: 'error',
+                showCancelButton: true,
+                confirmButtonText: 'نعم، امسح كل شيء',
+                cancelButtonText: 'إلغاء'
+            }).then((res) => {
+                if(res.isConfirmed) { localStorage.clear(); location.reload(); }
+            });
         });
     });
 
@@ -3266,7 +3377,15 @@ function updateDriveUI() {
 
     on("restoreDriveBtn", "click", async function() {
         if (!accessToken) return showToast(currentLang === 'ar' ? "يرجى الربط بالدرايف أولاً ☁️" : "Please connect to Drive first ☁️", "err");
-        if (!confirm(currentLang === 'ar' ? "⚠️ تحذير شديد: سيتم مسح كل البيانات الحالية واستبدالها بنسخة السحابة، متأكد؟" : "⚠️ WARNING: Current data will be replaced by cloud backup. Sure?")) return;
+        const confirmRes = await Swal.fire({
+            title: 'تحذير شديد',
+            text: currentLang === 'ar' ? "⚠️ تحذير شديد: سيتم مسح كل البيانات الحالية واستبدالها بنسخة السحابة، متأكد؟" : "⚠️ WARNING: Current data will be replaced by cloud backup. Sure?",
+            icon: 'error',
+            showCancelButton: true,
+            confirmButtonText: 'نعم، استرجع البيانات',
+            cancelButtonText: 'إلغاء'
+        });
+        if (!confirmRes.isConfirmed) return;
 
         try {
             const response = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${BACKUP_FILE_NAME}'&fields=files(id)`, { headers: { 'Authorization': `Bearer ${accessToken}` } });
@@ -3411,7 +3530,15 @@ function updateDriveUI() {
 
 
     window.deleteAssistant = async function(asstKey) {
-        if (!confirm(currentLang === 'ar' ? `هل أنت متأكد من حذف المساعد نهائياً؟` : `Delete assistant?`)) return;
+        const res = await Swal.fire({
+            title: 'تأكيد الحذف',
+            text: currentLang === 'ar' ? `هل أنت متأكد من حذف المساعد نهائياً؟` : `Delete assistant?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'نعم، احذف',
+            cancelButtonText: 'إلغاء'
+        });
+        if (!res.isConfirmed) return;
         
         const managerId = localStorage.getItem("ca_manager_id");
         try {
@@ -5045,7 +5172,6 @@ function updateDriveUI() {
         ensureBase500(); 
         checkAuth(); 
         applyLanguage(); 
-        checkDailyBackup();
         setTimeout(checkQR, 500);
 
         initDailyApprovalSystem();
