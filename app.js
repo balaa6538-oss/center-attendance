@@ -5572,25 +5572,91 @@ function updateDriveUI() {
         updateSyncUI('syncing', 'جاري المزامنة اليدوية...');
         
         try {
-            // Fetch remote data
-            const snapshot = await get(child(ref(database), `users/${window.CURRENT_MANAGER_ID}`));
-            
-            if (snapshot.exists()) {
-                const remote = snapshot.val();
-                const remoteTimestamp = remote._lastModified || 0;
-                const localTimestamp = localTimestamps[K_STUDENTS] || 0;
+            const syncPromise = (async () => {
+                // Fetch remote data
+                const snapshot = await get(child(ref(database), `users/${window.CURRENT_MANAGER_ID}`));
+                
+                if (snapshot.exists()) {
+                    const remote = snapshot.val();
+                    const remoteTimestamp = remote._lastModified || 0;
+                    const localTimestamp = localTimestamps[K_STUDENTS] || 0;
 
-                if (!hasUnsavedChanges && localTimestamp >= remoteTimestamp) {
-                    console.log("[Sync] Already fully synced.");
-                    showToast("كل البيانات متزامنة بالفعل ✅", "success");
-                    updateSyncUI('online', 'متصل ومتزامن ✅');
-                    syncInProgress = false;
-                    return;
-                }
+                    if (!hasUnsavedChanges && localTimestamp >= remoteTimestamp) {
+                        console.log("[Sync] Already fully synced.");
+                        showToast("كل البيانات متزامنة بالفعل ✅", "success");
+                        updateSyncUI('online', 'متصل ومتزامن ✅');
+                        return;
+                    }
 
-                if (localTimestamp > remoteTimestamp) {
-                    // Local is newer — push local data to Firebase
-                    console.log("[Sync] Local is newer → Pushing to Firebase");
+                    if (localTimestamp > remoteTimestamp) {
+                        // Local is newer — push local data to Firebase
+                        console.log("[Sync] Local is newer → Pushing to Firebase");
+                        const dbRef = ref(database, `users/${window.CURRENT_MANAGER_ID}`);
+                        await update(dbRef, {
+                            'students': students,
+                            'attendance': attByDate,
+                            'finances/revenue': revenueByDate,
+                            'packages': groupFees,
+                            'finances/expenses': expensesByDate,
+                            'deletedStudents': deletedStudents,
+                            'syllabus': syllabusData,
+                            'evaluations': evalData,
+                            'sessionStudents': sessionStudentsByDate,
+                            'booklets': bookletsStock,
+                            '_lastModified': Date.now()
+                        });
+                        showToast("تم رفع البيانات المحلية إلى السحابة ✅", "success");
+                    } else {
+                        // Remote is newer — pull and merge
+                        console.log("[Sync] Server is newer → Pulling from Firebase");
+                        
+                        // Granular merge for students
+                        const remoteStudents = remote.students || {};
+                        for (const id in remoteStudents) {
+                            const remoteStudent = remoteStudents[id];
+                            const localStudent = students[id];
+                            if (!localStudent) {
+                                students[id] = remoteStudent;
+                            } else {
+                                const rMod = remoteStudent.lastModified || 0;
+                                const lMod = localStudent.lastModified || 0;
+                                if (rMod > lMod) {
+                                    students[id] = remoteStudent;
+                                }
+                            }
+                        }
+                        
+                        // For other entities, take the remote version if server is newer
+                        attByDate = remote.attendance || attByDate;
+                        revenueByDate = remote.finances?.revenue || revenueByDate;
+                        expensesByDate = remote.finances?.expenses || expensesByDate;
+                        groupFees = remote.packages || groupFees;
+                        deletedStudents = remote.deletedStudents || deletedStudents;
+                        syllabusData = remote.syllabus || syllabusData;
+                        evalData = remote.evaluations || evalData;
+                        sessionStudentsByDate = remote.sessionStudents || sessionStudentsByDate;
+                        bookletsStock = remote.booklets || bookletsStock;
+                        
+                        // Save merged data locally
+                        await Promise.all([
+                            secureSave(K_STUDENTS, students),
+                            secureSave(K_ATT_BY_DATE, attByDate),
+                            secureSave(K_REVENUE, revenueByDate),
+                            secureSave(K_GROUP_FEES, groupFees),
+                            secureSave(K_EXPENSES, expensesByDate),
+                            secureSave(K_DELETED, deletedStudents),
+                            secureSave(K_SYLLABUS, syllabusData),
+                            secureSave(K_EVAL, evalData),
+                            secureSave(K_SESSION_STUDENTS, sessionStudentsByDate),
+                            secureSave(K_BOOKLETS, bookletsStock)
+                        ]);
+                        
+                        updateTopStats(); updateFinanceSummary(); renderCharts();
+                        showToast("تم تحديث البيانات من السحابة ✅", "success");
+                    }
+                } else {
+                    // No remote data — push everything
+                    console.log("[Sync] No remote data found → Initial push");
                     const dbRef = ref(database, `users/${window.CURRENT_MANAGER_ID}`);
                     await update(dbRef, {
                         'students': students,
@@ -5605,81 +5671,28 @@ function updateDriveUI() {
                         'booklets': bookletsStock,
                         '_lastModified': Date.now()
                     });
-                    showToast("تم رفع البيانات المحلية إلى السحابة ✅", "success");
-                } else {
-                    // Remote is newer — pull and merge
-                    console.log("[Sync] Server is newer → Pulling from Firebase");
-                    
-                    // Granular merge for students
-                    const remoteStudents = remote.students || {};
-                    for (const id in remoteStudents) {
-                        const remoteStudent = remoteStudents[id];
-                        const localStudent = students[id];
-                        if (!localStudent) {
-                            students[id] = remoteStudent;
-                        } else {
-                            const rMod = remoteStudent.lastModified || 0;
-                            const lMod = localStudent.lastModified || 0;
-                            if (rMod > lMod) {
-                                students[id] = remoteStudent;
-                            }
-                        }
-                    }
-                    
-                    // For other entities, take the remote version if server is newer
-                    attByDate = remote.attendance || attByDate;
-                    revenueByDate = remote.finances?.revenue || revenueByDate;
-                    expensesByDate = remote.finances?.expenses || expensesByDate;
-                    groupFees = remote.packages || groupFees;
-                    deletedStudents = remote.deletedStudents || deletedStudents;
-                    syllabusData = remote.syllabus || syllabusData;
-                    evalData = remote.evaluations || evalData;
-                    sessionStudentsByDate = remote.sessionStudents || sessionStudentsByDate;
-                    bookletsStock = remote.booklets || bookletsStock;
-                    
-                    // Save merged data locally
-                    await Promise.all([
-                        secureSave(K_STUDENTS, students),
-                        secureSave(K_ATT_BY_DATE, attByDate),
-                        secureSave(K_REVENUE, revenueByDate),
-                        secureSave(K_GROUP_FEES, groupFees),
-                        secureSave(K_EXPENSES, expensesByDate),
-                        secureSave(K_DELETED, deletedStudents),
-                        secureSave(K_SYLLABUS, syllabusData),
-                        secureSave(K_EVAL, evalData),
-                        secureSave(K_SESSION_STUDENTS, sessionStudentsByDate),
-                        secureSave(K_BOOKLETS, bookletsStock)
-                    ]);
-                    
-                    updateTopStats(); updateFinanceSummary(); renderCharts();
-                    showToast("تم تحديث البيانات من السحابة ✅", "success");
+                    showToast("تم رفع البيانات لأول مرة ✅", "success");
                 }
-            } else {
-                // No remote data — push everything
-                console.log("[Sync] No remote data found → Initial push");
-                const dbRef = ref(database, `users/${window.CURRENT_MANAGER_ID}`);
-                await update(dbRef, {
-                    'students': students,
-                    'attendance': attByDate,
-                    'finances/revenue': revenueByDate,
-                    'packages': groupFees,
-                    'finances/expenses': expensesByDate,
-                    'deletedStudents': deletedStudents,
-                    'syllabus': syllabusData,
-                    'evaluations': evalData,
-                    'sessionStudents': sessionStudentsByDate,
-                    'booklets': bookletsStock,
-                    '_lastModified': Date.now()
-                });
-                showToast("تم رفع البيانات لأول مرة ✅", "success");
-            }
+                
+                hasUnsavedChanges = false;
+                updateSyncUI('online', 'متصل ومتزامن ✅');
+            })();
+
+            const timeoutPromise = new Promise((_, reject) => {
+                setTimeout(() => reject(new Error("SYNC_TIMEOUT")), 12000); // 12 seconds timeout
+            });
+
+            await Promise.race([syncPromise, timeoutPromise]);
             
-            hasUnsavedChanges = false;
-            updateSyncUI('online', 'متصل ومتزامن ✅');
         } catch(e) {
             console.error("[Sync] Error:", e);
-            updateSyncUI('pending', 'فشلت المزامنة - حاول مرة أخرى');
-            showToast("فشلت المزامنة. تأكد من اتصال الإنترنت.", "err");
+            if (e.message === "SYNC_TIMEOUT") {
+                updateSyncUI('offline', 'فشلت المزامنة - لا يوجد اتصال بالإنترنت');
+                showToast("انتهى وقت المزامنة (تأكد من جودة الإنترنت) ❌", "err");
+            } else {
+                updateSyncUI('offline', 'فشلت المزامنة - خطأ في السيرفر');
+                showToast("فشلت المزامنة. تأكد من اتصال الإنترنت.", "err");
+            }
         } finally {
             syncInProgress = false;
         }
