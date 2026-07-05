@@ -2788,17 +2788,10 @@ on("quickAttendId", "keypress", function(e) {
             }
         }
         
-         let warnMsg = currentLang==='ar' ? 'تحذير: سيتم استبدال البيانات الحالية بالكامل' : 'Warning: Overwrite current data?';
-        const confirmRes = await Swal.fire({
-            title: 'تأكيد الاستيراد',
-            text: warnMsg,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'نعم، استبدل',
-            cancelButtonText: 'إلغاء'
-        });
-        if(!confirmRes.isConfirmed) return;
-        if(currentId) updateStudentUI(currentId);
+        saveAll(); 
+        populatePackages(); 
+        if ($("groupFeesModal")) $("groupFeesModal").classList.add("hidden"); 
+        if(typeof showToast === 'function') showToast(currentLang === 'ar' ? 'تم الحفظ' : 'Saved');
     });
 
     on("changeLangBtn", "click", function() { 
@@ -2968,7 +2961,20 @@ on("importExcelInput", "change", async function(e) {
         const wb = XLSX.read(await f.arrayBuffer(), {type:"array"});
         
         let warnMsg = currentLang==='ar' ? 'تحذير: سيتم مسح البيانات الحالية واستبدالها' : 'Warning: Overwrite current data?';
-        if(!confirm(warnMsg)) return;
+        const confirmRes = await Swal.fire({
+            title: 'تأكيد الاستيراد',
+            text: warnMsg,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'نعم، استبدل',
+            cancelButtonText: 'إلغاء',
+            customClass: {
+                popup: 'glass-modal',
+                confirmButton: 'btn btn-danger',
+                cancelButton: 'btn btn-secondary'
+            }
+        });
+        if(!confirmRes.isConfirmed) return;
         
         // تصفير كل حاجة قبل ما نستقبل الداتا الجديدة
         students = {}; attByDate = {}; revenueByDate = {}; expensesByDate = {}; syllabusData = [];
