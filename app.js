@@ -34,17 +34,17 @@ function setupConnectionTracker() {
     const connectedRef = ref(database, '.info/connected');
     onValue(connectedRef, (snap) => {
         if (snap.val() === true) {
-            console.log("Firebase Connected! 🟢");
+            console.log("Firebase Connected! ًںں¢");
             isFirebaseConnected = true;
             // Only set to 'online' if there are no pending changes
             if (!hasUnsavedChanges) {
-                if (typeof updateSyncUI === 'function') updateSyncUI('online', 'متصل ومتزامن ✅');
+                if (typeof updateSyncUI === 'function') updateSyncUI('online', 'ظ…طھطµظ„ ظˆظ…طھط²ط§ظ…ظ† âœ…');
             } else {
-                if (typeof updateSyncUI === 'function') updateSyncUI('pending', 'متصل - يوجد تغييرات لم تتم مزامنتها');
+                if (typeof updateSyncUI === 'function') updateSyncUI('pending', 'ظ…طھطµظ„ - ظٹظˆط¬ط¯ طھط؛ظٹظٹط±ط§طھ ظ„ظ… طھطھظ… ظ…ط²ط§ظ…ظ†طھظ‡ط§');
             }
             if (wasOffline) {
                 if (typeof showToast === "function") {
-                    showToast(currentLang === 'ar' ? "عاد الاتصال بالإنترنت 🌐 جاري المزامنة التلقائية..." : "Connection Restored 🌐 Syncing...", "success");
+                    showToast(currentLang === 'ar' ? "ط¹ط§ط¯ ط§ظ„ط§طھطµط§ظ„ ط¨ط§ظ„ط¥ظ†طھط±ظ†طھ ًںŒگ ط¬ط§ط±ظٹ ط§ظ„ظ…ط²ط§ظ…ظ†ط© ط§ظ„طھظ„ظ‚ط§ط¦ظٹط©..." : "Connection Restored ًںŒگ Syncing...", "success");
                 }
                 if (hasUnsavedChanges) {
                     setTimeout(() => { if (typeof saveAll === "function") saveAll(); }, 800);
@@ -52,10 +52,10 @@ function setupConnectionTracker() {
             }
             wasOffline = false;
         } else {
-            console.log("Firebase Disconnected 🔴");
+            console.log("Firebase Disconnected ًں”´");
             isFirebaseConnected = false;
             wasOffline = true;
-            if (typeof updateSyncUI === 'function') updateSyncUI('offline', 'غير متصل بالسحابة');
+            if (typeof updateSyncUI === 'function') updateSyncUI('offline', 'ط؛ظٹط± ظ…طھطµظ„ ط¨ط§ظ„ط³ط­ط§ط¨ط©');
         }
     });
 
@@ -63,7 +63,7 @@ function setupConnectionTracker() {
     window.addEventListener('beforeunload', (e) => {
         if (hasUnsavedChanges && !isFirebaseConnected) {
             e.preventDefault();
-            e.returnValue = 'تحذير: لا يوجد اتصال بالإنترنت، هناك بيانات لم يتم مزامنتها مع السحابة!';
+            e.returnValue = 'طھط­ط°ظٹط±: ظ„ط§ ظٹظˆط¬ط¯ ط§طھطµط§ظ„ ط¨ط§ظ„ط¥ظ†طھط±ظ†طھطŒ ظ‡ظ†ط§ظƒ ط¨ظٹط§ظ†ط§طھ ظ„ظ… ظٹطھظ… ظ…ط²ط§ظ…ظ†طھظ‡ط§ ظ…ط¹ ط§ظ„ط³ط­ط§ط¨ط©!';
             return e.returnValue;
         }
     });
@@ -76,14 +76,14 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Sync UI with Mute State
     if($("muteSoundsToggle")) $("muteSoundsToggle").checked = window.isMuted;
-    if($("soundIcon")) $("soundIcon").innerText = window.isMuted ? "🔇" : "🔊";
+    if($("soundIcon")) $("soundIcon").innerText = window.isMuted ? "ًں”‡" : "ًں”ٹ";
 
     if ($("toggleSoundsBtn")) {
         $("toggleSoundsBtn").addEventListener("click", function() {
             window.isMuted = !window.isMuted;
             localStorage.setItem("ca_muted", window.isMuted ? "1" : "0");
             if($("muteSoundsToggle")) $("muteSoundsToggle").checked = window.isMuted;
-            if($("soundIcon")) $("soundIcon").innerText = window.isMuted ? "🔇" : "🔊";
+            if($("soundIcon")) $("soundIcon").innerText = window.isMuted ? "ًں”‡" : "ًں”ٹ";
             if (!window.isMuted) playSound("click");
         });
     }
@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const BASE_MAX_ID = 500; 
     const ITEMS_PER_PAGE = 50;
 
-    // مفاتيح التخزين المحلية
+    // ظ…ظپط§طھظٹط­ ط§ظ„طھط®ط²ظٹظ† ط§ظ„ظ…ط­ظ„ظٹط©
     const K_AUTH         = "ca_auth_v2";
     const K_ROLE         = "ca_role_v1";
     const K_STUDENTS     = "ca_students_v6";
@@ -189,7 +189,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // --- Migration: localStorage → localForage (One-time) ---
+    // --- Migration: localStorage â†’ localForage (One-time) ---
     async function initStorageMigration() {
         const migrated = await localforage.getItem('_idb_migrated');
         if (migrated === true) {
@@ -199,7 +199,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        console.log("[Migration] Starting localStorage → IndexedDB migration...");
+        console.log("[Migration] Starting localStorage â†’ IndexedDB migration...");
         let migratedCount = 0;
 
         for (const key of HEAVY_DATA_KEYS) {
@@ -210,9 +210,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     await secureSave(key, parsed);
                     localStorage.removeItem(key); // Free up the 5MB space
                     migratedCount++;
-                    console.log(`[Migration] ✅ Migrated: ${key}`);
+                    console.log(`[Migration] âœ… Migrated: ${key}`);
                 } catch(e) {
-                    console.error(`[Migration] ❌ Failed for ${key}:`, e);
+                    console.error(`[Migration] â‌Œ Failed for ${key}:`, e);
                 }
             }
         }
@@ -223,7 +223,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log(`[Migration] Complete! Migrated ${migratedCount} keys to IndexedDB.`);
         
         if (migratedCount > 0 && typeof showToast === 'function') {
-            showToast("تم ترقية قاعدة البيانات المحلية بنجاح ✅", "success");
+            showToast("طھظ… طھط±ظ‚ظٹط© ظ‚ط§ط¹ط¯ط© ط§ظ„ط¨ظٹط§ظ†ط§طھ ط§ظ„ظ…ط­ظ„ظٹط© ط¨ظ†ط¬ط§ط­ âœ…", "success");
         }
     }
 
@@ -231,14 +231,25 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateSyncUI(state, title) {
         // state: 'online' | 'offline' | 'pending' | 'syncing'
         const indicator = document.getElementById("cloudSyncIndicator");
-        const dot = document.getElementById("syncStatusDot");
-        const badge = document.getElementById("syncPendingBadge");
+        const syncIcon  = document.getElementById("syncIcon");
+        const dot       = document.getElementById("syncStatusDot");
+        const badge     = document.getElementById("syncPendingBadge");
         
         if (indicator) {
             indicator.classList.remove("online", "offline", "pending", "syncing");
             indicator.classList.add(state);
             indicator.title = title || "";
         }
+
+        // Animate the main cloud icon when syncing
+        if (syncIcon) {
+            if (state === 'syncing') {
+                syncIcon.style.animation = "pulseCloud 0.8s ease-in-out infinite";
+            } else {
+                syncIcon.style.animation = "";
+            }
+        }
+
         if (dot) {
             dot.classList.remove("online", "offline", "pending");
             dot.classList.add(state === 'syncing' ? 'pending' : state);
@@ -343,292 +354,292 @@ document.addEventListener('DOMContentLoaded', function() {
     // 3. THE COMPREHENSIVE DICTIONARY
     // ==========================================
     const dict = {
-        "grp_daily": { ar: "الإدارة اليومية", en: "Daily Operations" },
-        "nav_session_st": { ar: "طلاب الحصة", en: "Session Students" },
-        "grp_finance": { ar: "الحسابات والإحصائيات", en: "Finance & Analytics" },
-        "grp_tools": { ar: "أدوات وتسويق", en: "Tools & Marketing" },
-        "nav_booklets": { ar: "مخزون المذكرات", en: "Booklets Inventory" },
-        "nav_marketing": { ar: "حملات التسويق", en: "Marketing Campaigns" },
-        "grp_system": { ar: "إعدادات النظام", en: "System Settings" },
-        "note_header": { ar: "ملاحظات الطالب (منفصلة وقابلة للتعديل)", en: "Student Notes (Editable)" },
-        "txt_no_notes": { ar: "لا توجد ملاحظات مسجلة لهذا الطالب", en: "No notes recorded for this student" },
-        "print_receipt_lock": { ar: "إصدار إيصال سداد الباقة (مغلق لحين إكمال الدفع)", en: "Issue Package Receipt (Locked until full payment)" },
-        "print_receipt_unlock": { ar: "🖨️ طباعة إيصال سداد الباقة (مكتمل)", en: "🖨️ Print Package Receipt (Completed)" },
-        "correct_pay_btn": { ar: "إيداع", en: "Deposit" },
-       "shift_manager": { ar: "مسئول الشيفت:", en: "Shift Manager:" },
-        "modal_shift_title": { ar: "👨‍💼 اختيار مسئول الشيفت", en: "👨‍💼 Select Shift Manager" },
-        "plc_new_manager": { ar: "اسم المسئول الجديد...", en: "New manager name..." },
-        "btn_add_manager": { ar: "إضافة", en: "Add" },
-        "err_no_manager": { ar: "يرجى اختيار اسم مسئول الشيفت أولاً", en: "Please select a shift manager first" },
-       "drive_offline": { ar: "⚪ غير متصل", en: "⚪ Offline" },
-        "drive_online": { ar: "🟢 متصل بالسحابة", en: "🟢 Cloud Connected" },
-        "btn_drive_login": { ar: "ربط بجوجل درايف ☁️", en: "Connect Google Drive ☁️" },
-        "btn_drive_connected": { ar: "متصل بالدرايف ✅", en: "Drive Connected ✅" },
-        "btn_drive_restore": { ar: "استرجاع من السحاب 🔄", en: "Restore from Cloud 🔄" },
-        "msg_sync_wait": { ar: "جاري حفظ نسخة احتياطية للسحابة... ⏳", en: "Saving backup to cloud... ⏳" },
-        "msg_sync_done": { ar: "تم الحفظ بنجاح على الدرايف ✅", en: "Saved to Drive successfully ✅" },
-        "msg_sync_auto": { ar: "تم تحديث النسخة الاحتياطية تلقائياً ☁️", en: "Auto-backup updated on cloud ☁️" },
-        "lbl_last_sync": { ar: "آخر مزامنة: ", en: "Last Sync: " },
-       "fin_month_exp": { ar: "صافي مصروفات الشهر", en: "Monthly Expenses" },
-       "nav_syllabus": { ar: "المنهج", en: "Syllabus" },
-       "tbl_remain": { ar: "المتبقي", en: "Remaining" },
-        "modal_rev_today": { ar: "💰 تفاصيل إيراد اليوم", en: "💰 Today's Revenue Details" },
-        "syll_update_title": { ar: "🗺️ تحديث خريطة المنهج (للمدير)", en: "🗺️ Update Syllabus (Admin)" },
-        "syll_name_lbl": { ar: "اسم الشابتر / الدرس", en: "Chapter / Lesson Name" },
-        "syll_status_lbl": { ar: "الحالة", en: "Status" },
-        "syll_notes_lbl": { ar: "ملاحظات الحصة الأخيرة (للأسستنت والطلاب)", en: "Latest Session Notes" },
-        "syll_map_title": { ar: "📍 خريطة سير المنهج", en: "📍 Syllabus Map" },
-        "txt_no_rev": { ar: "لم يتم تسجيل أي إيرادات اليوم.", en: "No revenue recorded today." },
-        "login_title": { ar: "دخول لوحة السنتر", en: "Center Login" },
-        "login_desc": { ar: "الدخول للمسؤول فقط", en: "Admin Access Only" },
-        "login_btn": { ar: "دخول", en: "Login" },
-        "brand_name": { ar: "لوحة السنتر V-PRO", en: "V-PRO Dashboard" },
-        "stat_students": { ar: "👥 مسجلين:", en: "👥 Enrolled:" },
-        "stat_attend": { ar: "✅ حضور:", en: "✅ Attend:" },
-        "stat_revenue": { ar: "💰 إيراد:", en: "💰 Revenue:" },
-        "btn_logout": { ar: "خروج 🚪", en: "Logout 🚪" },
-        "quick_title": { ar: "سريع (QR)", en: "Quick Record" },
-        "btn_record": { ar: "سجل حضور", en: "Record" },
-        "lbl_last_scan": { ar: "آخر حضور تم تسجيله ⏱️", en: "Recent Activity ⏱️" },
-        "wait_scan": { ar: "بانتظار مسح كود...", en: "Waiting for scan..." },
-        "search_title": { ar: "بحث شامل", en: "Global Search" },
-        "btn_open": { ar: "فتح", en: "Open" },
-        "search_plc": { ar: "الاسم / الرقم / الكود...", en: "Name / Phone / ID..." },
-        "search_tbl_plc": { ar: "🔍 ابحث في الجدول...", en: "🔍 Search table..." },
-        "add_title": { ar: "+ إضافة طالب جديد", en: "+ New Student" },
-        "btn_add_open": { ar: "إضافة وفتح", en: "Add & Open" },
-        "st_details": { ar: "بيانات الطالب", en: "Student Information" },
-        "badge_new": { ar: "جديد", en: "NEW" },
-        "rank_normal": { ar: "🟢 عادي", en: "🟢 Normal" },
-        "rank_warn": { ar: "⚠️ إنذار", en: "⚠️ Warning" },
-        "lbl_name": { ar: "الاسم", en: "Name" },
-        "lbl_class": { ar: "الصف / الباقة", en: "Package / Class" },
-        "lbl_phone": { ar: "رقم الموبايل", en: "Phone Number" },
-        "lbl_finance": { ar: "نظام المصاريف", en: "Tuition System" },
-        "lbl_total_paid": { ar: "💰 إجمالي المدفوع:", en: "💰 Total Paid:" },
-        "btn_discount": { ar: "خصم", en: "Discount" },
-        "lbl_remaining": { ar: "⚠️ المتبقي:", en: "⚠️ Remaining:" },
-        "lbl_new_pay": { ar: "➕ دفعة جديدة:", en: "➕ New Payment:" },
-        "btn_deposit": { ar: "إيداع", en: "Deposit" },
-        "lbl_notes": { ar: "ملاحظات (مؤرخة)", en: "Dated Notes" },
-        "note_plc": { ar: "إضافة ملحوظة...", en: "Add a note..." },
-        "btn_add_note": { ar: "إضافة", en: "Add Note" },
-        "btn_save_st": { ar: "حفظ البيانات 💾", en: "Save Data 💾" },
-        "btn_mark_present": { ar: "✅ حضور", en: "✅ Present" },
-        "btn_mark_absent": { ar: "✖ غياب", en: "✖ Absent" },
-        "lbl_history": { ar: "سجل التواريخ", en: "Attendance History" },
-        "adv_search_title": { ar: "قائمة البحث المتقدم", en: "Advanced Search" },
-        "flt_all_classes": { ar: "كل المجموعات", en: "All Groups" },
-        "flt_all_fin": { ar: "كل الحالات المالية", en: "All Finance" },
-        "flt_paid": { ar: "✅ خالص", en: "✅ Paid" },
-        "flt_partial": { ar: "⚠️ جزء", en: "⚠️ Partial" },
-        "flt_unpaid": { ar: "🔴 لم يدفع", en: "🔴 Unpaid" },
-        "flt_all_att": { ar: "كل الحضور", en: "All Attendance" },
-        "flt_att_only": { ar: "✅ الحضور فقط", en: "✅ Present Only" },
-        "flt_abs_only": { ar: "✖ الغياب فقط", en: "✖ Absent Only" },
-        "lbl_selected": { ar: "تم تحديد", en: "Selected" },
-        "tbl_name": { ar: "الاسم", en: "Name" },
-        "tbl_class": { ar: "الباقة", en: "Package" },
-        "tbl_paid": { ar: "المدفوع", en: "Paid" },
-        "tbl_today": { ar: "حضور اليوم", en: "Today" },
-        "btn_prev": { ar: "السابق", en: "Prev" },
-        "btn_next": { ar: "التالي", en: "Next" },
-        "fin_summary_title": { ar: "📊 الملخص المالي", en: "📊 Financial Summary" },
-        "fin_today_net": { ar: "صافي ربح اليوم", en: "Today's Profit" },
-        "fin_month_net": { ar: "صافي ربح الشهر الحالي", en: "Monthly Profit" },
-        "exp_title": { ar: "🔻 تسجيل مصروفات اليوم", en: "🔻 Daily Expenses" },
-        "exp_amt_plc": { ar: "المبلغ (مثال: 150)", en: "Amount" },
-        "exp_rsn_plc": { ar: "سبب الصرف (مثال: ورق)", en: "Reason" },
-        "btn_save_exp": { ar: "خصم وحفظ", en: "Deduct & Save" },
-        "report_title": { ar: "تقرير الحضور والماليات", en: "Finance Report" },
-        "btn_copy_wa": { ar: "نسخ التقرير للمدير 📋", en: "Copy for Manager 📋" },
-        "btn_view": { ar: "عرض", en: "View Report" },
-        "badge_date": { ar: "التاريخ:", en: "Date:" },
-        "badge_count": { ar: "العدد:", en: "Count:" },
-        "badge_rev": { ar: "إيراد:", en: "Revenue:" },
-        "badge_exp": { ar: "مصروف:", en: "Expenses:" },
-        "chart_title": { ar: "📈 لوحة أرباح الأسبوع", en: "📈 Weekly Chart" },
-        "settings_title": { ar: "⚙️ إعدادات النظام", en: "⚙️ System Settings" },
-        "note_title": { ar: "📝 مفكرة السنتر السريعة", en: "📝 Quick Notebook" },
-        "note_plc_main": { ar: "اكتب ملاحظاتك هنا...", en: "Type your notes here..." },
-        "set_data_title": { ar: "💾 البيانات والنسخ الاحتياطي", en: "💾 Data Management" },
-        "btn_export_ex": { ar: "📥 تصدير البيانات (Excel)", en: "📥 Export to Excel" },
-        "btn_import_ex": { ar: "📤 استيراد بيانات (Excel)", en: "📤 Import from Excel" },
-        "btn_recycle": { ar: "🗑️ سلة المحذوفات", en: "🗑️ Recycle Bin" },
-        "set_ui_title": { ar: "🎨 المظهر والتخصيص", en: "🎨 UI & Theme" },
-        "lbl_theme": { ar: "ثيم البرنامج:", en: "App Theme:" },
-        "theme_cls": { ar: "🔵 كلاسيك", en: "🔵 Classic" },
-        "theme_dark": { ar: "🌑 ليلي", en: "🌑 Dark" },
-        "theme_glass": { ar: "🧊 زجاجي", en: "🧊 Glass" },
-        "btn_change_bg": { ar: "🖼️ تغيير الخلفية", en: "🖼️ Change Background" },
-        "btn_change_lang": { ar: "🌐 تغيير اللغة (Ar / En)", en: "🌐 Switch Language" },
-        "set_fin_title": { ar: "💰 إعدادات مالية", en: "💰 Package Pricing" },
-        "btn_group_fees": { ar: "⚙️ إدارة الباقات والمصاريف", en: "⚙️ Manage Packages" },
-        "set_danger_title": { ar: "⚠️ منطقة الخطر", en: "⚠️ Danger Zone" },
-        "btn_reset_term": { ar: "🔄 تصفير الترم", en: "🔄 Reset Term Data" },
-        "btn_factory_reset": { ar: "❌ مسح النظام بالكامل", en: "❌ Full Reset" },
-        "nav_settings": { ar: "الإعدادات", en: "Settings" },
-        "nav_revenue": { ar: "الماليات", en: "Finances" },
-        "nav_home": { ar: "الرئيسية", en: "Home" },
-        "nav_students": { ar: "الطلاب", en: "Students" },
-        "pass_req_title": { ar: "مطلوب صلاحية الإدارة", en: "Admin Auth Required" },
-        "pass_req_desc": { ar: "يرجى إدخال كلمة مرور الأدمن للمتابعة.", en: "Enter master password to continue." },
-        "btn_cancel": { ar: "إلغاء", en: "Cancel" },
-        "btn_confirm": { ar: "تأكيد ✔️", en: "Confirm ✔️" },
-        "modal_all_st": { ar: "قائمة الطلاب المسجلين", en: "Registered Students List" },
-        "btn_empty_bin": { ar: "إفراغ السلة نهائياً", en: "Empty Bin Permanently" },
-        "modal_today_att": { ar: "👥 حضور اليوم مفصل", en: "👥 Detailed Attendance" },
-        "btn_close": { ar: "إغلاق ✖", en: "Close Window ✖" },
-        "modal_grp_fees": { ar: "⚙️ إدارة مصاريف الباقات/المجموعات", en: "⚙️ Manage Package Pricing" },
-        "grp_fees_desc": { ar: "أضف الباقات هنا وسيتم عرضها للأسستنت أثناء تسجيل الطالب.", en: "Add packages here to display them to the assistant." },
-        "btn_save_changes": { ar: "حفظ التعديلات 💾", en: "Save Changes 💾" },
-        "msg_saved": { ar: "تم الحفظ بنجاح ✅", en: "Progress saved ✅" },
-        "msg_err_pass": { ar: "كلمة مرور خاطئة ❌", en: "Incorrect Password ❌" },
-        "msg_att_ok": { ar: "تم تسجيل الحضور ✅", en: "Attendance Recorded ✅" },
-        "msg_att_warn": { ar: "حاضر مسبقاً ⚠️", en: "Already marked present ⚠️" },
-        "msg_added": { ar: "تم إضافة الطالب بنجاح ✅", en: "Student registered ✅" },
-        "msg_deleted": { ar: "تم حذف الطالب", en: "Student deleted" },
-        "msg_undo": { ar: "تم التراجع بنجاح ✅", en: "Action Undone ✅" },
-        "msg_copied": { ar: "تم نسخ التقرير 📋", en: "Report Copied 📋" },
-        "txt_streak": { ar: "حصة متتالية", en: "Classes Streak" },
-        "txt_paid_full": { ar: "✅ خالص (مكتمل)", en: "✅ Fully Paid" },
-        "txt_free": { ar: "✅ بدون مصاريف", en: "✅ Free" },
-        "wa_net": { ar: "💵 صافي الربح", en: "💵 Net Profit" },
-        "wa_exp": { ar: "🔻 المصروفات", en: "🔻 Expenses" },
-        "nav_reports": { ar: "التقارير", en: "Reports" },
-        "reports_main_title": { ar: "📊 التقارير التحليلية والمالية", en: "📊 Analytical & Financial Reports" },
-        "btn_export_colored": { ar: "📥 تصدير التقرير (Excel ملون)", en: "📥 Export Colored Report (Excel)" },
-        "term_fin_summary": { ar: "📈 الملخص المالي التحليلي للترم", en: "📈 Term Financial Summary" },
-        "term_total_req": { ar: "إجمالي المطلوب (الكامل)", en: "Total Expected (Full)" },
-        "term_total_paid": { ar: "إجمالي المحصل (الفعلي)", en: "Total Collected (Actual)" },
-        "term_total_remain": { ar: "إجمالي المتبقي (المديونيات)", en: "Total Remaining (Debts)" },
-        "debtors_list_title": { ar: "⚠️ قائمة الطلاب المديونين", en: "⚠️ Debtors Students List" },
-        "debtors_count_lbl": { ar: "عدد المديونين:", en: "Debtors Count:" },
-        "debtors_desc": { ar: "جدول ديناميكي يعرض الطلاب الذين عليهم مبالغ متبقية فقط من الباقات.", en: "Dynamic table displaying students with remaining package debts." },
-        "tbl_remain_amount": { ar: "المبلغ المتبقي عليه", en: "Remaining Debt" },
-        "eval_form_title": { ar: "📋 تقرير التقييم الإداري (Evaluation Form)", en: "📋 Administrative Evaluation Form" },
-        "eval_form_desc": { ar: "نموذج مخصص لإدخال وحفظ بيانات التقييم الإداري للسنتر.", en: "Custom form to enter and save center evaluation data." },
-        "eval_center_name": { ar: "اسم السنتر:", en: "Center Name:" },
-        "eval_manager": { ar: "المسؤول:", en: "Manager:" },
-        "eval_packages": { ar: "الباقات:", en: "Packages:" },
-        "eval_students_count": { ar: "عدد الطلبة:", en: "Students Count:" },
-        "eval_current_courses": { ar: "الكورسات الحالية:", en: "Current Courses:" },
-        "eval_collab_opps": { ar: "فرص التعاون:", en: "Collaboration Opportunities:" },
-        "eval_notes": { ar: "ملاحظات:", en: "Notes:" },
-        "eval_followup_plan": { ar: "خطة المتابعة:", en: "Follow-up Plan:" },
-        "eval_needs": { ar: "احتياجات السنتر أو المقترحات التي تم مناقشتها:", en: "Center Needs / Suggested Proposals:" },
-        "eval_final_rate": { ar: "التقييم النهائي:", en: "Final Evaluation:" },
-        "btn_save_eval": { ar: "حفظ التقييم الإداري 💾", en: "Save Evaluation 💾" },
-        "opt_cash": { ar: "💵 كاش", en: "💵 Cash" },
-        "opt_instapay": { ar: "🟣 إنستاباي", en: "🟣 InstaPay" },
-        "opt_wallet": { ar: "🔴 فودافون كاش", en: "🔴 Vodafone Cash" },
-        "lbl_pay_history": { ar: "📋 سجل دفعات الطالب المفصل:", en: "📋 Detailed Payments History:" },
-        "txt_no_payments": { ar: "لا توجد دفعات مسجلة حتى الآن", en: "No payments recorded yet" },
-        "notes_lock_msg": { ar: "يرجى اختيار أو البحث عن طالب أولاً لتفعيل الملاحظات", en: "Please select or search for a student first to enable notes" },
-        "btn_delete": { ar: "🗑️ حذف", en: "🗑️ Delete" },
-        "btn_edit_note": { ar: "تعديل الملحوظة", en: "Edit Note" },
-        "btn_del_note": { ar: "مسح الملحوظة", en: "Delete Note" },
-        "btn_del_payment": { ar: "حذف الدفعة", en: "Delete Payment" },
-        "txt_cash_old": { ar: "💵 كاش (رصيد سابق)", en: "💵 Cash (Prior Balance)" },
-        "badge_instapay": { ar: "🟣 إنستاباي", en: "🟣 InstaPay" },
-        "badge_wallet": { ar: "🔴 فودافون كاش", en: "🔴 Vodafone Cash" },
-        "badge_cash": { ar: "💵 كاش", en: "💵 Cash" },
-        "prompt_edit_note": { ar: "✏️ تعديل نص الملحوظة:", en: "✏️ Edit note text:" },
-        "confirm_empty_note": { ar: "⚠️ النص فارغ، هل تريد مسح الملحوظة؟", en: "⚠️ Text is empty, delete note?" },
-        "confirm_del_note": { ar: "⚠️ متأكد من مسح هذه الملحوظة نهائياً؟", en: "⚠️ Are you sure you want to delete this note?" },
-        "msg_note_edited": { ar: "تم تعديل الملحوظة بنجاح ✏️", en: "Note edited successfully ✏️" },
-        "msg_note_deleted": { ar: "تم مسح الملحوظة 🗑️", en: "Note deleted 🗑️" },
-        "quick_controls_title": { ar: "🛠️ قائمة التحكم السريعة", en: "🛠️ Quick Controls Menu" },
-        "quick_switch_role": { ar: "تبديل الصلاحيات (مسؤول)", en: "Switch Privileges (Admin)" },
-        "quick_group_fees": { ar: "إدارة الباقات والمصاريف", en: "Group Packages & Fees" },
-        "quick_export": { ar: "تصدير التقرير التحليلي", en: "Export Analytics Report" },
-        "quick_bin": { ar: "سلة المحذوفات", en: "Recycle Bin" },
-        "sess_main_title": { ar: "<span>🎟️</span> نظام تسجيل طلاب الحصة الفورية", en: "<span>🎟️</span> Immediate Session Students" },
-        "sess_main_desc": { ar: "تسجيل الحضور والدفع للطلاب المؤقتين (بدون إصدار كارت أو حجز ID دائم في قاعدة البيانات)", en: "Quick attendance and payment for temporary students (without permanent card/ID in database)" },
-        "sess_add_title": { ar: "➕ تسجيل حضور ودفع فوري", en: "➕ Quick Attend & Payment" },
-        "sess_name_lbl": { ar: "اسم الطالب *", en: "Student Name *" },
-        "sess_name_plc": { ar: "مثال: أحمد محمود عثمان", en: "Ex: Ahmed Mahmoud Osman" },
-        "sess_phone_lbl": { ar: "رقم الموبايل (اختياري)", en: "Mobile Number (Optional)" },
-        "sess_phone_plc": { ar: "مثال: 01012345678", en: "Ex: 01012345678" },
-        "sess_class_lbl": { ar: "المادة / الصف / الباقة", en: "Subject / Class / Package" },
-        "sess_class_opt": { ar: "حصة فردية (عام)", en: "Individual Session (General)" },
-        "sess_amount_lbl": { ar: "مبلغ الحصة *", en: "Session Amount *" },
-        "sess_amount_plc": { ar: "المبلغ (ج)", en: "Amount (EGP)" },
-        "sess_method_lbl": { ar: "طريقة الدفع *", en: "Payment Method *" },
-        "sess_save_btn": { ar: "تسجيل الحضور وتحصيل المبلغ 💾", en: "Record Attend & Collect 💾" },
-        "sess_list_title": { ar: "📋 سجل طلاب الحصة", en: "📋 Session Students Log" },
-        "sess_no_students": { ar: "لا يوجد طلاب مسجلين بالحصة لهذا اليوم", en: "No session students recorded for this day" },
-        "booklets_main_title": { ar: "<span>📚</span> إدارة مخزون المذكرات والورق", en: "<span>📚</span> Booklets & Inventory Stock" },
-        "booklets_main_desc": { ar: "متابعة حركة طباعة واستلام المذكرات، المباع منها، المخزون المتبقي، وإجمالي العائد المالي بدقة تامة دون هدر.", en: "Monitor booklet prints, received copies, sold copies, remaining stock, and total revenue with complete accuracy." },
-        "stat_b_types": { ar: "أنواع المذكرات", en: "Booklet Types" },
-        "stat_b_recd": { ar: "إجمالي النسخ المستلمة", en: "Total Received Copies" },
-        "stat_b_sold": { ar: "النسخ المباعة", en: "Sold Copies" },
-        "stat_b_remain": { ar: "المخزون المتبقي بالسنتر", en: "Remaining Center Stock" },
-        "stat_b_rev": { ar: "إجمالي عائد المذكرات 💰", en: "Total Booklets Revenue 💰" },
-        "booklet_add_title": { ar: "➕ استلام وتسجيل ورق / مذكرة جديدة", en: "➕ Receive & Register New Booklet" },
-        "booklet_name_lbl": { ar: "اسم المذكرة / الورق", en: "Booklet / Note Name" },
-        "booklet_name_plc": { ar: "مثال: مذكرة مراجعة الباب الأول...", en: "Ex: Chapter 1 Review Booklet..." },
-        "booklet_qty_lbl": { ar: "العدد الكلي المستلم (نسخة)", en: "Total Received (Copies)" },
-        "booklet_qty_plc": { ar: "مثال: 150", en: "Ex: 150" },
-        "booklet_price_lbl": { ar: "سعر بيع النسخة (جنيه)", en: "Selling Price (EGP)" },
-        "booklet_price_plc": { ar: "مثال: 50", en: "Ex: 50" },
-        "booklet_save_btn": { ar: "💾 تسجيل المذكرة وإضافتها للمخزون", en: "💾 Save Booklet & Add to Stock" },
-        "booklet_list_title": { ar: "📋 قائمة جرد المذكرات وحركة البيع الفورية", en: "📋 Booklets Inventory & Instant Sales" },
-        "booklet_list_tip": { ar: "اضغط زر البيع 🛒 عند بيع أي نسخة للتحديث الفوري", en: "Click Sale 🛒 when selling any copy for instant updates" },
-        "booklet_no_items": { ar: "لا توجد مذكرات مسجلة بالمخزون حالياً", en: "No booklets currently registered in stock" },
-        "mkt_main_title": { ar: "<span>🚀</span> حملات التسويق وإعادة الاستهداف الذكية", en: "<span>🚀</span> Smart Marketing & Retargeting Campaigns" },
-        "mkt_main_desc": { ar: "استهداف ذكي لجميع أرقام وداتا الطلاب المسجلة في السنتر لإطلاق حملات إعلانية لكورسات ومراجعات جديدة بضغطة زر.", en: "Smart targeting of all student data in the center to launch advertising campaigns for new courses with one click." },
-        "mkt_setup_title": { ar: "🎯 إعداد شريحة الاستهداف الإعلانية", en: "🎯 Setup Campaign Targeting Segment" },
-        "mkt_target_lbl": { ar: "اختر شريحة الطلاب المستهدفة", en: "Select Target Student Segment" },
-        "mkt_opt_all": { ar: "جميع الطلاب الدائمين المسجلين بالسنتر", en: "All Permanent Students in Center" },
-        "mkt_opt_groups": { ar: "طلاب باقة / مجموعة محددة", en: "Students of Specific Package/Group" },
-        "mkt_opt_session": { ar: "داتا طلاب الحصة الفورية (المؤقتين)", en: "Session Students Data (Temporary)" },
-        "mkt_opt_vip": { ar: "الطلاب أصحاب تصنيف VIP", en: "VIP Classified Students" },
-        "mkt_opt_debtors": { ar: "الطلاب أصحاب الدفعات المتبقية (المديونين)", en: "Debtors Students (Remaining Balance)" },
-        "mkt_select_grp_lbl": { ar: "تحديد الباقة / المجموعة", en: "Select Package / Group" },
-        "mkt_opt_select": { ar: "-- اختر الباقة --", en: "-- Select Package --" },
-        "mkt_msg_lbl": { ar: "📝 نص الرسالة الإعلانية / التنبيه", en: "📝 Message / Broadcast Body" },
-        "mkt_msg_plc": { ar: "اكتب هنا نص الإعلان أو التنبيه...\nيمكنك استخدام الوسوم الذكية [اسم_الطالب] و [المبلغ] وسيتم استبدالها تلقائياً لكل طالب.", en: "Write your broadcast text here...\nYou can use smart tags [اسم_الطالب] and [المبلغ] for dynamic student replacement." },
-        "mkt_vars_tip": { ar: "💡 المتغيرات الذكية المدعومة في الرسالة:", en: "💡 Supported Smart Variables:" },
-        "mkt_click_tip": { ar: "(اضغط على الوسم لإضافته للنص)", en: "(Click tag to insert into text)" },
-        "mkt_filter_btn": { ar: "🔍 تصفية وعرض داتا الأرقام المستهدفة", en: "🔍 Filter & View Target Numbers Data" },
-        "mkt_broadcast_btn": { ar: "🚀 بدء الإرسال التلقائي الذكي (بفاصل زمني لمنع الحظر)", en: "🚀 Start Smart Auto Broadcast (Anti-Ban Interval)" },
-        "mkt_copy_btn": { ar: "📋 نسخ جميع أرقام الموبايل (لبرامج خارجية)", en: "📋 Copy All Mobile Numbers (For External Apps)" },
-        "mkt_broad_prep": { ar: "جاري الاستعداد لبدء البث التلقائي...", en: "Preparing to start auto broadcast..." },
-        "mkt_broad_sub": { ar: "سيتم فتح نوافذ المحادثات تباعاً بفاصل زمني آمن لحماية حسابك من الحظر (Anti-Ban).", en: "Chat windows will open sequentially with a safe delay to protect your account from ban." },
-        "btn_pause": { ar: "⏸ إيقاف مؤقت", en: "⏸ Pause" },
-        "btn_stop": { ar: "⏹ إنهاء البث", en: "⏹ Stop Broadcast" },
-        "lbl_progress": { ar: "مستوى التقدم:", en: "Progress Level:" },
-        "lbl_next_win": { ar: "النافذة التالية خلال:", en: "Next Window in:" },
-        "lbl_seconds": { ar: "ثواني", en: "seconds" },
-        "mkt_list_title": { ar: "📋 قائمة الأرقام المستهدفة في الحملة", en: "📋 Target Campaign Numbers List" },
-        "lbl_student_cnt": { ar: "طالب", en: "student(s)" },
-        "mkt_list_tip": { ar: "اضغط زر المراسلة 💬 بجانب أي طالب لبدء الإرسال الفوري", en: "Click chat button 💬 next to any student for instant messaging" },
-        "mkt_no_data": { ar: "اضغط على \"تصفية وعرض داتا الأرقام المستهدفة\" لعرض القائمة", en: "Click 'Filter & View Target Numbers Data' to display list" },
-        "vaults_title": { ar: "🏦 خزائن ومحافظ السنتر (إجمالي الأرصدة)", en: "🏦 Center Vaults & Wallets (Total Balances)" },
-        "vault_cash": { ar: "💵 خزينة الكاش", en: "💵 Cash Vault" },
-        "vault_today": { ar: "تحصيل اليوم:", en: "Collected Today:" },
-        "vault_total": { ar: "إجمالي المحصل:", en: "Total Collected:" },
-        "vault_exp": { ar: "المصروفات:", en: "Expenses:" },
-        "vault_net": { ar: "الصافي بالخزينة:", en: "Net in Vault:" },
-        "vault_instapay": { ar: "🟣 خزينة إنستاباي (InstaPay)", en: "🟣 InstaPay Vault" },
-        "vault_act_total": { ar: "الرصيد الفعلي:", en: "Actual Balance:" },
-        "vault_wallet": { ar: "🔴 فودافون كاش والمحافظ", en: "🔴 Vodafone Cash & Wallets" },
-        "btn_print": { ar: "🖨️ طباعة (A4 / إيصال)", en: "🖨️ Print (A4 / Receipt)" },
-        "btn_photo_mode": { ar: "📱 وضع التصوير بالهاتف", en: "📱 Mobile Photo Mode" },
-        "btn_close_rec": { ar: "✖ إغلاق", en: "✖ Close" },
-        "photo_mode_tip": { ar: "📸 الشاشة الآن في وضع التصوير الصافي للطالب .. اضغط هنا لإعادة إظهار أزرار الإغلاق والطباعة 🔄", en: "📸 Screen is in clean photo mode .. Click here to restore Close & Print buttons 🔄" },
-        "receipt_paid_full": { ar: "خالص السداد ✔️", en: "Paid in Full ✔️" },
-        "receipt_st_details_title": { ar: "📜 بيانات التسجيل والسداد", en: "📜 Registration & Payment Details" },
-        "receipt_lbl_name": { ar: "اسم الطالب:", en: "Student Name:" },
-        "receipt_lbl_id": { ar: "كود التعريف (ID):", en: "Definition Code (ID):" },
-        "receipt_lbl_class": { ar: "الباقة / المجموعة:", en: "Package / Group:" },
-        "receipt_lbl_phone": { ar: "رقم الموبايل:", en: "Mobile Number:" },
-        "receipt_lbl_total": { ar: "المبلغ الكلي المدفوع", en: "TOTAL PAID AMOUNT" },
-        "receipt_inc_methods": { ar: "شامل طرق الدفع المسجلة بالسنتر", en: "Includes all registered payment methods" },
-        "receipt_auth_title": { ar: "📜 اعتماد إلكتروني معتمد", en: "📜 Certified Electronic Approval" },
-        "receipt_auth_sub": { ar: "توقيع الموظف / المحاسب المسئول", en: "Authorized Accountant / Employee Signature" },
-        "receipt_sec_code": { ar: "رمز التحقق الأمني", en: "Security Verification Code" }
+        "grp_daily": { ar: "ط§ظ„ط¥ط¯ط§ط±ط© ط§ظ„ظٹظˆظ…ظٹط©", en: "Daily Operations" },
+        "nav_session_st": { ar: "ط·ظ„ط§ط¨ ط§ظ„ط­طµط©", en: "Session Students" },
+        "grp_finance": { ar: "ط§ظ„ط­ط³ط§ط¨ط§طھ ظˆط§ظ„ط¥ط­طµط§ط¦ظٹط§طھ", en: "Finance & Analytics" },
+        "grp_tools": { ar: "ط£ط¯ظˆط§طھ ظˆطھط³ظˆظٹظ‚", en: "Tools & Marketing" },
+        "nav_booklets": { ar: "ظ…ط®ط²ظˆظ† ط§ظ„ظ…ط°ظƒط±ط§طھ", en: "Booklets Inventory" },
+        "nav_marketing": { ar: "ط­ظ…ظ„ط§طھ ط§ظ„طھط³ظˆظٹظ‚", en: "Marketing Campaigns" },
+        "grp_system": { ar: "ط¥ط¹ط¯ط§ط¯ط§طھ ط§ظ„ظ†ط¸ط§ظ…", en: "System Settings" },
+        "note_header": { ar: "ظ…ظ„ط§ط­ط¸ط§طھ ط§ظ„ط·ط§ظ„ط¨ (ظ…ظ†ظپطµظ„ط© ظˆظ‚ط§ط¨ظ„ط© ظ„ظ„طھط¹ط¯ظٹظ„)", en: "Student Notes (Editable)" },
+        "txt_no_notes": { ar: "ظ„ط§ طھظˆط¬ط¯ ظ…ظ„ط§ط­ط¸ط§طھ ظ…ط³ط¬ظ„ط© ظ„ظ‡ط°ط§ ط§ظ„ط·ط§ظ„ط¨", en: "No notes recorded for this student" },
+        "print_receipt_lock": { ar: "ط¥طµط¯ط§ط± ط¥ظٹطµط§ظ„ ط³ط¯ط§ط¯ ط§ظ„ط¨ط§ظ‚ط© (ظ…ط؛ظ„ظ‚ ظ„ط­ظٹظ† ط¥ظƒظ…ط§ظ„ ط§ظ„ط¯ظپط¹)", en: "Issue Package Receipt (Locked until full payment)" },
+        "print_receipt_unlock": { ar: "ًں–¨ï¸ڈ ط·ط¨ط§ط¹ط© ط¥ظٹطµط§ظ„ ط³ط¯ط§ط¯ ط§ظ„ط¨ط§ظ‚ط© (ظ…ظƒطھظ…ظ„)", en: "ًں–¨ï¸ڈ Print Package Receipt (Completed)" },
+        "correct_pay_btn": { ar: "ط¥ظٹط¯ط§ط¹", en: "Deposit" },
+       "shift_manager": { ar: "ظ…ط³ط¦ظˆظ„ ط§ظ„ط´ظٹظپطھ:", en: "Shift Manager:" },
+        "modal_shift_title": { ar: "ًں‘¨â€چًں’¼ ط§ط®طھظٹط§ط± ظ…ط³ط¦ظˆظ„ ط§ظ„ط´ظٹظپطھ", en: "ًں‘¨â€چًں’¼ Select Shift Manager" },
+        "plc_new_manager": { ar: "ط§ط³ظ… ط§ظ„ظ…ط³ط¦ظˆظ„ ط§ظ„ط¬ط¯ظٹط¯...", en: "New manager name..." },
+        "btn_add_manager": { ar: "ط¥ط¶ط§ظپط©", en: "Add" },
+        "err_no_manager": { ar: "ظٹط±ط¬ظ‰ ط§ط®طھظٹط§ط± ط§ط³ظ… ظ…ط³ط¦ظˆظ„ ط§ظ„ط´ظٹظپطھ ط£ظˆظ„ط§ظ‹", en: "Please select a shift manager first" },
+       "drive_offline": { ar: "âڑھ ط؛ظٹط± ظ…طھطµظ„", en: "âڑھ Offline" },
+        "drive_online": { ar: "ًںں¢ ظ…طھطµظ„ ط¨ط§ظ„ط³ط­ط§ط¨ط©", en: "ًںں¢ Cloud Connected" },
+        "btn_drive_login": { ar: "ط±ط¨ط· ط¨ط¬ظˆط¬ظ„ ط¯ط±ط§ظٹظپ âکپï¸ڈ", en: "Connect Google Drive âکپï¸ڈ" },
+        "btn_drive_connected": { ar: "ظ…طھطµظ„ ط¨ط§ظ„ط¯ط±ط§ظٹظپ âœ…", en: "Drive Connected âœ…" },
+        "btn_drive_restore": { ar: "ط§ط³طھط±ط¬ط§ط¹ ظ…ظ† ط§ظ„ط³ط­ط§ط¨ ًں”„", en: "Restore from Cloud ًں”„" },
+        "msg_sync_wait": { ar: "ط¬ط§ط±ظٹ ط­ظپط¸ ظ†ط³ط®ط© ط§ط­طھظٹط§ط·ظٹط© ظ„ظ„ط³ط­ط§ط¨ط©... âڈ³", en: "Saving backup to cloud... âڈ³" },
+        "msg_sync_done": { ar: "طھظ… ط§ظ„ط­ظپط¸ ط¨ظ†ط¬ط§ط­ ط¹ظ„ظ‰ ط§ظ„ط¯ط±ط§ظٹظپ âœ…", en: "Saved to Drive successfully âœ…" },
+        "msg_sync_auto": { ar: "طھظ… طھط­ط¯ظٹط« ط§ظ„ظ†ط³ط®ط© ط§ظ„ط§ط­طھظٹط§ط·ظٹط© طھظ„ظ‚ط§ط¦ظٹط§ظ‹ âکپï¸ڈ", en: "Auto-backup updated on cloud âکپï¸ڈ" },
+        "lbl_last_sync": { ar: "ط¢ط®ط± ظ…ط²ط§ظ…ظ†ط©: ", en: "Last Sync: " },
+       "fin_month_exp": { ar: "طµط§ظپظٹ ظ…طµط±ظˆظپط§طھ ط§ظ„ط´ظ‡ط±", en: "Monthly Expenses" },
+       "nav_syllabus": { ar: "ط§ظ„ظ…ظ†ظ‡ط¬", en: "Syllabus" },
+       "tbl_remain": { ar: "ط§ظ„ظ…طھط¨ظ‚ظٹ", en: "Remaining" },
+        "modal_rev_today": { ar: "ًں’° طھظپط§طµظٹظ„ ط¥ظٹط±ط§ط¯ ط§ظ„ظٹظˆظ…", en: "ًں’° Today's Revenue Details" },
+        "syll_update_title": { ar: "ًں—؛ï¸ڈ طھط­ط¯ظٹط« ط®ط±ظٹط·ط© ط§ظ„ظ…ظ†ظ‡ط¬ (ظ„ظ„ظ…ط¯ظٹط±)", en: "ًں—؛ï¸ڈ Update Syllabus (Admin)" },
+        "syll_name_lbl": { ar: "ط§ط³ظ… ط§ظ„ط´ط§ط¨طھط± / ط§ظ„ط¯ط±ط³", en: "Chapter / Lesson Name" },
+        "syll_status_lbl": { ar: "ط§ظ„ط­ط§ظ„ط©", en: "Status" },
+        "syll_notes_lbl": { ar: "ظ…ظ„ط§ط­ط¸ط§طھ ط§ظ„ط­طµط© ط§ظ„ط£ط®ظٹط±ط© (ظ„ظ„ط£ط³ط³طھظ†طھ ظˆط§ظ„ط·ظ„ط§ط¨)", en: "Latest Session Notes" },
+        "syll_map_title": { ar: "ًں“چ ط®ط±ظٹط·ط© ط³ظٹط± ط§ظ„ظ…ظ†ظ‡ط¬", en: "ًں“چ Syllabus Map" },
+        "txt_no_rev": { ar: "ظ„ظ… ظٹطھظ… طھط³ط¬ظٹظ„ ط£ظٹ ط¥ظٹط±ط§ط¯ط§طھ ط§ظ„ظٹظˆظ….", en: "No revenue recorded today." },
+        "login_title": { ar: "ط¯ط®ظˆظ„ ظ„ظˆط­ط© ط§ظ„ط³ظ†طھط±", en: "Center Login" },
+        "login_desc": { ar: "ط§ظ„ط¯ط®ظˆظ„ ظ„ظ„ظ…ط³ط¤ظˆظ„ ظپظ‚ط·", en: "Admin Access Only" },
+        "login_btn": { ar: "ط¯ط®ظˆظ„", en: "Login" },
+        "brand_name": { ar: "ظ„ظˆط­ط© ط§ظ„ط³ظ†طھط± V-PRO", en: "V-PRO Dashboard" },
+        "stat_students": { ar: "ًں‘¥ ظ…ط³ط¬ظ„ظٹظ†:", en: "ًں‘¥ Enrolled:" },
+        "stat_attend": { ar: "âœ… ط­ط¶ظˆط±:", en: "âœ… Attend:" },
+        "stat_revenue": { ar: "ًں’° ط¥ظٹط±ط§ط¯:", en: "ًں’° Revenue:" },
+        "btn_logout": { ar: "ط®ط±ظˆط¬ ًںڑھ", en: "Logout ًںڑھ" },
+        "quick_title": { ar: "ط³ط±ظٹط¹ (QR)", en: "Quick Record" },
+        "btn_record": { ar: "ط³ط¬ظ„ ط­ط¶ظˆط±", en: "Record" },
+        "lbl_last_scan": { ar: "ط¢ط®ط± ط­ط¶ظˆط± طھظ… طھط³ط¬ظٹظ„ظ‡ âڈ±ï¸ڈ", en: "Recent Activity âڈ±ï¸ڈ" },
+        "wait_scan": { ar: "ط¨ط§ظ†طھط¸ط§ط± ظ…ط³ط­ ظƒظˆط¯...", en: "Waiting for scan..." },
+        "search_title": { ar: "ط¨ط­ط« ط´ط§ظ…ظ„", en: "Global Search" },
+        "btn_open": { ar: "ظپطھط­", en: "Open" },
+        "search_plc": { ar: "ط§ظ„ط§ط³ظ… / ط§ظ„ط±ظ‚ظ… / ط§ظ„ظƒظˆط¯...", en: "Name / Phone / ID..." },
+        "search_tbl_plc": { ar: "ًں”چ ط§ط¨ط­ط« ظپظٹ ط§ظ„ط¬ط¯ظˆظ„...", en: "ًں”چ Search table..." },
+        "add_title": { ar: "+ ط¥ط¶ط§ظپط© ط·ط§ظ„ط¨ ط¬ط¯ظٹط¯", en: "+ New Student" },
+        "btn_add_open": { ar: "ط¥ط¶ط§ظپط© ظˆظپطھط­", en: "Add & Open" },
+        "st_details": { ar: "ط¨ظٹط§ظ†ط§طھ ط§ظ„ط·ط§ظ„ط¨", en: "Student Information" },
+        "badge_new": { ar: "ط¬ط¯ظٹط¯", en: "NEW" },
+        "rank_normal": { ar: "ًںں¢ ط¹ط§ط¯ظٹ", en: "ًںں¢ Normal" },
+        "rank_warn": { ar: "âڑ ï¸ڈ ط¥ظ†ط°ط§ط±", en: "âڑ ï¸ڈ Warning" },
+        "lbl_name": { ar: "ط§ظ„ط§ط³ظ…", en: "Name" },
+        "lbl_class": { ar: "ط§ظ„طµظپ / ط§ظ„ط¨ط§ظ‚ط©", en: "Package / Class" },
+        "lbl_phone": { ar: "ط±ظ‚ظ… ط§ظ„ظ…ظˆط¨ط§ظٹظ„", en: "Phone Number" },
+        "lbl_finance": { ar: "ظ†ط¸ط§ظ… ط§ظ„ظ…طµط§ط±ظٹظپ", en: "Tuition System" },
+        "lbl_total_paid": { ar: "ًں’° ط¥ط¬ظ…ط§ظ„ظٹ ط§ظ„ظ…ط¯ظپظˆط¹:", en: "ًں’° Total Paid:" },
+        "btn_discount": { ar: "ط®طµظ…", en: "Discount" },
+        "lbl_remaining": { ar: "âڑ ï¸ڈ ط§ظ„ظ…طھط¨ظ‚ظٹ:", en: "âڑ ï¸ڈ Remaining:" },
+        "lbl_new_pay": { ar: "â‍• ط¯ظپط¹ط© ط¬ط¯ظٹط¯ط©:", en: "â‍• New Payment:" },
+        "btn_deposit": { ar: "ط¥ظٹط¯ط§ط¹", en: "Deposit" },
+        "lbl_notes": { ar: "ظ…ظ„ط§ط­ط¸ط§طھ (ظ…ط¤ط±ط®ط©)", en: "Dated Notes" },
+        "note_plc": { ar: "ط¥ط¶ط§ظپط© ظ…ظ„ط­ظˆط¸ط©...", en: "Add a note..." },
+        "btn_add_note": { ar: "ط¥ط¶ط§ظپط©", en: "Add Note" },
+        "btn_save_st": { ar: "ط­ظپط¸ ط§ظ„ط¨ظٹط§ظ†ط§طھ ًں’¾", en: "Save Data ًں’¾" },
+        "btn_mark_present": { ar: "âœ… ط­ط¶ظˆط±", en: "âœ… Present" },
+        "btn_mark_absent": { ar: "âœ– ط؛ظٹط§ط¨", en: "âœ– Absent" },
+        "lbl_history": { ar: "ط³ط¬ظ„ ط§ظ„طھظˆط§ط±ظٹط®", en: "Attendance History" },
+        "adv_search_title": { ar: "ظ‚ط§ط¦ظ…ط© ط§ظ„ط¨ط­ط« ط§ظ„ظ…طھظ‚ط¯ظ…", en: "Advanced Search" },
+        "flt_all_classes": { ar: "ظƒظ„ ط§ظ„ظ…ط¬ظ…ظˆط¹ط§طھ", en: "All Groups" },
+        "flt_all_fin": { ar: "ظƒظ„ ط§ظ„ط­ط§ظ„ط§طھ ط§ظ„ظ…ط§ظ„ظٹط©", en: "All Finance" },
+        "flt_paid": { ar: "âœ… ط®ط§ظ„طµ", en: "âœ… Paid" },
+        "flt_partial": { ar: "âڑ ï¸ڈ ط¬ط²ط،", en: "âڑ ï¸ڈ Partial" },
+        "flt_unpaid": { ar: "ًں”´ ظ„ظ… ظٹط¯ظپط¹", en: "ًں”´ Unpaid" },
+        "flt_all_att": { ar: "ظƒظ„ ط§ظ„ط­ط¶ظˆط±", en: "All Attendance" },
+        "flt_att_only": { ar: "âœ… ط§ظ„ط­ط¶ظˆط± ظپظ‚ط·", en: "âœ… Present Only" },
+        "flt_abs_only": { ar: "âœ– ط§ظ„ط؛ظٹط§ط¨ ظپظ‚ط·", en: "âœ– Absent Only" },
+        "lbl_selected": { ar: "طھظ… طھط­ط¯ظٹط¯", en: "Selected" },
+        "tbl_name": { ar: "ط§ظ„ط§ط³ظ…", en: "Name" },
+        "tbl_class": { ar: "ط§ظ„ط¨ط§ظ‚ط©", en: "Package" },
+        "tbl_paid": { ar: "ط§ظ„ظ…ط¯ظپظˆط¹", en: "Paid" },
+        "tbl_today": { ar: "ط­ط¶ظˆط± ط§ظ„ظٹظˆظ…", en: "Today" },
+        "btn_prev": { ar: "ط§ظ„ط³ط§ط¨ظ‚", en: "Prev" },
+        "btn_next": { ar: "ط§ظ„طھط§ظ„ظٹ", en: "Next" },
+        "fin_summary_title": { ar: "ًں“ٹ ط§ظ„ظ…ظ„ط®طµ ط§ظ„ظ…ط§ظ„ظٹ", en: "ًں“ٹ Financial Summary" },
+        "fin_today_net": { ar: "طµط§ظپظٹ ط±ط¨ط­ ط§ظ„ظٹظˆظ…", en: "Today's Profit" },
+        "fin_month_net": { ar: "طµط§ظپظٹ ط±ط¨ط­ ط§ظ„ط´ظ‡ط± ط§ظ„ط­ط§ظ„ظٹ", en: "Monthly Profit" },
+        "exp_title": { ar: "ًں”» طھط³ط¬ظٹظ„ ظ…طµط±ظˆظپط§طھ ط§ظ„ظٹظˆظ…", en: "ًں”» Daily Expenses" },
+        "exp_amt_plc": { ar: "ط§ظ„ظ…ط¨ظ„ط؛ (ظ…ط«ط§ظ„: 150)", en: "Amount" },
+        "exp_rsn_plc": { ar: "ط³ط¨ط¨ ط§ظ„طµط±ظپ (ظ…ط«ط§ظ„: ظˆط±ظ‚)", en: "Reason" },
+        "btn_save_exp": { ar: "ط®طµظ… ظˆط­ظپط¸", en: "Deduct & Save" },
+        "report_title": { ar: "طھظ‚ط±ظٹط± ط§ظ„ط­ط¶ظˆط± ظˆط§ظ„ظ…ط§ظ„ظٹط§طھ", en: "Finance Report" },
+        "btn_copy_wa": { ar: "ظ†ط³ط® ط§ظ„طھظ‚ط±ظٹط± ظ„ظ„ظ…ط¯ظٹط± ًں“‹", en: "Copy for Manager ًں“‹" },
+        "btn_view": { ar: "ط¹ط±ط¶", en: "View Report" },
+        "badge_date": { ar: "ط§ظ„طھط§ط±ظٹط®:", en: "Date:" },
+        "badge_count": { ar: "ط§ظ„ط¹ط¯ط¯:", en: "Count:" },
+        "badge_rev": { ar: "ط¥ظٹط±ط§ط¯:", en: "Revenue:" },
+        "badge_exp": { ar: "ظ…طµط±ظˆظپ:", en: "Expenses:" },
+        "chart_title": { ar: "ًں“ˆ ظ„ظˆط­ط© ط£ط±ط¨ط§ط­ ط§ظ„ط£ط³ط¨ظˆط¹", en: "ًں“ˆ Weekly Chart" },
+        "settings_title": { ar: "âڑ™ï¸ڈ ط¥ط¹ط¯ط§ط¯ط§طھ ط§ظ„ظ†ط¸ط§ظ…", en: "âڑ™ï¸ڈ System Settings" },
+        "note_title": { ar: "ًں“‌ ظ…ظپظƒط±ط© ط§ظ„ط³ظ†طھط± ط§ظ„ط³ط±ظٹط¹ط©", en: "ًں“‌ Quick Notebook" },
+        "note_plc_main": { ar: "ط§ظƒطھط¨ ظ…ظ„ط§ط­ط¸ط§طھظƒ ظ‡ظ†ط§...", en: "Type your notes here..." },
+        "set_data_title": { ar: "ًں’¾ ط§ظ„ط¨ظٹط§ظ†ط§طھ ظˆط§ظ„ظ†ط³ط® ط§ظ„ط§ط­طھظٹط§ط·ظٹ", en: "ًں’¾ Data Management" },
+        "btn_export_ex": { ar: "ًں“¥ طھطµط¯ظٹط± ط§ظ„ط¨ظٹط§ظ†ط§طھ (Excel)", en: "ًں“¥ Export to Excel" },
+        "btn_import_ex": { ar: "ًں“¤ ط§ط³طھظٹط±ط§ط¯ ط¨ظٹط§ظ†ط§طھ (Excel)", en: "ًں“¤ Import from Excel" },
+        "btn_recycle": { ar: "ًں—‘ï¸ڈ ط³ظ„ط© ط§ظ„ظ…ط­ط°ظˆظپط§طھ", en: "ًں—‘ï¸ڈ Recycle Bin" },
+        "set_ui_title": { ar: "ًںژ¨ ط§ظ„ظ…ط¸ظ‡ط± ظˆط§ظ„طھط®طµظٹطµ", en: "ًںژ¨ UI & Theme" },
+        "lbl_theme": { ar: "ط«ظٹظ… ط§ظ„ط¨ط±ظ†ط§ظ…ط¬:", en: "App Theme:" },
+        "theme_cls": { ar: "ًں”µ ظƒظ„ط§ط³ظٹظƒ", en: "ًں”µ Classic" },
+        "theme_dark": { ar: "ًںŒ‘ ظ„ظٹظ„ظٹ", en: "ًںŒ‘ Dark" },
+        "theme_glass": { ar: "ًں§ٹ ط²ط¬ط§ط¬ظٹ", en: "ًں§ٹ Glass" },
+        "btn_change_bg": { ar: "ًں–¼ï¸ڈ طھط؛ظٹظٹط± ط§ظ„ط®ظ„ظپظٹط©", en: "ًں–¼ï¸ڈ Change Background" },
+        "btn_change_lang": { ar: "ًںŒگ طھط؛ظٹظٹط± ط§ظ„ظ„ط؛ط© (Ar / En)", en: "ًںŒگ Switch Language" },
+        "set_fin_title": { ar: "ًں’° ط¥ط¹ط¯ط§ط¯ط§طھ ظ…ط§ظ„ظٹط©", en: "ًں’° Package Pricing" },
+        "btn_group_fees": { ar: "âڑ™ï¸ڈ ط¥ط¯ط§ط±ط© ط§ظ„ط¨ط§ظ‚ط§طھ ظˆط§ظ„ظ…طµط§ط±ظٹظپ", en: "âڑ™ï¸ڈ Manage Packages" },
+        "set_danger_title": { ar: "âڑ ï¸ڈ ظ…ظ†ط·ظ‚ط© ط§ظ„ط®ط·ط±", en: "âڑ ï¸ڈ Danger Zone" },
+        "btn_reset_term": { ar: "ًں”„ طھطµظپظٹط± ط§ظ„طھط±ظ…", en: "ًں”„ Reset Term Data" },
+        "btn_factory_reset": { ar: "â‌Œ ظ…ط³ط­ ط§ظ„ظ†ط¸ط§ظ… ط¨ط§ظ„ظƒط§ظ…ظ„", en: "â‌Œ Full Reset" },
+        "nav_settings": { ar: "ط§ظ„ط¥ط¹ط¯ط§ط¯ط§طھ", en: "Settings" },
+        "nav_revenue": { ar: "ط§ظ„ظ…ط§ظ„ظٹط§طھ", en: "Finances" },
+        "nav_home": { ar: "ط§ظ„ط±ط¦ظٹط³ظٹط©", en: "Home" },
+        "nav_students": { ar: "ط§ظ„ط·ظ„ط§ط¨", en: "Students" },
+        "pass_req_title": { ar: "ظ…ط·ظ„ظˆط¨ طµظ„ط§ط­ظٹط© ط§ظ„ط¥ط¯ط§ط±ط©", en: "Admin Auth Required" },
+        "pass_req_desc": { ar: "ظٹط±ط¬ظ‰ ط¥ط¯ط®ط§ظ„ ظƒظ„ظ…ط© ظ…ط±ظˆط± ط§ظ„ط£ط¯ظ…ظ† ظ„ظ„ظ…طھط§ط¨ط¹ط©.", en: "Enter master password to continue." },
+        "btn_cancel": { ar: "ط¥ظ„ط؛ط§ط،", en: "Cancel" },
+        "btn_confirm": { ar: "طھط£ظƒظٹط¯ âœ”ï¸ڈ", en: "Confirm âœ”ï¸ڈ" },
+        "modal_all_st": { ar: "ظ‚ط§ط¦ظ…ط© ط§ظ„ط·ظ„ط§ط¨ ط§ظ„ظ…ط³ط¬ظ„ظٹظ†", en: "Registered Students List" },
+        "btn_empty_bin": { ar: "ط¥ظپط±ط§ط؛ ط§ظ„ط³ظ„ط© ظ†ظ‡ط§ط¦ظٹط§ظ‹", en: "Empty Bin Permanently" },
+        "modal_today_att": { ar: "ًں‘¥ ط­ط¶ظˆط± ط§ظ„ظٹظˆظ… ظ…ظپطµظ„", en: "ًں‘¥ Detailed Attendance" },
+        "btn_close": { ar: "ط¥ط؛ظ„ط§ظ‚ âœ–", en: "Close Window âœ–" },
+        "modal_grp_fees": { ar: "âڑ™ï¸ڈ ط¥ط¯ط§ط±ط© ظ…طµط§ط±ظٹظپ ط§ظ„ط¨ط§ظ‚ط§طھ/ط§ظ„ظ…ط¬ظ…ظˆط¹ط§طھ", en: "âڑ™ï¸ڈ Manage Package Pricing" },
+        "grp_fees_desc": { ar: "ط£ط¶ظپ ط§ظ„ط¨ط§ظ‚ط§طھ ظ‡ظ†ط§ ظˆط³ظٹطھظ… ط¹ط±ط¶ظ‡ط§ ظ„ظ„ط£ط³ط³طھظ†طھ ط£ط«ظ†ط§ط، طھط³ط¬ظٹظ„ ط§ظ„ط·ط§ظ„ط¨.", en: "Add packages here to display them to the assistant." },
+        "btn_save_changes": { ar: "ط­ظپط¸ ط§ظ„طھط¹ط¯ظٹظ„ط§طھ ًں’¾", en: "Save Changes ًں’¾" },
+        "msg_saved": { ar: "طھظ… ط§ظ„ط­ظپط¸ ط¨ظ†ط¬ط§ط­ âœ…", en: "Progress saved âœ…" },
+        "msg_err_pass": { ar: "ظƒظ„ظ…ط© ظ…ط±ظˆط± ط®ط§ط·ط¦ط© â‌Œ", en: "Incorrect Password â‌Œ" },
+        "msg_att_ok": { ar: "طھظ… طھط³ط¬ظٹظ„ ط§ظ„ط­ط¶ظˆط± âœ…", en: "Attendance Recorded âœ…" },
+        "msg_att_warn": { ar: "ط­ط§ط¶ط± ظ…ط³ط¨ظ‚ط§ظ‹ âڑ ï¸ڈ", en: "Already marked present âڑ ï¸ڈ" },
+        "msg_added": { ar: "طھظ… ط¥ط¶ط§ظپط© ط§ظ„ط·ط§ظ„ط¨ ط¨ظ†ط¬ط§ط­ âœ…", en: "Student registered âœ…" },
+        "msg_deleted": { ar: "طھظ… ط­ط°ظپ ط§ظ„ط·ط§ظ„ط¨", en: "Student deleted" },
+        "msg_undo": { ar: "طھظ… ط§ظ„طھط±ط§ط¬ط¹ ط¨ظ†ط¬ط§ط­ âœ…", en: "Action Undone âœ…" },
+        "msg_copied": { ar: "طھظ… ظ†ط³ط® ط§ظ„طھظ‚ط±ظٹط± ًں“‹", en: "Report Copied ًں“‹" },
+        "txt_streak": { ar: "ط­طµط© ظ…طھطھط§ظ„ظٹط©", en: "Classes Streak" },
+        "txt_paid_full": { ar: "âœ… ط®ط§ظ„طµ (ظ…ظƒطھظ…ظ„)", en: "âœ… Fully Paid" },
+        "txt_free": { ar: "âœ… ط¨ط¯ظˆظ† ظ…طµط§ط±ظٹظپ", en: "âœ… Free" },
+        "wa_net": { ar: "ًں’µ طµط§ظپظٹ ط§ظ„ط±ط¨ط­", en: "ًں’µ Net Profit" },
+        "wa_exp": { ar: "ًں”» ط§ظ„ظ…طµط±ظˆظپط§طھ", en: "ًں”» Expenses" },
+        "nav_reports": { ar: "ط§ظ„طھظ‚ط§ط±ظٹط±", en: "Reports" },
+        "reports_main_title": { ar: "ًں“ٹ ط§ظ„طھظ‚ط§ط±ظٹط± ط§ظ„طھط­ظ„ظٹظ„ظٹط© ظˆط§ظ„ظ…ط§ظ„ظٹط©", en: "ًں“ٹ Analytical & Financial Reports" },
+        "btn_export_colored": { ar: "ًں“¥ طھطµط¯ظٹط± ط§ظ„طھظ‚ط±ظٹط± (Excel ظ…ظ„ظˆظ†)", en: "ًں“¥ Export Colored Report (Excel)" },
+        "term_fin_summary": { ar: "ًں“ˆ ط§ظ„ظ…ظ„ط®طµ ط§ظ„ظ…ط§ظ„ظٹ ط§ظ„طھط­ظ„ظٹظ„ظٹ ظ„ظ„طھط±ظ…", en: "ًں“ˆ Term Financial Summary" },
+        "term_total_req": { ar: "ط¥ط¬ظ…ط§ظ„ظٹ ط§ظ„ظ…ط·ظ„ظˆط¨ (ط§ظ„ظƒط§ظ…ظ„)", en: "Total Expected (Full)" },
+        "term_total_paid": { ar: "ط¥ط¬ظ…ط§ظ„ظٹ ط§ظ„ظ…ط­طµظ„ (ط§ظ„ظپط¹ظ„ظٹ)", en: "Total Collected (Actual)" },
+        "term_total_remain": { ar: "ط¥ط¬ظ…ط§ظ„ظٹ ط§ظ„ظ…طھط¨ظ‚ظٹ (ط§ظ„ظ…ط¯ظٹظˆظ†ظٹط§طھ)", en: "Total Remaining (Debts)" },
+        "debtors_list_title": { ar: "âڑ ï¸ڈ ظ‚ط§ط¦ظ…ط© ط§ظ„ط·ظ„ط§ط¨ ط§ظ„ظ…ط¯ظٹظˆظ†ظٹظ†", en: "âڑ ï¸ڈ Debtors Students List" },
+        "debtors_count_lbl": { ar: "ط¹ط¯ط¯ ط§ظ„ظ…ط¯ظٹظˆظ†ظٹظ†:", en: "Debtors Count:" },
+        "debtors_desc": { ar: "ط¬ط¯ظˆظ„ ط¯ظٹظ†ط§ظ…ظٹظƒظٹ ظٹط¹ط±ط¶ ط§ظ„ط·ظ„ط§ط¨ ط§ظ„ط°ظٹظ† ط¹ظ„ظٹظ‡ظ… ظ…ط¨ط§ظ„ط؛ ظ…طھط¨ظ‚ظٹط© ظپظ‚ط· ظ…ظ† ط§ظ„ط¨ط§ظ‚ط§طھ.", en: "Dynamic table displaying students with remaining package debts." },
+        "tbl_remain_amount": { ar: "ط§ظ„ظ…ط¨ظ„ط؛ ط§ظ„ظ…طھط¨ظ‚ظٹ ط¹ظ„ظٹظ‡", en: "Remaining Debt" },
+        "eval_form_title": { ar: "ًں“‹ طھظ‚ط±ظٹط± ط§ظ„طھظ‚ظٹظٹظ… ط§ظ„ط¥ط¯ط§ط±ظٹ (Evaluation Form)", en: "ًں“‹ Administrative Evaluation Form" },
+        "eval_form_desc": { ar: "ظ†ظ…ظˆط°ط¬ ظ…ط®طµطµ ظ„ط¥ط¯ط®ط§ظ„ ظˆط­ظپط¸ ط¨ظٹط§ظ†ط§طھ ط§ظ„طھظ‚ظٹظٹظ… ط§ظ„ط¥ط¯ط§ط±ظٹ ظ„ظ„ط³ظ†طھط±.", en: "Custom form to enter and save center evaluation data." },
+        "eval_center_name": { ar: "ط§ط³ظ… ط§ظ„ط³ظ†طھط±:", en: "Center Name:" },
+        "eval_manager": { ar: "ط§ظ„ظ…ط³ط¤ظˆظ„:", en: "Manager:" },
+        "eval_packages": { ar: "ط§ظ„ط¨ط§ظ‚ط§طھ:", en: "Packages:" },
+        "eval_students_count": { ar: "ط¹ط¯ط¯ ط§ظ„ط·ظ„ط¨ط©:", en: "Students Count:" },
+        "eval_current_courses": { ar: "ط§ظ„ظƒظˆط±ط³ط§طھ ط§ظ„ط­ط§ظ„ظٹط©:", en: "Current Courses:" },
+        "eval_collab_opps": { ar: "ظپط±طµ ط§ظ„طھط¹ط§ظˆظ†:", en: "Collaboration Opportunities:" },
+        "eval_notes": { ar: "ظ…ظ„ط§ط­ط¸ط§طھ:", en: "Notes:" },
+        "eval_followup_plan": { ar: "ط®ط·ط© ط§ظ„ظ…طھط§ط¨ط¹ط©:", en: "Follow-up Plan:" },
+        "eval_needs": { ar: "ط§ط­طھظٹط§ط¬ط§طھ ط§ظ„ط³ظ†طھط± ط£ظˆ ط§ظ„ظ…ظ‚طھط±ط­ط§طھ ط§ظ„طھظٹ طھظ… ظ…ظ†ط§ظ‚ط´طھظ‡ط§:", en: "Center Needs / Suggested Proposals:" },
+        "eval_final_rate": { ar: "ط§ظ„طھظ‚ظٹظٹظ… ط§ظ„ظ†ظ‡ط§ط¦ظٹ:", en: "Final Evaluation:" },
+        "btn_save_eval": { ar: "ط­ظپط¸ ط§ظ„طھظ‚ظٹظٹظ… ط§ظ„ط¥ط¯ط§ط±ظٹ ًں’¾", en: "Save Evaluation ًں’¾" },
+        "opt_cash": { ar: "ًں’µ ظƒط§ط´", en: "ًں’µ Cash" },
+        "opt_instapay": { ar: "ًںں£ ط¥ظ†ط³طھط§ط¨ط§ظٹ", en: "ًںں£ InstaPay" },
+        "opt_wallet": { ar: "ًں”´ ظپظˆط¯ط§ظپظˆظ† ظƒط§ط´", en: "ًں”´ Vodafone Cash" },
+        "lbl_pay_history": { ar: "ًں“‹ ط³ط¬ظ„ ط¯ظپط¹ط§طھ ط§ظ„ط·ط§ظ„ط¨ ط§ظ„ظ…ظپطµظ„:", en: "ًں“‹ Detailed Payments History:" },
+        "txt_no_payments": { ar: "ظ„ط§ طھظˆط¬ط¯ ط¯ظپط¹ط§طھ ظ…ط³ط¬ظ„ط© ط­طھظ‰ ط§ظ„ط¢ظ†", en: "No payments recorded yet" },
+        "notes_lock_msg": { ar: "ظٹط±ط¬ظ‰ ط§ط®طھظٹط§ط± ط£ظˆ ط§ظ„ط¨ط­ط« ط¹ظ† ط·ط§ظ„ط¨ ط£ظˆظ„ط§ظ‹ ظ„طھظپط¹ظٹظ„ ط§ظ„ظ…ظ„ط§ط­ط¸ط§طھ", en: "Please select or search for a student first to enable notes" },
+        "btn_delete": { ar: "ًں—‘ï¸ڈ ط­ط°ظپ", en: "ًں—‘ï¸ڈ Delete" },
+        "btn_edit_note": { ar: "طھط¹ط¯ظٹظ„ ط§ظ„ظ…ظ„ط­ظˆط¸ط©", en: "Edit Note" },
+        "btn_del_note": { ar: "ظ…ط³ط­ ط§ظ„ظ…ظ„ط­ظˆط¸ط©", en: "Delete Note" },
+        "btn_del_payment": { ar: "ط­ط°ظپ ط§ظ„ط¯ظپط¹ط©", en: "Delete Payment" },
+        "txt_cash_old": { ar: "ًں’µ ظƒط§ط´ (ط±طµظٹط¯ ط³ط§ط¨ظ‚)", en: "ًں’µ Cash (Prior Balance)" },
+        "badge_instapay": { ar: "ًںں£ ط¥ظ†ط³طھط§ط¨ط§ظٹ", en: "ًںں£ InstaPay" },
+        "badge_wallet": { ar: "ًں”´ ظپظˆط¯ط§ظپظˆظ† ظƒط§ط´", en: "ًں”´ Vodafone Cash" },
+        "badge_cash": { ar: "ًں’µ ظƒط§ط´", en: "ًں’µ Cash" },
+        "prompt_edit_note": { ar: "âœڈï¸ڈ طھط¹ط¯ظٹظ„ ظ†طµ ط§ظ„ظ…ظ„ط­ظˆط¸ط©:", en: "âœڈï¸ڈ Edit note text:" },
+        "confirm_empty_note": { ar: "âڑ ï¸ڈ ط§ظ„ظ†طµ ظپط§ط±ط؛طŒ ظ‡ظ„ طھط±ظٹط¯ ظ…ط³ط­ ط§ظ„ظ…ظ„ط­ظˆط¸ط©طں", en: "âڑ ï¸ڈ Text is empty, delete note?" },
+        "confirm_del_note": { ar: "âڑ ï¸ڈ ظ…طھط£ظƒط¯ ظ…ظ† ظ…ط³ط­ ظ‡ط°ظ‡ ط§ظ„ظ…ظ„ط­ظˆط¸ط© ظ†ظ‡ط§ط¦ظٹط§ظ‹طں", en: "âڑ ï¸ڈ Are you sure you want to delete this note?" },
+        "msg_note_edited": { ar: "طھظ… طھط¹ط¯ظٹظ„ ط§ظ„ظ…ظ„ط­ظˆط¸ط© ط¨ظ†ط¬ط§ط­ âœڈï¸ڈ", en: "Note edited successfully âœڈï¸ڈ" },
+        "msg_note_deleted": { ar: "طھظ… ظ…ط³ط­ ط§ظ„ظ…ظ„ط­ظˆط¸ط© ًں—‘ï¸ڈ", en: "Note deleted ًں—‘ï¸ڈ" },
+        "quick_controls_title": { ar: "ًں› ï¸ڈ ظ‚ط§ط¦ظ…ط© ط§ظ„طھط­ظƒظ… ط§ظ„ط³ط±ظٹط¹ط©", en: "ًں› ï¸ڈ Quick Controls Menu" },
+        "quick_switch_role": { ar: "طھط¨ط¯ظٹظ„ ط§ظ„طµظ„ط§ط­ظٹط§طھ (ظ…ط³ط¤ظˆظ„)", en: "Switch Privileges (Admin)" },
+        "quick_group_fees": { ar: "ط¥ط¯ط§ط±ط© ط§ظ„ط¨ط§ظ‚ط§طھ ظˆط§ظ„ظ…طµط§ط±ظٹظپ", en: "Group Packages & Fees" },
+        "quick_export": { ar: "طھطµط¯ظٹط± ط§ظ„طھظ‚ط±ظٹط± ط§ظ„طھط­ظ„ظٹظ„ظٹ", en: "Export Analytics Report" },
+        "quick_bin": { ar: "ط³ظ„ط© ط§ظ„ظ…ط­ط°ظˆظپط§طھ", en: "Recycle Bin" },
+        "sess_main_title": { ar: "<span>ًںژںï¸ڈ</span> ظ†ط¸ط§ظ… طھط³ط¬ظٹظ„ ط·ظ„ط§ط¨ ط§ظ„ط­طµط© ط§ظ„ظپظˆط±ظٹط©", en: "<span>ًںژںï¸ڈ</span> Immediate Session Students" },
+        "sess_main_desc": { ar: "طھط³ط¬ظٹظ„ ط§ظ„ط­ط¶ظˆط± ظˆط§ظ„ط¯ظپط¹ ظ„ظ„ط·ظ„ط§ط¨ ط§ظ„ظ…ط¤ظ‚طھظٹظ† (ط¨ط¯ظˆظ† ط¥طµط¯ط§ط± ظƒط§ط±طھ ط£ظˆ ط­ط¬ط² ID ط¯ط§ط¦ظ… ظپظٹ ظ‚ط§ط¹ط¯ط© ط§ظ„ط¨ظٹط§ظ†ط§طھ)", en: "Quick attendance and payment for temporary students (without permanent card/ID in database)" },
+        "sess_add_title": { ar: "â‍• طھط³ط¬ظٹظ„ ط­ط¶ظˆط± ظˆط¯ظپط¹ ظپظˆط±ظٹ", en: "â‍• Quick Attend & Payment" },
+        "sess_name_lbl": { ar: "ط§ط³ظ… ط§ظ„ط·ط§ظ„ط¨ *", en: "Student Name *" },
+        "sess_name_plc": { ar: "ظ…ط«ط§ظ„: ط£ط­ظ…ط¯ ظ…ط­ظ…ظˆط¯ ط¹ط«ظ…ط§ظ†", en: "Ex: Ahmed Mahmoud Osman" },
+        "sess_phone_lbl": { ar: "ط±ظ‚ظ… ط§ظ„ظ…ظˆط¨ط§ظٹظ„ (ط§ط®طھظٹط§ط±ظٹ)", en: "Mobile Number (Optional)" },
+        "sess_phone_plc": { ar: "ظ…ط«ط§ظ„: 01012345678", en: "Ex: 01012345678" },
+        "sess_class_lbl": { ar: "ط§ظ„ظ…ط§ط¯ط© / ط§ظ„طµظپ / ط§ظ„ط¨ط§ظ‚ط©", en: "Subject / Class / Package" },
+        "sess_class_opt": { ar: "ط­طµط© ظپط±ط¯ظٹط© (ط¹ط§ظ…)", en: "Individual Session (General)" },
+        "sess_amount_lbl": { ar: "ظ…ط¨ظ„ط؛ ط§ظ„ط­طµط© *", en: "Session Amount *" },
+        "sess_amount_plc": { ar: "ط§ظ„ظ…ط¨ظ„ط؛ (ط¬)", en: "Amount (EGP)" },
+        "sess_method_lbl": { ar: "ط·ط±ظٹظ‚ط© ط§ظ„ط¯ظپط¹ *", en: "Payment Method *" },
+        "sess_save_btn": { ar: "طھط³ط¬ظٹظ„ ط§ظ„ط­ط¶ظˆط± ظˆطھط­طµظٹظ„ ط§ظ„ظ…ط¨ظ„ط؛ ًں’¾", en: "Record Attend & Collect ًں’¾" },
+        "sess_list_title": { ar: "ًں“‹ ط³ط¬ظ„ ط·ظ„ط§ط¨ ط§ظ„ط­طµط©", en: "ًں“‹ Session Students Log" },
+        "sess_no_students": { ar: "ظ„ط§ ظٹظˆط¬ط¯ ط·ظ„ط§ط¨ ظ…ط³ط¬ظ„ظٹظ† ط¨ط§ظ„ط­طµط© ظ„ظ‡ط°ط§ ط§ظ„ظٹظˆظ…", en: "No session students recorded for this day" },
+        "booklets_main_title": { ar: "<span>ًں“ڑ</span> ط¥ط¯ط§ط±ط© ظ…ط®ط²ظˆظ† ط§ظ„ظ…ط°ظƒط±ط§طھ ظˆط§ظ„ظˆط±ظ‚", en: "<span>ًں“ڑ</span> Booklets & Inventory Stock" },
+        "booklets_main_desc": { ar: "ظ…طھط§ط¨ط¹ط© ط­ط±ظƒط© ط·ط¨ط§ط¹ط© ظˆط§ط³طھظ„ط§ظ… ط§ظ„ظ…ط°ظƒط±ط§طھطŒ ط§ظ„ظ…ط¨ط§ط¹ ظ…ظ†ظ‡ط§طŒ ط§ظ„ظ…ط®ط²ظˆظ† ط§ظ„ظ…طھط¨ظ‚ظٹطŒ ظˆط¥ط¬ظ…ط§ظ„ظٹ ط§ظ„ط¹ط§ط¦ط¯ ط§ظ„ظ…ط§ظ„ظٹ ط¨ط¯ظ‚ط© طھط§ظ…ط© ط¯ظˆظ† ظ‡ط¯ط±.", en: "Monitor booklet prints, received copies, sold copies, remaining stock, and total revenue with complete accuracy." },
+        "stat_b_types": { ar: "ط£ظ†ظˆط§ط¹ ط§ظ„ظ…ط°ظƒط±ط§طھ", en: "Booklet Types" },
+        "stat_b_recd": { ar: "ط¥ط¬ظ…ط§ظ„ظٹ ط§ظ„ظ†ط³ط® ط§ظ„ظ…ط³طھظ„ظ…ط©", en: "Total Received Copies" },
+        "stat_b_sold": { ar: "ط§ظ„ظ†ط³ط® ط§ظ„ظ…ط¨ط§ط¹ط©", en: "Sold Copies" },
+        "stat_b_remain": { ar: "ط§ظ„ظ…ط®ط²ظˆظ† ط§ظ„ظ…طھط¨ظ‚ظٹ ط¨ط§ظ„ط³ظ†طھط±", en: "Remaining Center Stock" },
+        "stat_b_rev": { ar: "ط¥ط¬ظ…ط§ظ„ظٹ ط¹ط§ط¦ط¯ ط§ظ„ظ…ط°ظƒط±ط§طھ ًں’°", en: "Total Booklets Revenue ًں’°" },
+        "booklet_add_title": { ar: "â‍• ط§ط³طھظ„ط§ظ… ظˆطھط³ط¬ظٹظ„ ظˆط±ظ‚ / ظ…ط°ظƒط±ط© ط¬ط¯ظٹط¯ط©", en: "â‍• Receive & Register New Booklet" },
+        "booklet_name_lbl": { ar: "ط§ط³ظ… ط§ظ„ظ…ط°ظƒط±ط© / ط§ظ„ظˆط±ظ‚", en: "Booklet / Note Name" },
+        "booklet_name_plc": { ar: "ظ…ط«ط§ظ„: ظ…ط°ظƒط±ط© ظ…ط±ط§ط¬ط¹ط© ط§ظ„ط¨ط§ط¨ ط§ظ„ط£ظˆظ„...", en: "Ex: Chapter 1 Review Booklet..." },
+        "booklet_qty_lbl": { ar: "ط§ظ„ط¹ط¯ط¯ ط§ظ„ظƒظ„ظٹ ط§ظ„ظ…ط³طھظ„ظ… (ظ†ط³ط®ط©)", en: "Total Received (Copies)" },
+        "booklet_qty_plc": { ar: "ظ…ط«ط§ظ„: 150", en: "Ex: 150" },
+        "booklet_price_lbl": { ar: "ط³ط¹ط± ط¨ظٹط¹ ط§ظ„ظ†ط³ط®ط© (ط¬ظ†ظٹظ‡)", en: "Selling Price (EGP)" },
+        "booklet_price_plc": { ar: "ظ…ط«ط§ظ„: 50", en: "Ex: 50" },
+        "booklet_save_btn": { ar: "ًں’¾ طھط³ط¬ظٹظ„ ط§ظ„ظ…ط°ظƒط±ط© ظˆط¥ط¶ط§ظپطھظ‡ط§ ظ„ظ„ظ…ط®ط²ظˆظ†", en: "ًں’¾ Save Booklet & Add to Stock" },
+        "booklet_list_title": { ar: "ًں“‹ ظ‚ط§ط¦ظ…ط© ط¬ط±ط¯ ط§ظ„ظ…ط°ظƒط±ط§طھ ظˆط­ط±ظƒط© ط§ظ„ط¨ظٹط¹ ط§ظ„ظپظˆط±ظٹط©", en: "ًں“‹ Booklets Inventory & Instant Sales" },
+        "booklet_list_tip": { ar: "ط§ط¶ط؛ط· ط²ط± ط§ظ„ط¨ظٹط¹ ًں›’ ط¹ظ†ط¯ ط¨ظٹط¹ ط£ظٹ ظ†ط³ط®ط© ظ„ظ„طھط­ط¯ظٹط« ط§ظ„ظپظˆط±ظٹ", en: "Click Sale ًں›’ when selling any copy for instant updates" },
+        "booklet_no_items": { ar: "ظ„ط§ طھظˆط¬ط¯ ظ…ط°ظƒط±ط§طھ ظ…ط³ط¬ظ„ط© ط¨ط§ظ„ظ…ط®ط²ظˆظ† ط­ط§ظ„ظٹط§ظ‹", en: "No booklets currently registered in stock" },
+        "mkt_main_title": { ar: "<span>ًںڑ€</span> ط­ظ…ظ„ط§طھ ط§ظ„طھط³ظˆظٹظ‚ ظˆط¥ط¹ط§ط¯ط© ط§ظ„ط§ط³طھظ‡ط¯ط§ظپ ط§ظ„ط°ظƒظٹط©", en: "<span>ًںڑ€</span> Smart Marketing & Retargeting Campaigns" },
+        "mkt_main_desc": { ar: "ط§ط³طھظ‡ط¯ط§ظپ ط°ظƒظٹ ظ„ط¬ظ…ظٹط¹ ط£ط±ظ‚ط§ظ… ظˆط¯ط§طھط§ ط§ظ„ط·ظ„ط§ط¨ ط§ظ„ظ…ط³ط¬ظ„ط© ظپظٹ ط§ظ„ط³ظ†طھط± ظ„ط¥ط·ظ„ط§ظ‚ ط­ظ…ظ„ط§طھ ط¥ط¹ظ„ط§ظ†ظٹط© ظ„ظƒظˆط±ط³ط§طھ ظˆظ…ط±ط§ط¬ط¹ط§طھ ط¬ط¯ظٹط¯ط© ط¨ط¶ط؛ط·ط© ط²ط±.", en: "Smart targeting of all student data in the center to launch advertising campaigns for new courses with one click." },
+        "mkt_setup_title": { ar: "ًںژ¯ ط¥ط¹ط¯ط§ط¯ ط´ط±ظٹط­ط© ط§ظ„ط§ط³طھظ‡ط¯ط§ظپ ط§ظ„ط¥ط¹ظ„ط§ظ†ظٹط©", en: "ًںژ¯ Setup Campaign Targeting Segment" },
+        "mkt_target_lbl": { ar: "ط§ط®طھط± ط´ط±ظٹط­ط© ط§ظ„ط·ظ„ط§ط¨ ط§ظ„ظ…ط³طھظ‡ط¯ظپط©", en: "Select Target Student Segment" },
+        "mkt_opt_all": { ar: "ط¬ظ…ظٹط¹ ط§ظ„ط·ظ„ط§ط¨ ط§ظ„ط¯ط§ط¦ظ…ظٹظ† ط§ظ„ظ…ط³ط¬ظ„ظٹظ† ط¨ط§ظ„ط³ظ†طھط±", en: "All Permanent Students in Center" },
+        "mkt_opt_groups": { ar: "ط·ظ„ط§ط¨ ط¨ط§ظ‚ط© / ظ…ط¬ظ…ظˆط¹ط© ظ…ط­ط¯ط¯ط©", en: "Students of Specific Package/Group" },
+        "mkt_opt_session": { ar: "ط¯ط§طھط§ ط·ظ„ط§ط¨ ط§ظ„ط­طµط© ط§ظ„ظپظˆط±ظٹط© (ط§ظ„ظ…ط¤ظ‚طھظٹظ†)", en: "Session Students Data (Temporary)" },
+        "mkt_opt_vip": { ar: "ط§ظ„ط·ظ„ط§ط¨ ط£طµط­ط§ط¨ طھطµظ†ظٹظپ VIP", en: "VIP Classified Students" },
+        "mkt_opt_debtors": { ar: "ط§ظ„ط·ظ„ط§ط¨ ط£طµط­ط§ط¨ ط§ظ„ط¯ظپط¹ط§طھ ط§ظ„ظ…طھط¨ظ‚ظٹط© (ط§ظ„ظ…ط¯ظٹظˆظ†ظٹظ†)", en: "Debtors Students (Remaining Balance)" },
+        "mkt_select_grp_lbl": { ar: "طھط­ط¯ظٹط¯ ط§ظ„ط¨ط§ظ‚ط© / ط§ظ„ظ…ط¬ظ…ظˆط¹ط©", en: "Select Package / Group" },
+        "mkt_opt_select": { ar: "-- ط§ط®طھط± ط§ظ„ط¨ط§ظ‚ط© --", en: "-- Select Package --" },
+        "mkt_msg_lbl": { ar: "ًں“‌ ظ†طµ ط§ظ„ط±ط³ط§ظ„ط© ط§ظ„ط¥ط¹ظ„ط§ظ†ظٹط© / ط§ظ„طھظ†ط¨ظٹظ‡", en: "ًں“‌ Message / Broadcast Body" },
+        "mkt_msg_plc": { ar: "ط§ظƒطھط¨ ظ‡ظ†ط§ ظ†طµ ط§ظ„ط¥ط¹ظ„ط§ظ† ط£ظˆ ط§ظ„طھظ†ط¨ظٹظ‡...\nظٹظ…ظƒظ†ظƒ ط§ط³طھط®ط¯ط§ظ… ط§ظ„ظˆط³ظˆظ… ط§ظ„ط°ظƒظٹط© [ط§ط³ظ…_ط§ظ„ط·ط§ظ„ط¨] ظˆ [ط§ظ„ظ…ط¨ظ„ط؛] ظˆط³ظٹطھظ… ط§ط³طھط¨ط¯ط§ظ„ظ‡ط§ طھظ„ظ‚ط§ط¦ظٹط§ظ‹ ظ„ظƒظ„ ط·ط§ظ„ط¨.", en: "Write your broadcast text here...\nYou can use smart tags [ط§ط³ظ…_ط§ظ„ط·ط§ظ„ط¨] and [ط§ظ„ظ…ط¨ظ„ط؛] for dynamic student replacement." },
+        "mkt_vars_tip": { ar: "ًں’، ط§ظ„ظ…طھط؛ظٹط±ط§طھ ط§ظ„ط°ظƒظٹط© ط§ظ„ظ…ط¯ط¹ظˆظ…ط© ظپظٹ ط§ظ„ط±ط³ط§ظ„ط©:", en: "ًں’، Supported Smart Variables:" },
+        "mkt_click_tip": { ar: "(ط§ط¶ط؛ط· ط¹ظ„ظ‰ ط§ظ„ظˆط³ظ… ظ„ط¥ط¶ط§ظپطھظ‡ ظ„ظ„ظ†طµ)", en: "(Click tag to insert into text)" },
+        "mkt_filter_btn": { ar: "ًں”چ طھطµظپظٹط© ظˆط¹ط±ط¶ ط¯ط§طھط§ ط§ظ„ط£ط±ظ‚ط§ظ… ط§ظ„ظ…ط³طھظ‡ط¯ظپط©", en: "ًں”چ Filter & View Target Numbers Data" },
+        "mkt_broadcast_btn": { ar: "ًںڑ€ ط¨ط¯ط، ط§ظ„ط¥ط±ط³ط§ظ„ ط§ظ„طھظ„ظ‚ط§ط¦ظٹ ط§ظ„ط°ظƒظٹ (ط¨ظپط§طµظ„ ط²ظ…ظ†ظٹ ظ„ظ…ظ†ط¹ ط§ظ„ط­ط¸ط±)", en: "ًںڑ€ Start Smart Auto Broadcast (Anti-Ban Interval)" },
+        "mkt_copy_btn": { ar: "ًں“‹ ظ†ط³ط® ط¬ظ…ظٹط¹ ط£ط±ظ‚ط§ظ… ط§ظ„ظ…ظˆط¨ط§ظٹظ„ (ظ„ط¨ط±ط§ظ…ط¬ ط®ط§ط±ط¬ظٹط©)", en: "ًں“‹ Copy All Mobile Numbers (For External Apps)" },
+        "mkt_broad_prep": { ar: "ط¬ط§ط±ظٹ ط§ظ„ط§ط³طھط¹ط¯ط§ط¯ ظ„ط¨ط¯ط، ط§ظ„ط¨ط« ط§ظ„طھظ„ظ‚ط§ط¦ظٹ...", en: "Preparing to start auto broadcast..." },
+        "mkt_broad_sub": { ar: "ط³ظٹطھظ… ظپطھط­ ظ†ظˆط§ظپط° ط§ظ„ظ…ط­ط§ط¯ط«ط§طھ طھط¨ط§ط¹ط§ظ‹ ط¨ظپط§طµظ„ ط²ظ…ظ†ظٹ ط¢ظ…ظ† ظ„ط­ظ…ط§ظٹط© ط­ط³ط§ط¨ظƒ ظ…ظ† ط§ظ„ط­ط¸ط± (Anti-Ban).", en: "Chat windows will open sequentially with a safe delay to protect your account from ban." },
+        "btn_pause": { ar: "âڈ¸ ط¥ظٹظ‚ط§ظپ ظ…ط¤ظ‚طھ", en: "âڈ¸ Pause" },
+        "btn_stop": { ar: "âڈ¹ ط¥ظ†ظ‡ط§ط، ط§ظ„ط¨ط«", en: "âڈ¹ Stop Broadcast" },
+        "lbl_progress": { ar: "ظ…ط³طھظˆظ‰ ط§ظ„طھظ‚ط¯ظ…:", en: "Progress Level:" },
+        "lbl_next_win": { ar: "ط§ظ„ظ†ط§ظپط°ط© ط§ظ„طھط§ظ„ظٹط© ط®ظ„ط§ظ„:", en: "Next Window in:" },
+        "lbl_seconds": { ar: "ط«ظˆط§ظ†ظٹ", en: "seconds" },
+        "mkt_list_title": { ar: "ًں“‹ ظ‚ط§ط¦ظ…ط© ط§ظ„ط£ط±ظ‚ط§ظ… ط§ظ„ظ…ط³طھظ‡ط¯ظپط© ظپظٹ ط§ظ„ط­ظ…ظ„ط©", en: "ًں“‹ Target Campaign Numbers List" },
+        "lbl_student_cnt": { ar: "ط·ط§ظ„ط¨", en: "student(s)" },
+        "mkt_list_tip": { ar: "ط§ط¶ط؛ط· ط²ط± ط§ظ„ظ…ط±ط§ط³ظ„ط© ًں’¬ ط¨ط¬ط§ظ†ط¨ ط£ظٹ ط·ط§ظ„ط¨ ظ„ط¨ط¯ط، ط§ظ„ط¥ط±ط³ط§ظ„ ط§ظ„ظپظˆط±ظٹ", en: "Click chat button ًں’¬ next to any student for instant messaging" },
+        "mkt_no_data": { ar: "ط§ط¶ط؛ط· ط¹ظ„ظ‰ \"طھطµظپظٹط© ظˆط¹ط±ط¶ ط¯ط§طھط§ ط§ظ„ط£ط±ظ‚ط§ظ… ط§ظ„ظ…ط³طھظ‡ط¯ظپط©\" ظ„ط¹ط±ط¶ ط§ظ„ظ‚ط§ط¦ظ…ط©", en: "Click 'Filter & View Target Numbers Data' to display list" },
+        "vaults_title": { ar: "ًںڈ¦ ط®ط²ط§ط¦ظ† ظˆظ…ط­ط§ظپط¸ ط§ظ„ط³ظ†طھط± (ط¥ط¬ظ…ط§ظ„ظٹ ط§ظ„ط£ط±طµط¯ط©)", en: "ًںڈ¦ Center Vaults & Wallets (Total Balances)" },
+        "vault_cash": { ar: "ًں’µ ط®ط²ظٹظ†ط© ط§ظ„ظƒط§ط´", en: "ًں’µ Cash Vault" },
+        "vault_today": { ar: "طھط­طµظٹظ„ ط§ظ„ظٹظˆظ…:", en: "Collected Today:" },
+        "vault_total": { ar: "ط¥ط¬ظ…ط§ظ„ظٹ ط§ظ„ظ…ط­طµظ„:", en: "Total Collected:" },
+        "vault_exp": { ar: "ط§ظ„ظ…طµط±ظˆظپط§طھ:", en: "Expenses:" },
+        "vault_net": { ar: "ط§ظ„طµط§ظپظٹ ط¨ط§ظ„ط®ط²ظٹظ†ط©:", en: "Net in Vault:" },
+        "vault_instapay": { ar: "ًںں£ ط®ط²ظٹظ†ط© ط¥ظ†ط³طھط§ط¨ط§ظٹ (InstaPay)", en: "ًںں£ InstaPay Vault" },
+        "vault_act_total": { ar: "ط§ظ„ط±طµظٹط¯ ط§ظ„ظپط¹ظ„ظٹ:", en: "Actual Balance:" },
+        "vault_wallet": { ar: "ًں”´ ظپظˆط¯ط§ظپظˆظ† ظƒط§ط´ ظˆط§ظ„ظ…ط­ط§ظپط¸", en: "ًں”´ Vodafone Cash & Wallets" },
+        "btn_print": { ar: "ًں–¨ï¸ڈ ط·ط¨ط§ط¹ط© (A4 / ط¥ظٹطµط§ظ„)", en: "ًں–¨ï¸ڈ Print (A4 / Receipt)" },
+        "btn_photo_mode": { ar: "ًں“± ظˆط¶ط¹ ط§ظ„طھطµظˆظٹط± ط¨ط§ظ„ظ‡ط§طھظپ", en: "ًں“± Mobile Photo Mode" },
+        "btn_close_rec": { ar: "âœ– ط¥ط؛ظ„ط§ظ‚", en: "âœ– Close" },
+        "photo_mode_tip": { ar: "ًں“¸ ط§ظ„ط´ط§ط´ط© ط§ظ„ط¢ظ† ظپظٹ ظˆط¶ط¹ ط§ظ„طھطµظˆظٹط± ط§ظ„طµط§ظپظٹ ظ„ظ„ط·ط§ظ„ط¨ .. ط§ط¶ط؛ط· ظ‡ظ†ط§ ظ„ط¥ط¹ط§ط¯ط© ط¥ط¸ظ‡ط§ط± ط£ط²ط±ط§ط± ط§ظ„ط¥ط؛ظ„ط§ظ‚ ظˆط§ظ„ط·ط¨ط§ط¹ط© ًں”„", en: "ًں“¸ Screen is in clean photo mode .. Click here to restore Close & Print buttons ًں”„" },
+        "receipt_paid_full": { ar: "ط®ط§ظ„طµ ط§ظ„ط³ط¯ط§ط¯ âœ”ï¸ڈ", en: "Paid in Full âœ”ï¸ڈ" },
+        "receipt_st_details_title": { ar: "ًں“œ ط¨ظٹط§ظ†ط§طھ ط§ظ„طھط³ط¬ظٹظ„ ظˆط§ظ„ط³ط¯ط§ط¯", en: "ًں“œ Registration & Payment Details" },
+        "receipt_lbl_name": { ar: "ط§ط³ظ… ط§ظ„ط·ط§ظ„ط¨:", en: "Student Name:" },
+        "receipt_lbl_id": { ar: "ظƒظˆط¯ ط§ظ„طھط¹ط±ظٹظپ (ID):", en: "Definition Code (ID):" },
+        "receipt_lbl_class": { ar: "ط§ظ„ط¨ط§ظ‚ط© / ط§ظ„ظ…ط¬ظ…ظˆط¹ط©:", en: "Package / Group:" },
+        "receipt_lbl_phone": { ar: "ط±ظ‚ظ… ط§ظ„ظ…ظˆط¨ط§ظٹظ„:", en: "Mobile Number:" },
+        "receipt_lbl_total": { ar: "ط§ظ„ظ…ط¨ظ„ط؛ ط§ظ„ظƒظ„ظٹ ط§ظ„ظ…ط¯ظپظˆط¹", en: "TOTAL PAID AMOUNT" },
+        "receipt_inc_methods": { ar: "ط´ط§ظ…ظ„ ط·ط±ظ‚ ط§ظ„ط¯ظپط¹ ط§ظ„ظ…ط³ط¬ظ„ط© ط¨ط§ظ„ط³ظ†طھط±", en: "Includes all registered payment methods" },
+        "receipt_auth_title": { ar: "ًں“œ ط§ط¹طھظ…ط§ط¯ ط¥ظ„ظƒطھط±ظˆظ†ظٹ ظ…ط¹طھظ…ط¯", en: "ًں“œ Certified Electronic Approval" },
+        "receipt_auth_sub": { ar: "طھظˆظ‚ظٹط¹ ط§ظ„ظ…ظˆط¸ظپ / ط§ظ„ظ…ط­ط§ط³ط¨ ط§ظ„ظ…ط³ط¦ظˆظ„", en: "Authorized Accountant / Employee Signature" },
+        "receipt_sec_code": { ar: "ط±ظ…ط² ط§ظ„طھط­ظ‚ظ‚ ط§ظ„ط£ظ…ظ†ظٹ", en: "Security Verification Code" }
     };
 
     // ==========================================
@@ -643,7 +654,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function t(key) { return (dict[key] && dict[key][currentLang]) ? dict[key][currentLang] : key; }
     function nowDateStr() { return new Date().toISOString().split('T')[0]; }
-    function prettyDate(d) { return d ? d.split("-").reverse().join("-") : "—"; }
+    function prettyDate(d) { return d ? d.split("-").reverse().join("-") : "â€”"; }
     function toInt(v) { const n = parseInt(v); return isNaN(n) ? 0 : n; }
 
     function getTagColor(str) {
@@ -658,7 +669,7 @@ document.addEventListener('DOMContentLoaded', function() {
     window.logAction = function(actionType, details) {
         if (!window.CURRENT_MANAGER_ID || !isFirebaseConnected) return;
         const now = Date.now();
-        const user = window.CURRENT_ROLE === 'admin' ? 'المدير' : ($("currentShiftManagerName") ? $("currentShiftManagerName").innerText : 'المساعد');
+        const user = window.CURRENT_ROLE === 'admin' ? 'ط§ظ„ظ…ط¯ظٹط±' : ($("currentShiftManagerName") ? $("currentShiftManagerName").innerText : 'ط§ظ„ظ…ط³ط§ط¹ط¯');
         
         const logEntry = {
             time: now,
@@ -695,7 +706,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const body = $("activityLogBody");
         if (!body) return;
         if (logs.length === 0) {
-            body.innerHTML = '<div style="text-align: center; color: #888; padding: 20px;">لا توجد عمليات مسجلة حتى الآن</div>';
+            body.innerHTML = '<div style="text-align: center; color: #888; padding: 20px;">ظ„ط§ طھظˆط¬ط¯ ط¹ظ…ظ„ظٹط§طھ ظ…ط³ط¬ظ„ط© ط­طھظ‰ ط§ظ„ط¢ظ†</div>';
             return;
         }
         let html = '';
@@ -708,7 +719,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <span style="font-size: 0.85em; color: #888;">${dateStr}</span>
                 </div>
                 <div style="margin-bottom: 5px;">${log.details}</div>
-                <div style="font-size: 0.85em; color: var(--success);">بواسطة: ${log.user}</div>
+                <div style="font-size: 0.85em; color: var(--success);">ط¨ظˆط§ط³ط·ط©: ${log.user}</div>
             </div>`;
         });
         body.innerHTML = html;
@@ -738,7 +749,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         if (logs.length === 0) {
-            html = '<div style="text-align: center; color: #888; padding: 10px;">لا يوجد إشعارات</div>';
+            html = '<div style="text-align: center; color: #888; padding: 10px;">ظ„ط§ ظٹظˆط¬ط¯ ط¥ط´ط¹ط§ط±ط§طھ</div>';
         }
         
         if (notifList) notifList.innerHTML = html;
@@ -775,11 +786,11 @@ document.addEventListener('DOMContentLoaded', function() {
         box.classList.remove("hidden");
         void box.offsetWidth;
         if (isSuccess) {
-            icon.innerHTML = "✅";
+            icon.innerHTML = "âœ…";
         } else if (isAlreadyPresent) {
-            icon.innerHTML = "⚠️";
+            icon.innerHTML = "âڑ ï¸ڈ";
         } else {
-            icon.innerHTML = "❌";
+            icon.innerHTML = "â‌Œ";
         }
         setTimeout(() => { box.classList.add("hidden"); }, 400);
     }
@@ -788,7 +799,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let container = $("toastContainer"); if(!container) return;
         const toast = document.createElement("div"); 
         toast.className = `toast toast-${type}`;
-        let icon = type==='err' ? '❌' : (type==='warning' ? '⚠️' : '✅');
+        let icon = type==='err' ? 'â‌Œ' : (type==='warning' ? 'âڑ ï¸ڈ' : 'âœ…');
         toast.innerHTML = `<span style="margin-left:10px;">${icon}</span> ${msg}`;
         container.appendChild(toast);
         setTimeout(() => { 
@@ -801,8 +812,8 @@ document.addEventListener('DOMContentLoaded', function() {
         let container = $("toastContainer"); if(!container) return;
         const toast = document.createElement("div"); 
         toast.className = `toast toast-warning undo-toast`;
-        const undoTxt = currentLang === 'ar' ? 'تراجع ↩️' : 'Undo ↩️';
-        toast.innerHTML = `<span>⚠️ ${msg}</span> <button class="btn smallBtn" id="tempUndoBtn" style="margin-right:15px; padding:5px 10px;">${undoTxt}</button>`;
+        const undoTxt = currentLang === 'ar' ? 'طھط±ط§ط¬ط¹ â†©ï¸ڈ' : 'Undo â†©ï¸ڈ';
+        toast.innerHTML = `<span>âڑ ï¸ڈ ${msg}</span> <button class="btn smallBtn" id="tempUndoBtn" style="margin-right:15px; padding:5px 10px;">${undoTxt}</button>`;
         container.appendChild(toast); 
         let isUndone = false;
         toast.querySelector("#tempUndoBtn").onclick = () => { 
@@ -862,9 +873,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const popup = document.createElement("div");
         popup.className = "celebration-popup";
         popup.innerHTML = `
-            <div style="font-size: 3.8em; margin-bottom: 12px;">🏆🎉</div>
-            <h2 style="margin: 0; font-size: 2em; font-weight: 900; color: #fbbf24;">اكتمل سداد الباقة بالكامل</h2>
-            <p style="margin: 12px 0 0 0; font-size: 1.2em; opacity: 0.95;">ألف مبروك .. أصبح حساب الطالب خالص السداد 100% ✅</p>
+            <div style="font-size: 3.8em; margin-bottom: 12px;">ًںڈ†ًںژ‰</div>
+            <h2 style="margin: 0; font-size: 2em; font-weight: 900; color: #fbbf24;">ط§ظƒطھظ…ظ„ ط³ط¯ط§ط¯ ط§ظ„ط¨ط§ظ‚ط© ط¨ط§ظ„ظƒط§ظ…ظ„</h2>
+            <p style="margin: 12px 0 0 0; font-size: 1.2em; opacity: 0.95;">ط£ظ„ظپ ظ…ط¨ط±ظˆظƒ .. ط£طµط¨ط­ ط­ط³ط§ط¨ ط§ظ„ط·ط§ظ„ط¨ ط®ط§ظ„طµ ط§ظ„ط³ط¯ط§ط¯ 100% âœ…</p>
         `;
         document.body.appendChild(popup);
         setTimeout(() => popup.remove(), 4200);
@@ -969,7 +980,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     window.extOpen = function(id) {
         if(!id || !students[String(id)]) {
-            showToast(currentLang === 'ar' ? "الطالب غير مسجل" : "Student not found", "err");
+            showToast(currentLang === 'ar' ? "ط§ظ„ط·ط§ظ„ط¨ ط؛ظٹط± ظ…ط³ط¬ظ„" : "Student not found", "err");
             return;
         }
         
@@ -993,7 +1004,7 @@ document.addEventListener('DOMContentLoaded', function() {
     async function saveAll() {
         try {
             hasUnsavedChanges = true;
-            updateSyncUI('pending', 'جاري الحفظ...');
+            updateSyncUI('pending', 'ط¬ط§ط±ظٹ ط§ظ„ط­ظپط¸...');
 
             // Save to IndexedDB (encrypted, async, no 5MB limit)
             await Promise.all([
@@ -1014,7 +1025,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Push to Firebase
             if (window.CURRENT_MANAGER_ID) {
-                updateSyncUI('syncing', 'جاري المزامنة مع السحابة...');
+                updateSyncUI('syncing', 'ط¬ط§ط±ظٹ ط§ظ„ظ…ط²ط§ظ…ظ†ط© ظ…ط¹ ط§ظ„ط³ط­ط§ط¨ط©...');
                 
                 const dbRef = ref(database, `users/${window.CURRENT_MANAGER_ID}`);
                 update(dbRef, {
@@ -1031,22 +1042,22 @@ document.addEventListener('DOMContentLoaded', function() {
                     '_lastModified': Date.now()
                 }).then(() => {
                     hasUnsavedChanges = false;
-                    updateSyncUI('online', 'متصل ومتزامن ✅');
+                    updateSyncUI('online', 'ظ…طھطµظ„ ظˆظ…طھط²ط§ظ…ظ† âœ…');
                 }).catch(e => {
                     console.error("Firebase update error:", e);
-                    updateSyncUI('pending', 'تغييرات محلية لم تتم مزامنتها');
+                    updateSyncUI('pending', 'طھط؛ظٹظٹط±ط§طھ ظ…ط­ظ„ظٹط© ظ„ظ… طھطھظ… ظ…ط²ط§ظ…ظ†طھظ‡ط§');
                 });
             }
         } catch(e) { 
             console.error("saveAll error:", e);
-            showToast("حدث خطأ أثناء حفظ البيانات.", "err"); 
+            showToast("ط­ط¯ط« ط®ط·ط£ ط£ط«ظ†ط§ط، ط­ظپط¸ ط§ظ„ط¨ظٹط§ظ†ط§طھ.", "err"); 
         }
     }
 
     async function saveAttendanceOnly() {
         try {
             hasUnsavedChanges = true;
-            updateSyncUI('pending', 'جاري حفظ الحضور...');
+            updateSyncUI('pending', 'ط¬ط§ط±ظٹ ط­ظپط¸ ط§ظ„ط­ط¶ظˆط±...');
             
             await Promise.all([
                 secureSave(K_STUDENTS, students),
@@ -1055,7 +1066,7 @@ document.addEventListener('DOMContentLoaded', function() {
             updateTopStats();
 
             if (window.CURRENT_MANAGER_ID) {
-                updateSyncUI('syncing', 'جاري المزامنة...');
+                updateSyncUI('syncing', 'ط¬ط§ط±ظٹ ط§ظ„ظ…ط²ط§ظ…ظ†ط©...');
                 
                 const dbRef = ref(database, `users/${window.CURRENT_MANAGER_ID}`);
                 update(dbRef, {
@@ -1072,15 +1083,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     '_lastModified': Date.now()
                 }).then(() => {
                     hasUnsavedChanges = false;
-                    updateSyncUI('online', 'متصل ومتزامن ✅');
+                    updateSyncUI('online', 'ظ…طھطµظ„ ظˆظ…طھط²ط§ظ…ظ† âœ…');
                 }).catch(e => {
                     console.error("Firebase update error:", e);
-                    updateSyncUI('pending', 'تغييرات محلية لم تتم مزامنتها');
+                    updateSyncUI('pending', 'طھط؛ظٹظٹط±ط§طھ ظ…ط­ظ„ظٹط© ظ„ظ… طھطھظ… ظ…ط²ط§ظ…ظ†طھظ‡ط§');
                 });
             }
         } catch(e) { 
             console.error("saveAttendanceOnly error:", e);
-            showToast("حدث خطأ أثناء حفظ البيانات.", "err"); 
+            showToast("ط­ط¯ط« ط®ط·ط£ ط£ط«ظ†ط§ط، ط­ظپط¸ ط§ظ„ط¨ظٹط§ظ†ط§طھ.", "err"); 
         }
     }
 
@@ -1104,7 +1115,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Step 2: Try to fetch from Firebase and merge
             try {
                 if (window.CURRENT_MANAGER_ID) {
-                    updateSyncUI('syncing', 'جاري جلب البيانات من السحابة...');
+                    updateSyncUI('syncing', 'ط¬ط§ط±ظٹ ط¬ظ„ط¨ ط§ظ„ط¨ظٹط§ظ†ط§طھ ظ…ظ† ط§ظ„ط³ط­ط§ط¨ط©...');
                     const dbRef = ref(database);
                     const snapshot = await get(child(dbRef, `users/${window.CURRENT_MANAGER_ID}`));
                     if (snapshot.exists()) {
@@ -1113,7 +1124,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         const localTimestamp = localTimestamps[K_STUDENTS] || 0;
 
                         if (remoteTimestamp >= localTimestamp) {
-                            // Server is newer or equal — use server data
+                            // Server is newer or equal â€” use server data
                             students = remote.students || students;
                             deletedStudents = remote.deletedStudents || deletedStudents;
                             attByDate = remote.attendance || attByDate;
@@ -1124,10 +1135,10 @@ document.addEventListener('DOMContentLoaded', function() {
                             evalData = remote.evaluations || evalData;
                             sessionStudentsByDate = remote.sessionStudents || sessionStudentsByDate;
                             bookletsStock = remote.booklets || bookletsStock;
-                            console.log("[loadAll] Server data is newer — using Firebase data");
+                            console.log("[loadAll] Server data is newer â€” using Firebase data");
                         } else {
-                            // Local is newer — merge granularly (field-level)
-                            console.log("[loadAll] Local data is newer — performing granular merge");
+                            // Local is newer â€” merge granularly (field-level)
+                            console.log("[loadAll] Local data is newer â€” performing granular merge");
                             const remoteStudents = remote.students || {};
                             const remoteAtt = remote.attendance || {};
                             
@@ -1178,18 +1189,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         fromFirebase = true;
                         hasUnsavedChanges = false;
-                        updateSyncUI('online', 'متصل ومتزامن ✅');
-                        console.log("[loadAll] Data synced and cached to IndexedDB ✅");
+                        updateSyncUI('online', 'ظ…طھطµظ„ ظˆظ…طھط²ط§ظ…ظ† âœ…');
+                        console.log("[loadAll] Data synced and cached to IndexedDB âœ…");
                     }
                 }
             } catch(e) {
                 console.error("[loadAll] Firebase load failed, using local data:", e);
-                updateSyncUI('offline', 'غير متصل - تعمل من البيانات المحلية');
+                updateSyncUI('offline', 'ط؛ظٹط± ظ…طھطµظ„ - طھط¹ظ…ظ„ ظ…ظ† ط§ظ„ط¨ظٹط§ظ†ط§طھ ط§ظ„ظ…ط­ظ„ظٹط©');
             }
 
             if (!fromFirebase && Object.keys(students).length > 0) {
                 console.log("[loadAll] Working offline with IndexedDB data");
-                updateSyncUI('pending', 'تعمل من البيانات المحلية');
+                updateSyncUI('pending', 'طھط¹ظ…ظ„ ظ…ظ† ط§ظ„ط¨ظٹط§ظ†ط§طھ ط§ظ„ظ…ط­ظ„ظٹط©');
             }
             
             // Populate eval form fields
@@ -1202,7 +1213,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if($("evalNotes")) $("evalNotes").value = evalData.notes || "";
             if($("evalFollowupPlan")) $("evalFollowupPlan").value = evalData.followupPlan || "";
             if($("evalNeeds")) $("evalNeeds").value = evalData.needs || "";
-            if($("evalFinalRate")) $("evalFinalRate").value = evalData.finalRate || "⭐⭐⭐⭐⭐ ممتاز";
+            if($("evalFinalRate")) $("evalFinalRate").value = evalData.finalRate || "â­گâ­گâ­گâ­گâ­گ ظ…ظ…طھط§ط²";
 
             applyTheme(localStorage.getItem(K_THEME) || "dark");
             
@@ -1251,7 +1262,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     window.switchManagerTab('dailyReport');
                 }
                 
-                if ($("managerTopName")) $("managerTopName").innerText = localStorage.getItem("ca_manager_id") || "المدير العام";
+                if ($("managerTopName")) $("managerTopName").innerText = localStorage.getItem("ca_manager_id") || "ط§ظ„ظ…ط¯ظٹط± ط§ظ„ط¹ط§ظ…";
                 
             } else {
                 $("appBox").classList.remove("hidden");
@@ -1272,12 +1283,12 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll(".manager-nav-item").forEach(btn => btn.classList.remove("active"));
 
         const tabMap = {
-            dailyReport:  { view: "managerDailyReportView",  btn: "btnManagerDailyReport",  title: "التقرير اليومي" },
-            termReport:   { view: "managerTermReportView",   btn: "btnManagerTermReport",   title: "تقرير الترم" },
-            assistants:   { view: "managerAssistantsView",   btn: "btnManagerAssistants",   title: "إدارة المساعدين" },
-            permissions:  { view: "managerPermissionsView",  btn: "btnManagerPermissions",  title: "صلاحيات المساعد" },
-            decisions:    { view: "managerDecisionsView",    btn: "btnManagerDecisions",    title: "طلبات القرارات" },
-            settings:     { view: "managerSettingsView",     btn: "btnManagerSettings",     title: "الإعدادات المتقدمة" },
+            dailyReport:  { view: "managerDailyReportView",  btn: "btnManagerDailyReport",  title: "ط§ظ„طھظ‚ط±ظٹط± ط§ظ„ظٹظˆظ…ظٹ" },
+            termReport:   { view: "managerTermReportView",   btn: "btnManagerTermReport",   title: "طھظ‚ط±ظٹط± ط§ظ„طھط±ظ…" },
+            assistants:   { view: "managerAssistantsView",   btn: "btnManagerAssistants",   title: "ط¥ط¯ط§ط±ط© ط§ظ„ظ…ط³ط§ط¹ط¯ظٹظ†" },
+            permissions:  { view: "managerPermissionsView",  btn: "btnManagerPermissions",  title: "طµظ„ط§ط­ظٹط§طھ ط§ظ„ظ…ط³ط§ط¹ط¯" },
+            decisions:    { view: "managerDecisionsView",    btn: "btnManagerDecisions",    title: "ط·ظ„ط¨ط§طھ ط§ظ„ظ‚ط±ط§ط±ط§طھ" },
+            settings:     { view: "managerSettingsView",     btn: "btnManagerSettings",     title: "ط§ظ„ط¥ط¹ط¯ط§ط¯ط§طھ ط§ظ„ظ…طھظ‚ط¯ظ…ط©" },
         };
 
         const tab = tabMap[tabId] || tabMap["dailyReport"];
@@ -1291,7 +1302,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (tabId === "dailyReport") renderManagerDailyReport(nowDateStr());
         if (tabId === "termReport") renderManagerTermReport();
         if (tabId === "settings") {
-            const mid = localStorage.getItem("ca_manager_id") || "—";
+            const mid = localStorage.getItem("ca_manager_id") || "â€”";
             if ($("mgrSettingsManagerId")) $("mgrSettingsManagerId").textContent = mid;
         }
     };
@@ -1302,7 +1313,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Fix for Shift Manager Display Name
         if ($("currentShiftManagerName")) {
-            $("currentShiftManagerName").innerText = localStorage.getItem("ca_current_username") || (currentUserRole === "admin" ? "المدير" : "مساعد");
+            $("currentShiftManagerName").innerText = localStorage.getItem("ca_current_username") || (currentUserRole === "admin" ? "ط§ظ„ظ…ط¯ظٹط±" : "ظ…ط³ط§ط¹ط¯");
         }
         
         renderReport(nowDateStr());
@@ -1315,7 +1326,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function applyPermissions() {
         const isAdmin = (currentUserRole === "admin");
         if ($("currentUserBadgeText")) {
-            $("currentUserBadgeText").innerText = isAdmin ? (currentLang === "ar" ? "👑 مسؤول عام" : "👑 Admin") : (currentLang === "ar" ? "👥 مساعد" : "👥 Assistant");
+            $("currentUserBadgeText").innerText = isAdmin ? (currentLang === "ar" ? "ًں‘‘ ظ…ط³ط¤ظˆظ„ ط¹ط§ظ…" : "ًں‘‘ Admin") : (currentLang === "ar" ? "ًں‘¥ ظ…ط³ط§ط¹ط¯" : "ًں‘¥ Assistant");
         }
         
         // TEMPORARILY: Give Assistant full permissions (don't hide anything)
@@ -1354,13 +1365,13 @@ document.addEventListener('DOMContentLoaded', function() {
         if($("totalStudentsCount")) $("totalStudentsCount").textContent = filledCount;
         if($("todayCountTop")) $("todayCountTop").textContent = todayCount;
         
-        if($("todayRevenue")) $("todayRevenue").textContent = isRevHidden ? "****** ج" : revenue + " ج";
-        if($("toggleRevBtn")) $("toggleRevBtn").textContent = isRevHidden ? "👁️‍🗨️" : "👁️";
+        if($("todayRevenue")) $("todayRevenue").textContent = isRevHidden ? "****** ط¬" : revenue + " ط¬";
+        if($("toggleRevBtn")) $("toggleRevBtn").textContent = isRevHidden ? "ًں‘پï¸ڈâ€چًں—¨ï¸ڈ" : "ًں‘پï¸ڈ";
     }
 
     function updateLiveFeed(st) {
-        let sName = st.name || "بدون اسم";
-        let sClass = st.className || "عام";
+        let sName = st.name || "ط¨ط¯ظˆظ† ط§ط³ظ…";
+        let sClass = st.className || "ط¹ط§ظ…";
         const timeStr = new Date().toLocaleTimeString(currentLang==='ar'?'ar-EG':'en-US', {hour:'2-digit', minute:'2-digit'});
         
         recentScans.unshift({ name: sName, id: st.id, cls: sClass, time: timeStr });
@@ -1389,7 +1400,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // ==========================================
     function calculateSmartStreak(st) {
         if(!st.attendanceDates || st.attendanceDates.length === 0) return 0;
-        let c = st.className ? st.className.trim() : "عام";
+        let c = st.className ? st.className.trim() : "ط¹ط§ظ…";
         
         let classDates = new Set();
         for(let dateKey in attByDate) {
@@ -1417,8 +1428,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!select) return;
         
         let currentVal = select.value; 
-        let html = `<option value="">-- اختر الباقة / المجموعة --</option>`;
-        let sHtml = `<option value="حصة فردية">حصة فردية (عام)</option>`;
+        let html = `<option value="">-- ط§ط®طھط± ط§ظ„ط¨ط§ظ‚ط© / ط§ظ„ظ…ط¬ظ…ظˆط¹ط© --</option>`;
+        let sHtml = `<option value="ط­طµط© ظپط±ط¯ظٹط©">ط­طµط© ظپط±ط¯ظٹط© (ط¹ط§ظ…)</option>`;
         
         let hasGroups = false;
         for (let g in groupFees) {
@@ -1426,7 +1437,7 @@ document.addEventListener('DOMContentLoaded', function() {
             sHtml += `<option value="${g}">${g}</option>`;
             hasGroups = true;
         }
-        if(!hasGroups) html += `<option value="عام">عام</option>`;
+        if(!hasGroups) html += `<option value="ط¹ط§ظ…">ط¹ط§ظ…</option>`;
         select.innerHTML = html;
         
         if(currentVal && groupFees[currentVal] !== undefined) {
@@ -1445,7 +1456,7 @@ document.addEventListener('DOMContentLoaded', function() {
         currentId = id; const st = students[id]; 
         if (!st) {
             if ($("notesLockOverlay")) $("notesLockOverlay").style.display = "flex";
-            if ($("stNotesListContainer")) $("stNotesListContainer").innerHTML = '<div class="mutedCenter" style="font-size:0.85em;">لا توجد ملاحظات مسجلة لهذا الطالب</div>';
+            if ($("stNotesListContainer")) $("stNotesListContainer").innerHTML = '<div class="mutedCenter" style="font-size:0.85em;">ظ„ط§ طھظˆط¬ط¯ ظ…ظ„ط§ط­ط¸ط§طھ ظ…ط³ط¬ظ„ط© ظ„ظ‡ط°ط§ ط§ظ„ط·ط§ظ„ط¨</div>';
             return; 
         }
         
@@ -1475,7 +1486,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         if($("stTotalPaid")) {
-            $("stTotalPaid").value = paid + " ج";
+            $("stTotalPaid").value = paid + " ط¬";
             $("stTotalPaid").style.background = req > 0 ? `linear-gradient(to left, #d4edda ${percent}%, #f0f2f5 ${percent}%)` : "#f0f2f5";
         }
 
@@ -1483,13 +1494,13 @@ document.addEventListener('DOMContentLoaded', function() {
         if (remBox) {
             if(req === 0) {
                 remBox.className = "remain-box remain-green";
-                remBox.innerHTML = `✅ ${t("txt_free")}`;
+                remBox.innerHTML = `âœ… ${t("txt_free")}`;
             } else if(remain <= 0) {
                 remBox.className = "remain-box remain-green";
-                remBox.innerHTML = `✅ ${t("txt_paid_full")}`;
+                remBox.innerHTML = `âœ… ${t("txt_paid_full")}`;
             } else {
                 remBox.className = "remain-box remain-red";
-                remBox.innerHTML = `${t("lbl_remaining")} <span id="stRemainingAmt">${remain}</span> ج`;
+                remBox.innerHTML = `${t("lbl_remaining")} <span id="stRemainingAmt">${remain}</span> ط¬`;
             }
         }
 
@@ -1513,7 +1524,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 rBtn.style.background = "linear-gradient(135deg, #10b981, #059669)";
                 rBtn.style.color = "#ffffff";
                 rBtn.style.boxShadow = "0 4px 12px rgba(16, 185, 129, 0.4)";
-                if ($("receiptBtnIcon")) $("receiptBtnIcon").textContent = "🖨️";
+                if ($("receiptBtnIcon")) $("receiptBtnIcon").textContent = "ًں–¨ï¸ڈ";
                 if ($("receiptBtnText")) $("receiptBtnText").textContent = t("print_receipt_unlock");
             } else {
                 rBtn.disabled = true;
@@ -1521,7 +1532,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 rBtn.style.background = "#334155";
                 rBtn.style.color = "#94a3b8";
                 rBtn.style.boxShadow = "none";
-                if ($("receiptBtnIcon")) $("receiptBtnIcon").textContent = "🔒";
+                if ($("receiptBtnIcon")) $("receiptBtnIcon").textContent = "ًں”’";
                 if ($("receiptBtnText")) $("receiptBtnText").textContent = t("print_receipt_lock");
             }
         }
@@ -1545,7 +1556,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         let streakCount = calculateSmartStreak(st);
-        if($("daysCount")) $("daysCount").innerHTML = `🔥 ${streakCount} ${t("txt_streak")}`;
+        if($("daysCount")) $("daysCount").innerHTML = `ًں”¥ ${streakCount} ${t("txt_streak")}`;
         
         if($("attList")) {
             let datesHtml = "";
@@ -1569,12 +1580,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (m === "instapay") { mBadge = t("badge_instapay"); badgeBg = "#f3e8ff"; badgeColor = "#6b21a8"; }
                     if (m === "wallet") { mBadge = t("badge_wallet"); badgeBg = "#fee2e2"; badgeColor = "#991b1b"; }
                     
-                    let delBtn = isAdmin ? `<button class="btn danger smallBtn iconOnly" style="padding:2px 6px; font-size:11px;" onclick="window.deleteStudentPayment(${i})" title="${t('btn_del_payment')}">🗑️</button>` : "";
+                    let delBtn = isAdmin ? `<button class="btn danger smallBtn iconOnly" style="padding:2px 6px; font-size:11px;" onclick="window.deleteStudentPayment(${i})" title="${t('btn_del_payment')}">ًں—‘ï¸ڈ</button>` : "";
                     
                     payHtml += `
                     <div class="item flexBetween" style="margin-bottom:8px; font-size:0.9em; padding:8px 10px; background:var(--bg-surface); border-radius:6px; border:1px solid var(--border);">
                         <div>
-                            <span style="font-weight:bold; color:var(--success);">+ ${p.amount} ج</span>
+                            <span style="font-weight:bold; color:var(--success);">+ ${p.amount} ط¬</span>
                             <span class="badge" style="background:${badgeBg}; color:${badgeColor}; font-size:0.8em; margin-inline-start:8px;">${mBadge}</span>
                         </div>
                         <div class="row" style="width:auto; gap:10px;">
@@ -1587,10 +1598,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 payHtml = `
                 <div class="item flexBetween" style="margin-bottom:8px; font-size:0.9em; padding:8px 10px; background:var(--bg-surface); border-radius:6px; border:1px solid var(--border);">
                     <div>
-                        <span style="font-weight:bold; color:var(--success);">+ ${st.paid} ج</span>
+                        <span style="font-weight:bold; color:var(--success);">+ ${st.paid} ط¬</span>
                         <span class="badge" style="background:#eef2f5; color:#333; font-size:0.8em; margin-inline-start:8px;">${t("txt_cash_old")}</span>
                     </div>
-                    <span style="font-size:0.85em; color:var(--text-secondary);">—</span>
+                    <span style="font-size:0.85em; color:var(--text-secondary);">â€”</span>
                 </div>`;
             } else {
                 payHtml = `<div class="mutedCenter" style="font-size:0.85em;">${t("txt_no_payments")}</div>`;
@@ -1616,11 +1627,11 @@ document.addEventListener('DOMContentLoaded', function() {
             if(!attByDate[d]) attByDate[d] = []; 
             attByDate[d].push(String(id)); 
             
-            if (typeof logAction === "function") logAction("تسجيل حضور", `تسجيل حضور الطالب ${s.name || id}`);
+            if (typeof logAction === "function") logAction("طھط³ط¬ظٹظ„ ط­ط¶ظˆط±", `طھط³ط¬ظٹظ„ ط­ط¶ظˆط± ط§ظ„ط·ط§ظ„ط¨ ${s.name || id}`);
             saveAttendanceOnly(); 
             updateLiveFeed(s);
             playSound("success");
-            triggerEdgeFlash(); // تشغيل الفلاش الأخضر للنجاح
+            triggerEdgeFlash(); // طھط´ط؛ظٹظ„ ط§ظ„ظپظ„ط§ط´ ط§ظ„ط£ط®ط¶ط± ظ„ظ„ظ†ط¬ط§ط­
             showFullscreenFeedback(true, false);
             return { ok: true, msg: t("msg_att_ok") };
         }
@@ -1633,7 +1644,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const s = students[String(id)]; if(!s) return;
         s.attendanceDates = s.attendanceDates.filter(date => date !== d);
         if(attByDate[d]) attByDate[d] = attByDate[d].filter(x => x !== String(id));
-        if (typeof logAction === "function") logAction("إلغاء حضور", `إلغاء حضور الطالب ${s.name || id} ليوم ${d}`);
+        if (typeof logAction === "function") logAction("ط¥ظ„ط؛ط§ط، ط­ط¶ظˆط±", `ط¥ظ„ط؛ط§ط، ط­ط¶ظˆط± ط§ظ„ط·ط§ظ„ط¨ ${s.name || id} ظ„ظٹظˆظ… ${d}`);
         saveAttendanceOnly();
     }
 
@@ -1692,7 +1703,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // ✨ إدراج أموال طلاب الحصة الفورية في الخزائن الحقيقية
+        // âœ¨ ط¥ط¯ط±ط§ط¬ ط£ظ…ظˆط§ظ„ ط·ظ„ط§ط¨ ط§ظ„ط­طµط© ط§ظ„ظپظˆط±ظٹط© ظپظٹ ط§ظ„ط®ط²ط§ط¦ظ† ط§ظ„ط­ظ‚ظٹظ‚ظٹط©
         for (let d in sessionStudentsByDate) {
             let sList = sessionStudentsByDate[d] || [];
             for (let k = 0; k < sList.length; k++) {
@@ -1791,7 +1802,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if(filterClassEl && filterClassEl.options.length <= 1) { 
             const classes = Object.keys(groupFees);
-            if(classes.length === 0) classes.push("عام");
+            if(classes.length === 0) classes.push("ط¹ط§ظ…");
             classes.forEach(function(c) { 
                 const opt = document.createElement("option"); opt.value = c; opt.innerText = c; filterClassEl.appendChild(opt); 
             });
@@ -1870,8 +1881,8 @@ document.addEventListener('DOMContentLoaded', function() {
             let pBar = `<div style="width:100%; background:#eee; height:5px; border-radius:3px; margin-top:3px;"><div style="width:${percent}%; height:100%; background:var(--success); border-radius:3px;"></div></div>`;
             
             let isAttended = (s.attendanceDates && s.attendanceDates.includes(today));
-            let attendTxt = isAttended ? "✅" : "➖";
-            let rankIcon = s.rank === 'vip' ? ' ⭐' : (s.rank === 'warn' ? ' ⚠️' : '');
+            let attendTxt = isAttended ? "âœ…" : "â‍–";
+            let rankIcon = s.rank === 'vip' ? ' â­گ' : (s.rank === 'warn' ? ' âڑ ï¸ڈ' : '');
             let gColor = getTagColor(sClass);
             let remainAmt = req > 0 ? (req - (s.paid || 0)) : 0;
             if (remainAmt < 0) remainAmt = 0;
@@ -1879,9 +1890,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td><input type="checkbox" class="stCheckbox" data-id="${s.id}"></td>
                 <td>${s.id}</td>
                 <td><b>${s.name}</b>${rankIcon}</td>
-                <td><span class="badge" style="background:${gColor}; border-color:${gColor}; color:#fff;">${s.className || 'عام'}</span></td>
-                <td>${s.paid} ج ${pBar}</td>
-                <td>${remainAmt} ج</td>
+                <td><span class="badge" style="background:${gColor}; border-color:${gColor}; color:#fff;">${s.className || 'ط¹ط§ظ…'}</span></td>
+                <td>${s.paid} ط¬ ${pBar}</td>
+                <td>${remainAmt} ط¬</td>
                 <td>${attendTxt}</td>`;
             tr.onclick = function(e) { 
                 if(e.target.type !== "checkbox") window.extOpen(s.id); 
@@ -1925,9 +1936,9 @@ document.addEventListener('DOMContentLoaded', function() {
         for (let i = start; i < end && i < simpleFilteredStuds.length; i++) {
             let s = simpleFilteredStuds[i];
             const tr = document.createElement("tr");
-            let rankIcon = s.rank === 'vip' ? ' ⭐' : (s.rank === 'warn' ? ' ⚠️' : '');
+            let rankIcon = s.rank === 'vip' ? ' â­گ' : (s.rank === 'warn' ? ' âڑ ï¸ڈ' : '');
             
-            tr.innerHTML = `<td>${s.id}</td><td><b>${s.name}</b>${rankIcon}</td><td><span class="badge" style="background:#eef2f5; color:#333; font-weight:bold;">${s.className || 'عام'}</span></td>`;
+            tr.innerHTML = `<td>${s.id}</td><td><b>${s.name}</b>${rankIcon}</td><td><span class="badge" style="background:#eef2f5; color:#333; font-weight:bold;">${s.className || 'ط¹ط§ظ…'}</span></td>`;
             tr.style.cursor = "pointer";
             
             tr.onclick = function() { 
@@ -1974,7 +1985,7 @@ document.addEventListener('DOMContentLoaded', function() {
         for (let i = 0; i < ids.length; i++) {
             let id = ids[i];
             const st = students[id]; 
-            let c = (st && st.className) ? st.className.trim() : "عام";
+            let c = (st && st.className) ? st.className.trim() : "ط¹ط§ظ…";
             if(!groups[c]) groups[c] = { count: 0 }; 
             groups[c].count++;
         }
@@ -1985,10 +1996,10 @@ document.addEventListener('DOMContentLoaded', function() {
             html += `
             <div class="group-revenue-card" style="border-right: 5px solid ${gColor};">
                 <div class="group-revenue-details">
-                    <b style="color:${gColor}; font-size:1.1em;">🏷️ ${g}</b>
+                    <b style="color:${gColor}; font-size:1.1em;">ًںڈ·ï¸ڈ ${g}</b>
                 </div>
                 <div class="group-revenue-amount">
-                    العدد: ${groups[g].count} طالب
+                    ط§ظ„ط¹ط¯ط¯: ${groups[g].count} ط·ط§ظ„ط¨
                 </div>
             </div>`;
         }
@@ -1998,7 +2009,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <h4 style="color:var(--danger); margin-top:15px;">${t("wa_exp")}</h4>
             <ul style="font-size:14px; color:#d9534f; list-style: inside; background:#fff; padding:15px; border-radius:8px;">`;
             for (let i = 0; i < expArr.length; i++) {
-                html += `<li>${expArr[i].amount} ج - ${expArr[i].reason}</li>`; 
+                html += `<li>${expArr[i].amount} ط¬ - ${expArr[i].reason}</li>`; 
             }
             html += `</ul>`;
         }
@@ -2006,15 +2017,15 @@ document.addEventListener('DOMContentLoaded', function() {
         let sessArr = sessionStudentsByDate[d] || [];
         if(sessArr.length > 0) {
             html += `
-            <h4 style="color:var(--primary); margin-top:15px; display:flex; align-items:center; gap:5px;"><span>🎟️</span> طلاب الحصة الفورية (${sessArr.length})</h4>
+            <h4 style="color:var(--primary); margin-top:15px; display:flex; align-items:center; gap:5px;"><span>ًںژںï¸ڈ</span> ط·ظ„ط§ط¨ ط§ظ„ط­طµط© ط§ظ„ظپظˆط±ظٹط© (${sessArr.length})</h4>
             <div style="background:var(--bg-surface); border:1px solid var(--border); border-radius:8px; padding:10px; margin-top:5px;">`;
             for (let i = 0; i < sessArr.length; i++) {
                 let item = sessArr[i];
-                let mBadge = item.method === "instapay" ? "📱 إنستاباي" : (item.method === "wallet" ? "🟢 فودافون كاش" : "💵 كاش");
+                let mBadge = item.method === "instapay" ? "ًں“± ط¥ظ†ط³طھط§ط¨ط§ظٹ" : (item.method === "wallet" ? "ًںں¢ ظپظˆط¯ط§ظپظˆظ† ظƒط§ط´" : "ًں’µ ظƒط§ط´");
                 html += `
                 <div class="item flexBetween" style="margin-bottom:8px; padding-bottom:8px; border-bottom:1px solid var(--border);">
-                    <div><b>${item.name}</b> <span class="badge" style="background:#eee; color:#333;">${item.className || "عام"}</span> <span class="badge" style="background:#e3f2fd; color:#0288d1;">${mBadge}</span></div>
-                    <div style="color:var(--success); font-weight:bold;">+ ${item.amount} ج</div>
+                    <div><b>${item.name}</b> <span class="badge" style="background:#eee; color:#333;">${item.className || "ط¹ط§ظ…"}</span> <span class="badge" style="background:#e3f2fd; color:#0288d1;">${mBadge}</span></div>
+                    <div style="color:var(--success); font-weight:bold;">+ ${item.amount} ط¬</div>
                 </div>`;
             }
             html += `</div>`;
@@ -2039,7 +2050,7 @@ document.addEventListener('DOMContentLoaded', function() {
             html += `
             <div class="item flexBetween" style="margin-bottom:8px;">
                 <b>${s.name} (${id})</b> 
-                <button class="btn success smallBtn" onclick="window.restoreSt('${id}')">استرجاع</button>
+                <button class="btn success smallBtn" onclick="window.restoreSt('${id}')">ط§ط³طھط±ط¬ط§ط¹</button>
             </div>`; 
         }
         bl.innerHTML = html;
@@ -2051,7 +2062,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if(!st) return;
         
         students[id] = st; delete deletedStudents[id]; saveAll(); renderBinList(); 
-        showToast("تم الاسترجاع ✅"); window.extOpen(id); 
+        showToast("طھظ… ط§ظ„ط§ط³طھط±ط¬ط§ط¹ âœ…"); window.extOpen(id); 
     };
 // ==========================================
     // 12. SYSTEM THEME & LANGUAGE APPLY
@@ -2080,7 +2091,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const iconBox = $("themeSwitchIconBox");
         const textEl = $("themeSwitchText");
         if(overlay && iconBox && textEl) {
-            textEl.innerText = currentLang === "ar" ? "جاري تبديل المظهر... ⏳" : "Switching Theme... ⏳";
+            textEl.innerText = currentLang === "ar" ? "ط¬ط§ط±ظٹ طھط¨ط¯ظٹظ„ ط§ظ„ظ…ط¸ظ‡ط±... âڈ³" : "Switching Theme... âڈ³";
             iconBox.innerHTML = targetTheme === "dark" 
                 ? `<svg class="theme-svg-icon" style="width:50px;height:50px;color:#f59e0b;" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>` 
                 : `<svg class="theme-svg-icon" style="width:50px;height:50px;color:#f59e0b;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
@@ -2111,31 +2122,31 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         if($("changeLangBtn")) {
-            $("changeLangBtn").innerText = currentLang === "ar" ? "🌐 تغيير اللغة (Ar / En)" : "🌐 Switch Language";
+            $("changeLangBtn").innerText = currentLang === "ar" ? "ًںŒگ طھط؛ظٹظٹط± ط§ظ„ظ„ط؛ط© (Ar / En)" : "ًںŒگ Switch Language";
         }
         
         if($("sidebarCollapseBtn")) {
-            $("sidebarCollapseBtn").title = currentLang === "ar" ? "طي القائمة" : "Collapse Sidebar";
+            $("sidebarCollapseBtn").title = currentLang === "ar" ? "ط·ظٹ ط§ظ„ظ‚ط§ط¦ظ…ط©" : "Collapse Sidebar";
         }
         
         applyPermissions();
         
         // Sidebar doesn't need flex-direction change for RTL (handled by CSS logical properties)
         
-        // السطر الجديد لتحديث كلمات جوجل درايف فوراً مع تغيير اللغة
+        // ط§ظ„ط³ط·ط± ط§ظ„ط¬ط¯ظٹط¯ ظ„طھط­ط¯ظٹط« ظƒظ„ظ…ط§طھ ط¬ظˆط¬ظ„ ط¯ط±ط§ظٹظپ ظپظˆط±ط§ظ‹ ظ…ط¹ طھط؛ظٹظٹط± ط§ظ„ظ„ط؛ط©
         if (typeof updateDriveUI === "function") updateDriveUI();
 
-        // 🚀 السطور الجديدة لترجمة شاشة إدخال المنهج
-        if($("saveSyllabusBtn")) $("saveSyllabusBtn").innerText = currentLang === 'ar' ? "حفظ وتحديث المنهج" : "Save & Update Syllabus";
-        if($("syllName")) $("syllName").placeholder = currentLang === 'ar' ? "اسم الشابتر / الدرس..." : "Chapter / Lesson Name...";
-        if($("syllNotes")) $("syllNotes").placeholder = currentLang === 'ar' ? "ملاحظات (مثال: خلصنا لحد صفحة ٢٠)..." : "Notes (e.g., Finished until page 20)...";
+        // ًںڑ€ ط§ظ„ط³ط·ظˆط± ط§ظ„ط¬ط¯ظٹط¯ط© ظ„طھط±ط¬ظ…ط© ط´ط§ط´ط© ط¥ط¯ط®ط§ظ„ ط§ظ„ظ…ظ†ظ‡ط¬
+        if($("saveSyllabusBtn")) $("saveSyllabusBtn").innerText = currentLang === 'ar' ? "ط­ظپط¸ ظˆطھط­ط¯ظٹط« ط§ظ„ظ…ظ†ظ‡ط¬" : "Save & Update Syllabus";
+        if($("syllName")) $("syllName").placeholder = currentLang === 'ar' ? "ط§ط³ظ… ط§ظ„ط´ط§ط¨طھط± / ط§ظ„ط¯ط±ط³..." : "Chapter / Lesson Name...";
+        if($("syllNotes")) $("syllNotes").placeholder = currentLang === 'ar' ? "ظ…ظ„ط§ط­ط¸ط§طھ (ظ…ط«ط§ظ„: ط®ظ„طµظ†ط§ ظ„ط­ط¯ طµظپط­ط© ظ¢ظ )..." : "Notes (e.g., Finished until page 20)...";
         
         if($("syllStatus")) {
             for(let i=0; i<$("syllStatus").options.length; i++) {
                 let opt = $("syllStatus").options[i];
-                if(opt.value === "not_started") opt.text = currentLang === 'ar' ? "⚪ لم يبدأ" : "⚪ Not Started";
-                if(opt.value === "in_progress") opt.text = currentLang === 'ar' ? "🟡 جاري الشرح" : "🟡 In Progress";
-                if(opt.value === "completed")   opt.text = currentLang === 'ar' ? "🟢 تم الانتهاء" : "🟢 Completed";
+                if(opt.value === "not_started") opt.text = currentLang === 'ar' ? "âڑھ ظ„ظ… ظٹط¨ط¯ط£" : "âڑھ Not Started";
+                if(opt.value === "in_progress") opt.text = currentLang === 'ar' ? "ًںں، ط¬ط§ط±ظٹ ط§ظ„ط´ط±ط­" : "ًںں، In Progress";
+                if(opt.value === "completed")   opt.text = currentLang === 'ar' ? "ًںں¢ طھظ… ط§ظ„ط§ظ†طھظ‡ط§ط،" : "ًںں¢ Completed";
             }
         }
     }
@@ -2146,7 +2157,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const tl = $("syllabusTimeline");
         if (!tl) return;
         if (syllabusData.length === 0) {
-            let emptyMsg = currentLang === 'ar' ? "لا توجد بيانات في خريطة المنهج حتى الآن. 📭" : "No syllabus data available yet. 📭";
+            let emptyMsg = currentLang === 'ar' ? "ظ„ط§ طھظˆط¬ط¯ ط¨ظٹط§ظ†ط§طھ ظپظٹ ط®ط±ظٹط·ط© ط§ظ„ظ…ظ†ظ‡ط¬ ط­طھظ‰ ط§ظ„ط¢ظ†. ًں“­" : "No syllabus data available yet. ًں“­";
             tl.innerHTML = `<div class="mutedCenter">${emptyMsg}</div>`;
             return;
         }
@@ -2158,14 +2169,14 @@ document.addEventListener('DOMContentLoaded', function() {
             let s = syllabusData[i];
             let statusClass = "status-" + s.status;
             
-            // ترجمة حالات الدرس
+            // طھط±ط¬ظ…ط© ط­ط§ظ„ط§طھ ط§ظ„ط¯ط±ط³
             let statusIcon = "";
-            if (s.status === "completed") statusIcon = currentLang === 'ar' ? "🟢 تم الانتهاء" : "🟢 Completed";
-            else if (s.status === "in_progress") statusIcon = currentLang === 'ar' ? "🟡 جاري الشرح" : "🟡 In Progress";
-            else statusIcon = currentLang === 'ar' ? "⚪ لم يبدأ" : "⚪ Not Started";
+            if (s.status === "completed") statusIcon = currentLang === 'ar' ? "ًںں¢ طھظ… ط§ظ„ط§ظ†طھظ‡ط§ط،" : "ًںں¢ Completed";
+            else if (s.status === "in_progress") statusIcon = currentLang === 'ar' ? "ًںں، ط¬ط§ط±ظٹ ط§ظ„ط´ط±ط­" : "ًںں، In Progress";
+            else statusIcon = currentLang === 'ar' ? "âڑھ ظ„ظ… ظٹط¨ط¯ط£" : "âڑھ Not Started";
             
-            let deleteBtnHtml = isAdmin ? `<button class="btn danger smallBtn iconOnly" onclick="window.deleteSyllabus(${i})">🗑️</button>` : "";
-            let dateLbl = currentLang === 'ar' ? "أخر تحديث:" : "Last Update:";
+            let deleteBtnHtml = isAdmin ? `<button class="btn danger smallBtn iconOnly" onclick="window.deleteSyllabus(${i})">ًں—‘ï¸ڈ</button>` : "";
+            let dateLbl = currentLang === 'ar' ? "ط£ط®ط± طھط­ط¯ظٹط«:" : "Last Update:";
 
             html += `
             <div class="syll-card ${statusClass}">
@@ -2176,8 +2187,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         ${deleteBtnHtml}
                     </div>
                 </div>
-                ${s.notes ? `<div class="syll-notes">📝 ${s.notes}</div>` : ''}
-                <div class="syll-date">📅 ${dateLbl} ${prettyDate(s.date)}</div>
+                ${s.notes ? `<div class="syll-notes">ًں“‌ ${s.notes}</div>` : ''}
+                <div class="syll-date">ًں“… ${dateLbl} ${prettyDate(s.date)}</div>
             </div>
             `;
         }
@@ -2185,14 +2196,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     window.deleteSyllabus = function(index) {
-        let confirmMsg = currentLang === 'ar' ? "⚠️ متأكد من حذف هذا الدرس من المنهج؟" : "⚠️ Are you sure you want to delete this lesson?";
+        let confirmMsg = currentLang === 'ar' ? "âڑ ï¸ڈ ظ…طھط£ظƒط¯ ظ…ظ† ط­ط°ظپ ظ‡ط°ط§ ط§ظ„ط¯ط±ط³ ظ…ظ† ط§ظ„ظ…ظ†ظ‡ط¬طں" : "âڑ ï¸ڈ Are you sure you want to delete this lesson?";
         Swal.fire({
-            title: 'تأكيد الحذف',
+            title: 'طھط£ظƒظٹط¯ ط§ظ„ط­ط°ظپ',
             text: confirmMsg,
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonText: currentLang === 'ar' ? 'نعم، احذف' : 'Yes, delete',
-            cancelButtonText: currentLang === 'ar' ? 'إلغاء' : 'Cancel'
+            confirmButtonText: currentLang === 'ar' ? 'ظ†ط¹ظ…طŒ ط§ط­ط°ظپ' : 'Yes, delete',
+            cancelButtonText: currentLang === 'ar' ? 'ط¥ظ„ط؛ط§ط،' : 'Cancel'
         }).then((result) => {
             if(result.isConfirmed) {
                 syllabusData.splice(index, 1);
@@ -2208,7 +2219,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let notes = $("syllNotes").value.trim();
         
         if(!name) {
-            let errMsg = currentLang === 'ar' ? "يرجى كتابة اسم الشابتر / الدرس أولاً" : "Please enter the chapter/lesson name first";
+            let errMsg = currentLang === 'ar' ? "ظٹط±ط¬ظ‰ ظƒطھط§ط¨ط© ط§ط³ظ… ط§ظ„ط´ط§ط¨طھط± / ط§ظ„ط¯ط±ط³ ط£ظˆظ„ط§ظ‹" : "Please enter the chapter/lesson name first";
             return showToast(errMsg, "err");
         }
 
@@ -2224,7 +2235,7 @@ document.addEventListener('DOMContentLoaded', function() {
         saveAll();
         renderSyllabus();
         
-        let successMsg = currentLang === 'ar' ? "تم تحديث خريطة المنهج ✅" : "Syllabus updated successfully ✅";
+        let successMsg = currentLang === 'ar' ? "طھظ… طھط­ط¯ظٹط« ط®ط±ظٹط·ط© ط§ظ„ظ…ظ†ظ‡ط¬ âœ…" : "Syllabus updated successfully âœ…";
         showToast(successMsg, "success");
         
         $("syllName").value = "";
@@ -2268,7 +2279,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const rawU = $("managerUser") ? $("managerUser").value.trim() : "";
             const p = $("managerPass") ? $("managerPass").value.trim() : "";
-            if (!rawU || !p) return showToast("أدخل البريد الإلكتروني وكلمة المرور", "err");
+            if (!rawU || !p) return showToast("ط£ط¯ط®ظ„ ط§ظ„ط¨ط±ظٹط¯ ط§ظ„ط¥ظ„ظƒطھط±ظˆظ†ظٹ ظˆظƒظ„ظ…ط© ط§ظ„ظ…ط±ظˆط±", "err");
             
             const u = sanitizeKey(rawU);
 
@@ -2285,16 +2296,16 @@ document.addEventListener('DOMContentLoaded', function() {
                         localStorage.setItem(K_AUTH, "1"); 
                         localStorage.setItem(K_ROLE, "admin"); 
                         localStorage.setItem("ca_manager_id", u);
-                        localStorage.setItem("ca_current_username", "المدير");
+                        localStorage.setItem("ca_current_username", "ط§ظ„ظ…ط¯ظٹط±");
                         checkAuth(); 
                         return;
                     }
                 }
-                showToast(t("msg_err_pass") || "خطأ في بيانات الدخول", "err"); 
+                showToast(t("msg_err_pass") || "ط®ط·ط£ ظپظٹ ط¨ظٹط§ظ†ط§طھ ط§ظ„ط¯ط®ظˆظ„", "err"); 
                 triggerShake("managerLoginBtn");
             } catch (err) {
                 console.error(err);
-                showToast("فشل الاتصال بقاعدة البيانات. تأكد من الإنترنت.", "err");
+                showToast("ظپط´ظ„ ط§ظ„ط§طھطµط§ظ„ ط¨ظ‚ط§ط¹ط¯ط© ط§ظ„ط¨ظٹط§ظ†ط§طھ. طھط£ظƒط¯ ظ…ظ† ط§ظ„ط¥ظ†طھط±ظ†طھ.", "err");
             }
         });
     }
@@ -2305,7 +2316,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const rawU = $("assistantUser") ? $("assistantUser").value.trim() : "";
             const p = $("assistantPass") ? $("assistantPass").value.trim() : "";
-            if (!rawU || !p) return showToast("أدخل اسم المستخدم وكلمة المرور", "err");
+            if (!rawU || !p) return showToast("ط£ط¯ط®ظ„ ط§ط³ظ… ط§ظ„ظ…ط³طھط®ط¯ظ… ظˆظƒظ„ظ…ط© ط§ظ„ظ…ط±ظˆط±", "err");
             
             const u = sanitizeKey(rawU);
             
@@ -2313,7 +2324,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Query global_assistants mapping
                 const globalSnap = await get(child(ref(database), `global_assistants/${u}`));
                 if (!globalSnap.exists()) {
-                    showToast("حساب المساعد غير موجود أو غير مربوط بمدير.", "err");
+                    showToast("ط­ط³ط§ط¨ ط§ظ„ظ…ط³ط§ط¹ط¯ ط؛ظٹط± ظ…ظˆط¬ظˆط¯ ط£ظˆ ط؛ظٹط± ظ…ط±ط¨ظˆط· ط¨ظ…ط¯ظٹط±.", "err");
                     return triggerShake("assistantLoginBtn");
                 }
                 
@@ -2344,11 +2355,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         return;
                     }
                 }
-                showToast(t("msg_err_pass") || "كلمة المرور غير صحيحة", "err"); 
+                showToast(t("msg_err_pass") || "ظƒظ„ظ…ط© ط§ظ„ظ…ط±ظˆط± ط؛ظٹط± طµط­ظٹط­ط©", "err"); 
                 triggerShake("assistantLoginBtn");
             } catch (err) {
                 console.error(err);
-                showToast("فشل الاتصال بقاعدة البيانات. تأكد من الإنترنت.", "err");
+                showToast("ظپط´ظ„ ط§ظ„ط§طھطµط§ظ„ ط¨ظ‚ط§ط¹ط¯ط© ط§ظ„ط¨ظٹط§ظ†ط§طھ. طھط£ظƒط¯ ظ…ظ† ط§ظ„ط¥ظ†طھط±ظ†طھ.", "err");
             }
         });
     }
@@ -2412,11 +2423,11 @@ document.addEventListener('DOMContentLoaded', function() {
     on("quickSwitchRoleBtn", "click", function() {
         if($("userProfileDropdown")) $("userProfileDropdown").classList.add("hidden");
         if(currentUserRole === "admin") {
-            showToast(currentLang === 'ar' ? "أنت مسجل كمسؤول عام بالفعل 👑" : "Already logged in as Admin 👑", "success");
+            showToast(currentLang === 'ar' ? "ط£ظ†طھ ظ…ط³ط¬ظ„ ظƒظ…ط³ط¤ظˆظ„ ط¹ط§ظ… ط¨ط§ظ„ظپط¹ظ„ ًں‘‘" : "Already logged in as Admin ًں‘‘", "success");
         } else {
             askAdminPass(function() {
                 currentUserRole = "admin"; localStorage.setItem(K_ROLE, "admin"); applyPermissions();
-                showToast(currentLang === 'ar' ? "تم التبديل لصلاحيات المسؤول 👑" : "Switched to Admin privileges 👑", "success");
+                showToast(currentLang === 'ar' ? "طھظ… ط§ظ„طھط¨ط¯ظٹظ„ ظ„طµظ„ط§ط­ظٹط§طھ ط§ظ„ظ…ط³ط¤ظˆظ„ ًں‘‘" : "Switched to Admin privileges ًں‘‘", "success");
             });
         }
     });
@@ -2436,16 +2447,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     on("customPassConfirm", "click", async function() {
         const p = $("customPassInput") ? $("customPassInput").value.trim() : "";
-        if (!p) return showToast("أدخل كلمة المرور", "err");
+        if (!p) return showToast("ط£ط¯ط®ظ„ ظƒظ„ظ…ط© ط§ظ„ظ…ط±ظˆط±", "err");
         try {
             const snapshot = await get(child(ref(database), `users/${window.CURRENT_MANAGER_ID}/settings/info`));
             if (snapshot.exists() && snapshot.val().password === p) {
                 if($("customPassModal")) $("customPassModal").classList.add("hidden"); 
                 if(passSuccessCallback) passSuccessCallback(); 
             } else {
-                showToast(t("msg_err_pass") || "كلمة المرور غير صحيحة", "err"); triggerShake("customPassInput");
+                showToast(t("msg_err_pass") || "ظƒظ„ظ…ط© ط§ظ„ظ…ط±ظˆط± ط؛ظٹط± طµط­ظٹط­ط©", "err"); triggerShake("customPassInput");
             }
-        } catch (err) { showToast("فشل الاتصال", "err"); }
+        } catch (err) { showToast("ظپط´ظ„ ط§ظ„ط§طھطµط§ظ„", "err"); }
     });
 
     on("customPassCancel", "click", function() { if($("customPassModal")) $("customPassModal").classList.add("hidden"); });
@@ -2463,8 +2474,8 @@ on("quickAttendId", "keypress", function(e) {
         if (!idInp) return;
         const id = toInt(idInp.value); 
         if(!id || !students[String(id)]) { 
-            showToast("الطالب غير مسجل", "err"); 
-            triggerShake("quickAttendId"); // الاهتزاز عند الخطأ
+            showToast("ط§ظ„ط·ط§ظ„ط¨ ط؛ظٹط± ظ…ط³ط¬ظ„", "err"); 
+            triggerShake("quickAttendId"); // ط§ظ„ط§ظ‡طھط²ط§ط² ط¹ظ†ط¯ ط§ظ„ط®ط·ط£
             showFullscreenFeedback(false, false);
             return; 
         }
@@ -2481,8 +2492,8 @@ on("quickAttendId", "keypress", function(e) {
         if ($("openId") && openVal && students[String(openVal)]) {
             window.extOpen(openVal);
         } else {
-            showToast("الطالب غير موجود", "err");
-            triggerShake("openId"); // الاهتزاز عند الخطأ
+            showToast("ط§ظ„ط·ط§ظ„ط¨ ط؛ظٹط± ظ…ظˆط¬ظˆط¯", "err");
+            triggerShake("openId"); // ط§ظ„ط§ظ‡طھط²ط§ط² ط¹ظ†ط¯ ط§ظ„ط®ط·ط£
         }
     });
 
@@ -2526,7 +2537,7 @@ on("quickAttendId", "keypress", function(e) {
             
             if (hasName || hasPaid || hasPayments || hasAttendance || hasNotes || hasClassName) {
                 triggerShake("newId");
-                showToast("⚠️ هذا الكود محجوز ومسجل به بيانات بالفعل", "err");
+                showToast("âڑ ï¸ڈ ظ‡ط°ط§ ط§ظ„ظƒظˆط¯ ظ…ط­ط¬ظˆط² ظˆظ…ط³ط¬ظ„ ط¨ظ‡ ط¨ظٹط§ظ†ط§طھ ط¨ط§ظ„ظپط¹ظ„", "err");
                 playSound("error");
                 window.extOpen(id);
                 if ($("newId")) $("newId").value = "";
@@ -2546,7 +2557,7 @@ on("quickAttendId", "keypress", function(e) {
         if ($("stName")) s.name = $("stName").value; 
         if ($("stClass")) s.className = $("stClass").value; 
         if ($("stPhone")) s.phone = $("stPhone").value;
-        if (typeof logAction === "function") logAction("تعديل بيانات الطالب", `تم تعديل بيانات الطالب ${s.name || currentId}`);
+        if (typeof logAction === "function") logAction("طھط¹ط¯ظٹظ„ ط¨ظٹط§ظ†ط§طھ ط§ظ„ط·ط§ظ„ط¨", `طھظ… طھط¹ط¯ظٹظ„ ط¨ظٹط§ظ†ط§طھ ط§ظ„ط·ط§ظ„ط¨ ${s.name || currentId}`);
         playSound("click");
         saveAll(); showToast(t("msg_saved")); updateStudentUI(currentId);
         
@@ -2561,18 +2572,18 @@ on("quickAttendId", "keypress", function(e) {
         if(!currentId) return;
         const st = students[currentId]; if (!st) return;
 
-        if ($("receiptCenterName")) $("receiptCenterName").textContent = evalData.centerName || "إدارة السنتر";
-        if ($("receiptManagerName")) $("receiptManagerName").textContent = evalData.manager ? `إشراف أ/ ${evalData.manager}` : "المدير المسئول";
-        if ($("receiptDate")) $("receiptDate").textContent = `التاريخ: ${nowDateStr()}`;
+        if ($("receiptCenterName")) $("receiptCenterName").textContent = evalData.centerName || "ط¥ط¯ط§ط±ط© ط§ظ„ط³ظ†طھط±";
+        if ($("receiptManagerName")) $("receiptManagerName").textContent = evalData.manager ? `ط¥ط´ط±ط§ظپ ط£/ ${evalData.manager}` : "ط§ظ„ظ…ط¯ظٹط± ط§ظ„ظ…ط³ط¦ظˆظ„";
+        if ($("receiptDate")) $("receiptDate").textContent = `ط§ظ„طھط§ط±ظٹط®: ${nowDateStr()}`;
         
-        if ($("receiptStudentName")) $("receiptStudentName").textContent = st.name || "طالب بدون اسم";
+        if ($("receiptStudentName")) $("receiptStudentName").textContent = st.name || "ط·ط§ظ„ط¨ ط¨ط¯ظˆظ† ط§ط³ظ…";
         if ($("receiptStudentID")) $("receiptStudentID").textContent = `#${st.id}`;
-        if ($("receiptStudentClass")) $("receiptStudentClass").textContent = st.className || "عام";
-        if ($("receiptStudentPhone")) $("receiptStudentPhone").textContent = st.phone ? `0${st.phone}` : "غير مسجل";
+        if ($("receiptStudentClass")) $("receiptStudentClass").textContent = st.className || "ط¹ط§ظ…";
+        if ($("receiptStudentPhone")) $("receiptStudentPhone").textContent = st.phone ? `0${st.phone}` : "ط؛ظٹط± ظ…ط³ط¬ظ„";
         
-        if ($("receiptTotalPaid")) $("receiptTotalPaid").textContent = `${st.paid || 0} ج`;
+        if ($("receiptTotalPaid")) $("receiptTotalPaid").textContent = `${st.paid || 0} ط¬`;
         
-        let methodsStr = "طرق الدفع: ";
+        let methodsStr = "ط·ط±ظ‚ ط§ظ„ط¯ظپط¹: ";
         let mMap = {};
         if (st.payments && st.payments.length > 0) {
             for(let i=0; i<st.payments.length; i++) {
@@ -2580,12 +2591,12 @@ on("quickAttendId", "keypress", function(e) {
                 mMap[m] = (mMap[m] || 0) + toInt(st.payments[i].amount);
             }
             let arr = [];
-            if(mMap["cash"]) arr.push(`كاش (${mMap["cash"]} ج)`);
-            if(mMap["instapay"]) arr.push(`إنستاباي (${mMap["instapay"]} ج)`);
-            if(mMap["wallet"]) arr.push(`محافظ/فودافون كاش (${mMap["wallet"]} ج)`);
+            if(mMap["cash"]) arr.push(`ظƒط§ط´ (${mMap["cash"]} ط¬)`);
+            if(mMap["instapay"]) arr.push(`ط¥ظ†ط³طھط§ط¨ط§ظٹ (${mMap["instapay"]} ط¬)`);
+            if(mMap["wallet"]) arr.push(`ظ…ط­ط§ظپط¸/ظپظˆط¯ط§ظپظˆظ† ظƒط§ط´ (${mMap["wallet"]} ط¬)`);
             methodsStr += arr.join(" + ");
         } else {
-            methodsStr += "كاش";
+            methodsStr += "ظƒط§ط´";
         }
         if ($("receiptPaymentMethods")) $("receiptPaymentMethods").textContent = methodsStr;
         
@@ -2606,19 +2617,19 @@ on("quickAttendId", "keypress", function(e) {
     on("rankNormalBtn", "click", function() {
         if(!currentId) return;
         students[currentId].rank = "normal";
-        saveAll(); updateStudentUI(currentId); showToast("تم التحديث لـ عادي 🟢");
+        saveAll(); updateStudentUI(currentId); showToast("طھظ… ط§ظ„طھط­ط¯ظٹط« ظ„ظ€ ط¹ط§ط¯ظٹ ًںں¢");
     });
 
     on("rankVipBtn", "click", function() {
         if(!currentId) return;
         students[currentId].rank = "vip";
-        saveAll(); updateStudentUI(currentId); showToast("تم الترقية لـ VIP ⭐");
+        saveAll(); updateStudentUI(currentId); showToast("طھظ… ط§ظ„طھط±ظ‚ظٹط© ظ„ظ€ VIP â­گ");
     });
 
     on("rankWarnBtn", "click", function() {
         if(!currentId) return;
         students[currentId].rank = "warn";
-        saveAll(); updateStudentUI(currentId); showToast("تم إعطاء إنذار ⚠️", "warning");
+        saveAll(); updateStudentUI(currentId); showToast("طھظ… ط¥ط¹ط·ط§ط، ط¥ظ†ط°ط§ط± âڑ ï¸ڈ", "warning");
     });
     
     on("markTodayBtn", "click", function() { 
@@ -2644,10 +2655,10 @@ on("quickAttendId", "keypress", function(e) {
         revenueByDate[today] += v;
         
         st.debt = 0;
-        if (typeof logAction === "function") logAction("تسديد مديونية", `تم تسديد كامل مديونية الطالب ${st.name || currentId} بقيمة ${v} ج كاش`);
+        if (typeof logAction === "function") logAction("طھط³ط¯ظٹط¯ ظ…ط¯ظٹظˆظ†ظٹط©", `طھظ… طھط³ط¯ظٹط¯ ظƒط§ظ…ظ„ ظ…ط¯ظٹظˆظ†ظٹط© ط§ظ„ط·ط§ظ„ط¨ ${st.name || currentId} ط¨ظ‚ظٹظ…ط© ${v} ط¬ ظƒط§ط´`);
         
         saveAll(); updateStudentUI(currentId);
-        fireConfetti(); playSound("money"); showToast("تم سداد المديونية بالكامل ✅");
+        fireConfetti(); playSound("money"); showToast("طھظ… ط³ط¯ط§ط¯ ط§ظ„ظ…ط¯ظٹظˆظ†ظٹط© ط¨ط§ظ„ظƒط§ظ…ظ„ âœ…");
     });
 
     on("addPaymentBtn", "click", function() {
@@ -2657,9 +2668,9 @@ on("quickAttendId", "keypress", function(e) {
         
         const methodInp = $("newPaymentMethod");
         const method = methodInp ? methodInp.value : "cash";
-        let methodName = "كاش 💵";
-        if (method === "instapay") methodName = "إنستاباي 🟣";
-        if (method === "wallet") methodName = "فودافون كاش 🔴";
+        let methodName = "ظƒط§ط´ ًں’µ";
+        if (method === "instapay") methodName = "ط¥ظ†ط³طھط§ط¨ط§ظٹ ًںں£";
+        if (method === "wallet") methodName = "ظپظˆط¯ط§ظپظˆظ† ظƒط§ط´ ًں”´";
         
         const st = students[currentId];
         if ($("stName")) st.name = $("stName").value; 
@@ -2673,7 +2684,7 @@ on("quickAttendId", "keypress", function(e) {
         if (!revenueByDate[today]) revenueByDate[today] = 0;
         revenueByDate[today] += v;
         
-        if (typeof logAction === "function") logAction("تسجيل دفعة", `تم دفع مبلغ ${v} ج للطالب ${st.name || currentId} عن طريق ${methodName}`);
+        if (typeof logAction === "function") logAction("طھط³ط¬ظٹظ„ ط¯ظپط¹ط©", `طھظ… ط¯ظپط¹ ظ…ط¨ظ„ط؛ ${v} ط¬ ظ„ظ„ط·ط§ظ„ط¨ ${st.name || currentId} ط¹ظ† ط·ط±ظٹظ‚ ${methodName}`);
         saveAll(); updateStudentUI(currentId);
         
         let sClass = st.className ? st.className.trim() : "";
@@ -2685,9 +2696,9 @@ on("quickAttendId", "keypress", function(e) {
        if(st.phone) {
             if(!currentManager) {
                 showToast(t("err_no_manager"), "err");
-                return; // يمنع فتح الواتساب
+                return; // ظٹظ…ظ†ط¹ ظپطھط­ ط§ظ„ظˆط§طھط³ط§ط¨
             }
-            let msg = `مرحباً ${st.name}،\nتم إيداع مبلغ ${v} ج (${methodName}) ✅\nإجمالي المدفوع: ${st.paid} ج.\n\nمع تحيات: أ/ ${currentManager}`;
+            let msg = `ظ…ط±ط­ط¨ط§ظ‹ ${st.name}طŒ\nطھظ… ط¥ظٹط¯ط§ط¹ ظ…ط¨ظ„ط؛ ${v} ط¬ (${methodName}) âœ…\nط¥ط¬ظ…ط§ظ„ظٹ ط§ظ„ظ…ط¯ظپظˆط¹: ${st.paid} ط¬.\n\nظ…ط¹ طھط­ظٹط§طھ: ط£/ ${currentManager}`;
             setTimeout(function() { 
                 window.open(`https://wa.me/20${st.phone}?text=${encodeURIComponent(msg)}`, '_blank'); 
             }, 1000);
@@ -2700,14 +2711,14 @@ on("quickAttendId", "keypress", function(e) {
         let st = students[currentId];
         if(!st || !st.payments || !st.payments[index]) return;
         
-        let msg = currentLang === 'ar' ? "⚠️ متأكد من حذف هذه الدفعة نهائياً؟" : "⚠️ Are you sure you want to delete this payment?";
+        let msg = currentLang === 'ar' ? "âڑ ï¸ڈ ظ…طھط£ظƒط¯ ظ…ظ† ط­ط°ظپ ظ‡ط°ظ‡ ط§ظ„ط¯ظپط¹ط© ظ†ظ‡ط§ط¦ظٹط§ظ‹طں" : "âڑ ï¸ڈ Are you sure you want to delete this payment?";
         Swal.fire({
-            title: 'تأكيد الحذف',
+            title: 'طھط£ظƒظٹط¯ ط§ظ„ط­ط°ظپ',
             text: msg,
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonText: currentLang === 'ar' ? 'نعم، احذف' : 'Yes, delete',
-            cancelButtonText: currentLang === 'ar' ? 'إلغاء' : 'Cancel'
+            confirmButtonText: currentLang === 'ar' ? 'ظ†ط¹ظ…طŒ ط§ط­ط°ظپ' : 'Yes, delete',
+            cancelButtonText: currentLang === 'ar' ? 'ط¥ظ„ط؛ط§ط،' : 'Cancel'
         }).then((result) => {
             if (result.isConfirmed) {
                 let p = st.payments[index];
@@ -2723,7 +2734,7 @@ on("quickAttendId", "keypress", function(e) {
                 updateStudentUI(currentId); 
                 renderReport(nowDateStr()); 
                 renderCharts();
-                if (typeof showToast === "function") showToast(currentLang === 'ar' ? "تم حذف الدفعة وتعديل الحساب ✅" : "Payment deleted ✅", "warning");
+                if (typeof showToast === "function") showToast(currentLang === 'ar' ? "طھظ… ط­ط°ظپ ط§ظ„ط¯ظپط¹ط© ظˆطھط¹ط¯ظٹظ„ ط§ظ„ط­ط³ط§ط¨ âœ…" : "Payment deleted âœ…", "warning");
             }
         });
     };
@@ -2731,12 +2742,12 @@ on("quickAttendId", "keypress", function(e) {
     on("correctPayBtn", "click", function() {
         if(!currentId) return; 
         Swal.fire({
-            title: currentLang === 'ar' ? 'قيمة الخصم' : 'Deduct amount',
+            title: currentLang === 'ar' ? 'ظ‚ظٹظ…ط© ط§ظ„ط®طµظ…' : 'Deduct amount',
             input: 'number',
             inputAttributes: { min: 1 },
             showCancelButton: true,
-            confirmButtonText: currentLang === 'ar' ? 'خصم' : 'Deduct',
-            cancelButtonText: currentLang === 'ar' ? 'إلغاء' : 'Cancel'
+            confirmButtonText: currentLang === 'ar' ? 'ط®طµظ…' : 'Deduct',
+            cancelButtonText: currentLang === 'ar' ? 'ط¥ظ„ط؛ط§ط،' : 'Cancel'
         }).then((result) => {
             if (result.isConfirmed && result.value) {
                 const v = toInt(result.value);
@@ -2798,12 +2809,12 @@ on("quickAttendId", "keypress", function(e) {
             html += `
             <div class="note-card" style="display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px; background:var(--bg-surface); border:1px solid var(--border); border-radius:6px; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
                 <div style="flex:1; line-height:1.4;">
-                    ${datePart ? `<span class="badge" style="background:#334155; color:#f8fafc; font-size:0.75em; margin-bottom:4px; display:inline-block;">📅 ${datePart}</span><br>` : ""}
+                    ${datePart ? `<span class="badge" style="background:#334155; color:#f8fafc; font-size:0.75em; margin-bottom:4px; display:inline-block;">ًں“… ${datePart}</span><br>` : ""}
                     <span style="color:var(--text); font-size:0.9em;">${textPart}</span>
                 </div>
                 <div class="row" style="width:auto; gap:6px;">
-                    <button class="btn warning smallBtn iconOnly edit-note-btn" data-index="${i}" title="${t('btn_edit_note')}">✏️</button>
-                    <button class="btn danger smallBtn iconOnly delete-note-btn" data-index="${i}" title="${t('btn_del_note')}">🗑️</button>
+                    <button class="btn warning smallBtn iconOnly edit-note-btn" data-index="${i}" title="${t('btn_edit_note')}">âœڈï¸ڈ</button>
+                    <button class="btn danger smallBtn iconOnly delete-note-btn" data-index="${i}" title="${t('btn_del_note')}">ًں—‘ï¸ڈ</button>
                 </div>
             </div>`;
         }
@@ -2829,19 +2840,19 @@ on("quickAttendId", "keypress", function(e) {
                     input: 'textarea',
                     inputValue: editableText,
                     showCancelButton: true,
-                    confirmButtonText: currentLang === 'ar' ? 'حفظ' : 'Save',
-                    cancelButtonText: currentLang === 'ar' ? 'إلغاء' : 'Cancel'
+                    confirmButtonText: currentLang === 'ar' ? 'ط­ظپط¸' : 'Save',
+                    cancelButtonText: currentLang === 'ar' ? 'ط¥ظ„ط؛ط§ط،' : 'Cancel'
                 }).then((res) => {
                     if (res.isConfirmed && res.value !== null) {
                         let newText = res.value;
                         if (newText.trim() === "") {
                             Swal.fire({
-                                title: 'تأكيد الحذف',
+                                title: 'طھط£ظƒظٹط¯ ط§ظ„ط­ط°ظپ',
                                 text: t("confirm_empty_note"),
                                 icon: 'warning',
                                 showCancelButton: true,
-                                confirmButtonText: currentLang === 'ar' ? 'نعم، احذف' : 'Yes, delete',
-                                cancelButtonText: currentLang === 'ar' ? 'إلغاء' : 'Cancel'
+                                confirmButtonText: currentLang === 'ar' ? 'ظ†ط¹ظ…طŒ ط§ط­ط°ظپ' : 'Yes, delete',
+                                cancelButtonText: currentLang === 'ar' ? 'ط¥ظ„ط؛ط§ط،' : 'Cancel'
                             }).then((delRes) => {
                                 if (delRes.isConfirmed) {
                                     allLines.splice(idx, 1);
@@ -2867,12 +2878,12 @@ on("quickAttendId", "keypress", function(e) {
             btn.onclick = function() {
                 let idx = toInt(this.getAttribute("data-index"));
                 Swal.fire({
-                    title: 'تأكيد الحذف',
+                    title: 'طھط£ظƒظٹط¯ ط§ظ„ط­ط°ظپ',
                     text: t("confirm_del_note"),
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonText: currentLang === 'ar' ? 'نعم، احذف' : 'Yes, delete',
-                    cancelButtonText: currentLang === 'ar' ? 'إلغاء' : 'Cancel'
+                    confirmButtonText: currentLang === 'ar' ? 'ظ†ط¹ظ…طŒ ط§ط­ط°ظپ' : 'Yes, delete',
+                    cancelButtonText: currentLang === 'ar' ? 'ط¥ظ„ط؛ط§ط،' : 'Cancel'
                 }).then((result) => {
                     if (result.isConfirmed) {
                         let allLines = (students[currentId].notes || "").split("\n").filter(l => l.trim() !== "");
@@ -2909,7 +2920,7 @@ on("quickAttendId", "keypress", function(e) {
         if (!$("expenseAmtInp") || !$("expenseReasonInp")) return;
         const a = toInt($("expenseAmtInp").value);
         const r = $("expenseReasonInp").value.trim();
-        if(!a || !r) { showToast("يرجى ملء كافة البيانات", "err"); return; }
+        if(!a || !r) { showToast("ظٹط±ط¬ظ‰ ظ…ظ„ط، ظƒط§ظپط© ط§ظ„ط¨ظٹط§ظ†ط§طھ", "err"); return; }
         
         const today = nowDateStr(); 
         if(!expensesByDate[today]) expensesByDate[today] = [];
@@ -2922,9 +2933,9 @@ on("quickAttendId", "keypress", function(e) {
     window.renderGroupFeesModal = function() {
         let h = `
         <div style="display:flex; gap:10px; margin-bottom:15px; background:#eef2f5; padding:10px; border-radius:8px;">
-            <input type="text" id="newPkgName" class="inp" placeholder="اسم الباقة (مثال: ترم كامل)">
-            <input type="number" id="newPkgPrice" class="inp" placeholder="السعر" style="width:100px;">
-            <button class="btn primary" id="addNewPkgBtn">إضافة</button>
+            <input type="text" id="newPkgName" class="inp" placeholder="ط§ط³ظ… ط§ظ„ط¨ط§ظ‚ط© (ظ…ط«ط§ظ„: طھط±ظ… ظƒط§ظ…ظ„)">
+            <input type="number" id="newPkgPrice" class="inp" placeholder="ط§ظ„ط³ط¹ط±" style="width:100px;">
+            <button class="btn primary" id="addNewPkgBtn">ط¥ط¶ط§ظپط©</button>
         </div>
         `;
         
@@ -2932,12 +2943,12 @@ on("quickAttendId", "keypress", function(e) {
             let val = groupFees[g];
             h += `<div class="group-fee-row" style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; padding:10px; background:var(--bg-surface); border:1px solid var(--border); border-radius:8px;">
                     <div style="display:flex; align-items:center; gap:5px; flex:1;">
-                        <span>📘</span>
+                        <span>ًں“ک</span>
                         <input type="text" class="inp g-fee-name-inp" data-old-group="${g}" value="${g}" style="flex:1; font-weight:bold;">
                     </div>
                     <div class="row" style="width:auto; gap:5px;">
-                        <input type="number" class="inp g-fee-inp" data-group="${g}" value="${val}" style="width:90px; text-align:center;"> ج
-                        <button class="btn danger smallBtn iconOnly delete-pkg-btn" data-group="${g}" title="حذف الباقة">🗑️</button>
+                        <input type="number" class="inp g-fee-inp" data-group="${g}" value="${val}" style="width:90px; text-align:center;"> ط¬
+                        <button class="btn danger smallBtn iconOnly delete-pkg-btn" data-group="${g}" title="ط­ط°ظپ ط§ظ„ط¨ط§ظ‚ط©">ًں—‘ï¸ڈ</button>
                     </div>
                   </div>`;
         }
@@ -2949,7 +2960,7 @@ on("quickAttendId", "keypress", function(e) {
                 let p = toInt($("newPkgPrice").value);
                 if(n) {
                     groupFees[n] = p;
-                    saveAll(); renderGroupFeesModal(); populatePackages(); showToast("تم إضافة الباقة");
+                    saveAll(); renderGroupFeesModal(); populatePackages(); showToast("طھظ… ط¥ط¶ط§ظپط© ط§ظ„ط¨ط§ظ‚ط©");
                 }
             };
         }
@@ -2958,17 +2969,17 @@ on("quickAttendId", "keypress", function(e) {
             btn.onclick = function() {
                 let g = this.getAttribute("data-group");
                 Swal.fire({
-                    title: 'تأكيد الحذف',
-                    text: "⚠️ متأكد من حذف هذه الباقة من السيستم؟",
+                    title: 'طھط£ظƒظٹط¯ ط§ظ„ط­ط°ظپ',
+                    text: "âڑ ï¸ڈ ظ…طھط£ظƒط¯ ظ…ظ† ط­ط°ظپ ظ‡ط°ظ‡ ط§ظ„ط¨ط§ظ‚ط© ظ…ظ† ط§ظ„ط³ظٹط³طھظ…طں",
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonText: 'نعم، احذف',
-                    cancelButtonText: 'إلغاء'
+                    confirmButtonText: 'ظ†ط¹ظ…طŒ ط§ط­ط°ظپ',
+                    cancelButtonText: 'ط¥ظ„ط؛ط§ط،'
                 }).then((res) => {
                     if (res.isConfirmed) {
                         delete groupFees[g];
                         saveAll(); renderGroupFeesModal(); populatePackages(); 
-                        if(typeof showToast==="function") showToast("تم الحذف");
+                        if(typeof showToast==="function") showToast("طھظ… ط§ظ„ط­ط°ظپ");
                     }
                 });
             }
@@ -3014,7 +3025,7 @@ on("quickAttendId", "keypress", function(e) {
         saveAll(); 
         populatePackages(); 
         if ($("groupFeesModal")) $("groupFeesModal").classList.add("hidden"); 
-        if(typeof showToast === 'function') showToast(currentLang === 'ar' ? 'تم الحفظ' : 'Saved');
+        if(typeof showToast === 'function') showToast(currentLang === 'ar' ? 'طھظ… ط§ظ„ط­ظپط¸' : 'Saved');
     });
 
     on("changeLangBtn", "click", function() { 
@@ -3022,7 +3033,7 @@ on("quickAttendId", "keypress", function(e) {
         const overlay = $("langSwitchOverlay");
         const textEl = $("langSwitchText");
         if(overlay && textEl) {
-            textEl.innerText = targetLang === "en" ? "Switching to English... ⏳" : "جاري التبديل للعربية... ⏳";
+            textEl.innerText = targetLang === "en" ? "Switching to English... âڈ³" : "ط¬ط§ط±ظٹ ط§ظ„طھط¨ط¯ظٹظ„ ظ„ظ„ط¹ط±ط¨ظٹط©... âڈ³";
             overlay.classList.add("active");
             setTimeout(() => {
                 currentLang = targetLang;
@@ -3057,7 +3068,7 @@ on("quickAttendId", "keypress", function(e) {
                 document.body.style.backgroundSize = "cover";
                 document.body.style.backgroundAttachment = "fixed";
                 localStorage.setItem(K_BG_IMAGE, imgData);
-                showToast("تم تغيير خلفية السنتر 🖼️");
+                showToast("طھظ… طھط؛ظٹظٹط± ط®ظ„ظپظٹط© ط§ظ„ط³ظ†طھط± ًں–¼ï¸ڈ");
             }; 
             reader.readAsDataURL(file);
         });
@@ -3067,7 +3078,7 @@ on("quickAttendId", "keypress", function(e) {
         $("removeBgBtn").addEventListener("click", function() {
             document.body.style.backgroundImage = "none";
             localStorage.removeItem(K_BG_IMAGE);
-            showToast("تم إزالة الخلفية 🗑️");
+            showToast("طھظ… ط¥ط²ط§ظ„ط© ط§ظ„ط®ظ„ظپظٹط© ًں—‘ï¸ڈ");
         });
     }
 
@@ -3087,72 +3098,72 @@ on("quickAttendId", "keypress", function(e) {
         let totalExp = 0;
         for (let i = 0; i < expArr.length; i++) totalExp += expArr[i].amount;
 
-        let txt = `📊 *${t("report_title")}: ${prettyDate(d)}*\n\n`;
+        let txt = `ًں“ٹ *${t("report_title")}: ${prettyDate(d)}*\n\n`;
         
         let groups = {};
         for (let i = 0; i < ids.length; i++) {
             let id = ids[i];
             const st = students[id];
-            let c = (st && st.className) ? st.className.trim() : "عام";
+            let c = (st && st.className) ? st.className.trim() : "ط¹ط§ظ…";
             if(!groups[c]) groups[c] = 0; 
             groups[c]++; 
         }
         
-        for(let g in groups) { txt += `📘 ${g}: ${groups[g]} طالب\n`; }
+        for(let g in groups) { txt += `ًں“ک ${g}: ${groups[g]} ط·ط§ظ„ط¨\n`; }
         
-        txt += `\n👥 إجمالي الحضور اليوم: ${ids.length}`;
-        txt += `\n💰 ${t("badge_rev")} ${rev} ج`;
+        txt += `\nًں‘¥ ط¥ط¬ظ…ط§ظ„ظٹ ط§ظ„ط­ط¶ظˆط± ط§ظ„ظٹظˆظ…: ${ids.length}`;
+        txt += `\nًں’° ${t("badge_rev")} ${rev} ط¬`;
         
         if(expArr.length > 0) {
-            txt += `\n\n🔻 *${t("wa_exp")}:*`;
+            txt += `\n\nًں”» *${t("wa_exp")}:*`;
             for (let i = 0; i < expArr.length; i++) {
                 let ex = expArr[i];
-                txt += `\n- ${ex.amount} ج (${ex.reason})`; 
+                txt += `\n- ${ex.amount} ط¬ (${ex.reason})`; 
             }
-            txt += `\n\n💵 *${t("wa_net")}: ${rev - totalExp} ج*`;
+            txt += `\n\nًں’µ *${t("wa_net")}: ${rev - totalExp} ط¬*`;
         }
         
-     let shiftStr = currentLang === 'ar' ? `إعداد الشيفت: أ/ ${currentManager}` : `Shift Prepared by: ${currentManager}`;
+     let shiftStr = currentLang === 'ar' ? `ط¥ط¹ط¯ط§ط¯ ط§ظ„ط´ظٹظپطھ: ط£/ ${currentManager}` : `Shift Prepared by: ${currentManager}`;
         txt = `${shiftStr}\n\n` + txt;
         navigator.clipboard.writeText(txt).then(function() { showToast(t("msg_copied")); });
     });
 
     // ==========================================
-    // 16. EXCEL LOGIC (تصدير واستيراد - النسخة الاحترافية متعددة الصفحات)
+    // 16. EXCEL LOGIC (طھطµط¯ظٹط± ظˆط§ط³طھظٹط±ط§ط¯ - ط§ظ„ظ†ط³ط®ط© ط§ظ„ط§ط­طھط±ط§ظپظٹط© ظ…طھط¹ط¯ط¯ط© ط§ظ„طµظپط­ط§طھ)
     // ==========================================
     on("exportExcelBtn", "click", function() {
-        if (typeof XLSX === "undefined") { return showToast("⚠️ مكتبة الإكسيل غير موجودة، تأكد من وجود ملف xlsx.full.min.js في فولدر assets", "err"); }
+        if (typeof XLSX === "undefined") { return showToast("âڑ ï¸ڈ ظ…ظƒطھط¨ط© ط§ظ„ط¥ظƒط³ظٹظ„ ط؛ظٹط± ظ…ظˆط¬ظˆط¯ط©طŒ طھط£ظƒط¯ ظ…ظ† ظˆط¬ظˆط¯ ظ…ظ„ظپ xlsx.full.min.js ظپظٹ ظپظˆظ„ط¯ط± assets", "err"); }
         
         const wb = XLSX.utils.book_new();
 
-        // --- الشيت الأول: بيانات الطلاب ---
+        // --- ط§ظ„ط´ظٹطھ ط§ظ„ط£ظˆظ„: ط¨ظٹط§ظ†ط§طھ ط§ظ„ط·ظ„ط§ط¨ ---
         let filled = [];
         const allStuds = Object.values(students);
         for (let i = 0; i < allStuds.length; i++) { if (allStuds[i].name) filled.push(allStuds[i]); }
         filled.sort(function(a, b) { return a.id - b.id; });
         
-        const stData = [["كود الطالب", "اسم الطالب", "الباقة / المجموعة", "رقم الموبايل", "إجمالي المدفوع", "التصنيف", "سجل الحضور", "الملاحظات"]];
+        const stData = [["ظƒظˆط¯ ط§ظ„ط·ط§ظ„ط¨", "ط§ط³ظ… ط§ظ„ط·ط§ظ„ط¨", "ط§ظ„ط¨ط§ظ‚ط© / ط§ظ„ظ…ط¬ظ…ظˆط¹ط©", "ط±ظ‚ظ… ط§ظ„ظ…ظˆط¨ط§ظٹظ„", "ط¥ط¬ظ…ط§ظ„ظٹ ط§ظ„ظ…ط¯ظپظˆط¹", "ط§ظ„طھطµظ†ظٹظپ", "ط³ط¬ظ„ ط§ظ„ط­ط¶ظˆط±", "ط§ظ„ظ…ظ„ط§ط­ط¸ط§طھ"]];
         for (let i = 0; i < filled.length; i++) {
             let s = filled[i];
             let history = s.attendanceDates ? s.attendanceDates.join(" | ") : "";
-            let rankAr = s.rank === 'vip' ? 'VIP ⭐' : (s.rank === 'warn' ? 'إنذار ⚠️' : 'عادي 🟢');
+            let rankAr = s.rank === 'vip' ? 'VIP â­گ' : (s.rank === 'warn' ? 'ط¥ظ†ط°ط§ط± âڑ ï¸ڈ' : 'ط¹ط§ط¯ظٹ ًںں¢');
             let cleanNotes = s.notes ? s.notes.replace(/\n/g, " - ") : ""; 
             
-            stData.push([s.id, s.name, s.className || "عام", s.phone, s.paid, rankAr, history, cleanNotes]);
+            stData.push([s.id, s.name, s.className || "ط¹ط§ظ…", s.phone, s.paid, rankAr, history, cleanNotes]);
         }
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(stData), "بيانات الطلاب");
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(stData), "ط¨ظٹط§ظ†ط§طھ ط§ظ„ط·ظ„ط§ط¨");
 
-        // --- الشيت الثاني: خريطة المنهج ---
-        const syllData = [["اسم الدرس / الشابتر", "الحالة", "ملاحظات الحصة", "تاريخ التحديث"]];
+        // --- ط§ظ„ط´ظٹطھ ط§ظ„ط«ط§ظ†ظٹ: ط®ط±ظٹط·ط© ط§ظ„ظ…ظ†ظ‡ط¬ ---
+        const syllData = [["ط§ط³ظ… ط§ظ„ط¯ط±ط³ / ط§ظ„ط´ط§ط¨طھط±", "ط§ظ„ط­ط§ظ„ط©", "ظ…ظ„ط§ط­ط¸ط§طھ ط§ظ„ط­طµط©", "طھط§ط±ظٹط® ط§ظ„طھط­ط¯ظٹط«"]];
         for(let i=0; i < syllabusData.length; i++) {
             let s = syllabusData[i];
-            let statusAr = s.status === "completed" ? "تم الانتهاء" : (s.status === "in_progress" ? "جاري الشرح" : "لم يبدأ");
+            let statusAr = s.status === "completed" ? "طھظ… ط§ظ„ط§ظ†طھظ‡ط§ط،" : (s.status === "in_progress" ? "ط¬ط§ط±ظٹ ط§ظ„ط´ط±ط­" : "ظ„ظ… ظٹط¨ط¯ط£");
             syllData.push([s.name, statusAr, s.notes || "", s.date]);
         }
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(syllData), "خريطة المنهج");
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(syllData), "ط®ط±ظٹط·ط© ط§ظ„ظ…ظ†ظ‡ط¬");
 
-        // --- الشيت الثالث: الماليات والمصروفات ---
-        const finData = [["التاريخ", "النوع", "المبلغ", "البيان / السبب"]];
+        // --- ط§ظ„ط´ظٹطھ ط§ظ„ط«ط§ظ„ط«: ط§ظ„ظ…ط§ظ„ظٹط§طھ ظˆط§ظ„ظ…طµط±ظˆظپط§طھ ---
+        const finData = [["ط§ظ„طھط§ط±ظٹط®", "ط§ظ„ظ†ظˆط¹", "ط§ظ„ظ…ط¨ظ„ط؛", "ط§ظ„ط¨ظٹط§ظ† / ط§ظ„ط³ط¨ط¨"]];
         
         let allDates = new Set([...Object.keys(revenueByDate), ...Object.keys(expensesByDate)]);
         let sortedDates = Array.from(allDates).sort((a,b) => new Date(a) - new Date(b)); 
@@ -3160,21 +3171,21 @@ on("quickAttendId", "keypress", function(e) {
         for(let i=0; i<sortedDates.length; i++) {
             let d = sortedDates[i];
             if(revenueByDate[d]) {
-                finData.push([prettyDate(d), "إيرادات 💰", revenueByDate[d], "إيراد مدفوعات الطلاب"]);
+                finData.push([prettyDate(d), "ط¥ظٹط±ط§ط¯ط§طھ ًں’°", revenueByDate[d], "ط¥ظٹط±ط§ط¯ ظ…ط¯ظپظˆط¹ط§طھ ط§ظ„ط·ظ„ط§ط¨"]);
             }
             if(expensesByDate[d] && expensesByDate[d].length > 0) {
                 for(let j=0; j<expensesByDate[d].length; j++) {
-                    finData.push([prettyDate(d), "مصروفات 🔻", expensesByDate[d][j].amount, expensesByDate[d][j].reason]);
+                    finData.push([prettyDate(d), "ظ…طµط±ظˆظپط§طھ ًں”»", expensesByDate[d][j].amount, expensesByDate[d][j].reason]);
                 }
             }
         }
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(finData), "الماليات");
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(finData), "ط§ظ„ظ…ط§ظ„ظٹط§طھ");
 
         XLSX.writeFile(wb, `VPRO_Backup_${nowDateStr()}.xlsx`);
         localStorage.setItem(K_LAST_BACKUP, nowDateStr()); 
         
         if($("btnTabAdmin")) $("btnTabAdmin").classList.remove("needs-backup");
-        showToast("تم تصدير نسخة احتياطية شاملة ✅");
+        showToast("طھظ… طھطµط¯ظٹط± ظ†ط³ط®ط© ط§ط­طھظٹط§ط·ظٹط© ط´ط§ظ…ظ„ط© âœ…");
     });
 
     on("importExcelBtnFake", "click", function() { if ($("importExcelInput")) $("importExcelInput").click(); });
@@ -3183,14 +3194,14 @@ on("importExcelInput", "change", async function(e) {
         const f = e.target.files[0]; if(!f) return; 
         const wb = XLSX.read(await f.arrayBuffer(), {type:"array"});
         
-        let warnMsg = currentLang==='ar' ? 'تحذير: سيتم مسح البيانات الحالية واستبدالها' : 'Warning: Overwrite current data?';
+        let warnMsg = currentLang==='ar' ? 'طھط­ط°ظٹط±: ط³ظٹطھظ… ظ…ط³ط­ ط§ظ„ط¨ظٹط§ظ†ط§طھ ط§ظ„ط­ط§ظ„ظٹط© ظˆط§ط³طھط¨ط¯ط§ظ„ظ‡ط§' : 'Warning: Overwrite current data?';
         const confirmRes = await Swal.fire({
-            title: 'تأكيد الاستيراد',
+            title: 'طھط£ظƒظٹط¯ ط§ظ„ط§ط³طھظٹط±ط§ط¯',
             text: warnMsg,
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonText: 'نعم، استبدل',
-            cancelButtonText: 'إلغاء',
+            confirmButtonText: 'ظ†ط¹ظ…طŒ ط§ط³طھط¨ط¯ظ„',
+            cancelButtonText: 'ط¥ظ„ط؛ط§ط،',
             customClass: {
                 popup: 'glass-modal',
                 confirmButton: 'btn btn-danger',
@@ -3199,31 +3210,31 @@ on("importExcelInput", "change", async function(e) {
         });
         if(!confirmRes.isConfirmed) return;
         
-        // تصفير كل حاجة قبل ما نستقبل الداتا الجديدة
+        // طھطµظپظٹط± ظƒظ„ ط­ط§ط¬ط© ظ‚ط¨ظ„ ظ…ط§ ظ†ط³طھظ‚ط¨ظ„ ط§ظ„ط¯ط§طھط§ ط§ظ„ط¬ط¯ظٹط¯ط©
         students = {}; attByDate = {}; revenueByDate = {}; expensesByDate = {}; syllabusData = [];
         for (let i = BASE_MIN_ID; i <= BASE_MAX_ID; i++) { students[String(i)] = makeEmptyStudent(i); }
         
-        // 1. استيراد بيانات الطلاب (الصفحة الأولى)
-        if(wb.SheetNames.includes("بيانات الطلاب") || wb.SheetNames[0]) {
-            const sheetName = wb.SheetNames.includes("بيانات الطلاب") ? "بيانات الطلاب" : wb.SheetNames[0];
+        // 1. ط§ط³طھظٹط±ط§ط¯ ط¨ظٹط§ظ†ط§طھ ط§ظ„ط·ظ„ط§ط¨ (ط§ظ„طµظپط­ط© ط§ظ„ط£ظˆظ„ظ‰)
+        if(wb.SheetNames.includes("ط¨ظٹط§ظ†ط§طھ ط§ظ„ط·ظ„ط§ط¨") || wb.SheetNames[0]) {
+            const sheetName = wb.SheetNames.includes("ط¨ظٹط§ظ†ط§طھ ط§ظ„ط·ظ„ط§ط¨") ? "ط¨ظٹط§ظ†ط§طھ ط§ظ„ط·ظ„ط§ط¨" : wb.SheetNames[0];
             const rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName]);
             for (let i = 0; i < rows.length; i++) {
                 let row = rows[i];
-                const id = toInt(row["كود الطالب"] || row["ID"] || row["كود"]);
+                const id = toInt(row["ظƒظˆط¯ ط§ظ„ط·ط§ظ„ط¨"] || row["ID"] || row["ظƒظˆط¯"]);
                 if(id) {
                     let st = makeEmptyStudent(id);
-                    st.name = row["اسم الطالب"] || row["Name"] || row["الاسم"] || ""; 
-                    st.className = row["الباقة / المجموعة"] || row["Class"] || row["المجموعة"] || "";
-                    st.phone = String(row["رقم الموبايل"] || row["Phone"] || ""); 
-                    st.paid = toInt(row["إجمالي المدفوع"] || row["Paid"] || row["المدفوع"]);
+                    st.name = row["ط§ط³ظ… ط§ظ„ط·ط§ظ„ط¨"] || row["Name"] || row["ط§ظ„ط§ط³ظ…"] || ""; 
+                    st.className = row["ط§ظ„ط¨ط§ظ‚ط© / ط§ظ„ظ…ط¬ظ…ظˆط¹ط©"] || row["Class"] || row["ط§ظ„ظ…ط¬ظ…ظˆط¹ط©"] || "";
+                    st.phone = String(row["ط±ظ‚ظ… ط§ظ„ظ…ظˆط¨ط§ظٹظ„"] || row["Phone"] || ""); 
+                    st.paid = toInt(row["ط¥ط¬ظ…ط§ظ„ظٹ ط§ظ„ظ…ط¯ظپظˆط¹"] || row["Paid"] || row["ط§ظ„ظ…ط¯ظپظˆط¹"]);
                     
-                    let rankAr = row["التصنيف"] || row["Rank"] || "";
-                    st.rank = rankAr.includes("VIP") ? "vip" : (rankAr.includes("إنذار") ? "warn" : "normal");
+                    let rankAr = row["ط§ظ„طھطµظ†ظٹظپ"] || row["Rank"] || "";
+                    st.rank = rankAr.includes("VIP") ? "vip" : (rankAr.includes("ط¥ظ†ط°ط§ط±") ? "warn" : "normal");
                     
-                    let n = row["الملاحظات"] || "";
+                    let n = row["ط§ظ„ظ…ظ„ط§ط­ط¸ط§طھ"] || "";
                     st.notes = n ? n.replace(/ - /g, "\n") : "";
                     
-                    let h = row["سجل الحضور"] || row["History"] || "";
+                    let h = row["ط³ط¬ظ„ ط§ظ„ط­ط¶ظˆط±"] || row["History"] || "";
                     if(h) {
                         st.attendanceDates = h.split(/\||,/).map(function(d) { return d.trim(); }).filter(d => d);
                         for (let j = 0; j < st.attendanceDates.length; j++) {
@@ -3237,21 +3248,21 @@ on("importExcelInput", "change", async function(e) {
             }
         }
 
-        // 2. استيراد الماليات (الصفحة التانية)
-        if(wb.SheetNames.includes("الماليات")) {
-            const finRows = XLSX.utils.sheet_to_json(wb.Sheets["الماليات"]);
+        // 2. ط§ط³طھظٹط±ط§ط¯ ط§ظ„ظ…ط§ظ„ظٹط§طھ (ط§ظ„طµظپط­ط© ط§ظ„طھط§ظ†ظٹط©)
+        if(wb.SheetNames.includes("ط§ظ„ظ…ط§ظ„ظٹط§طھ")) {
+            const finRows = XLSX.utils.sheet_to_json(wb.Sheets["ط§ظ„ظ…ط§ظ„ظٹط§طھ"]);
             for(let i=0; i<finRows.length; i++) {
                 let row = finRows[i];
-                let pDate = row["التاريخ"]; 
+                let pDate = row["ط§ظ„طھط§ط±ظٹط®"]; 
                 if(pDate) {
-                    let d = pDate.split("-").reverse().join("-"); // تحويل التاريخ لشكله الأصلي
-                    let type = row["النوع"] || "";
-                    let amt = toInt(row["المبلغ"]);
-                    let reason = row["البيان / السبب"] || "";
+                    let d = pDate.split("-").reverse().join("-"); // طھط­ظˆظٹظ„ ط§ظ„طھط§ط±ظٹط® ظ„ط´ظƒظ„ظ‡ ط§ظ„ط£طµظ„ظٹ
+                    let type = row["ط§ظ„ظ†ظˆط¹"] || "";
+                    let amt = toInt(row["ط§ظ„ظ…ط¨ظ„ط؛"]);
+                    let reason = row["ط§ظ„ط¨ظٹط§ظ† / ط§ظ„ط³ط¨ط¨"] || "";
 
-                    if(type.includes("إيرادات")) {
+                    if(type.includes("ط¥ظٹط±ط§ط¯ط§طھ")) {
                         revenueByDate[d] = (revenueByDate[d] || 0) + amt;
-                    } else if (type.includes("مصروفات")) {
+                    } else if (type.includes("ظ…طµط±ظˆظپط§طھ")) {
                         if(!expensesByDate[d]) expensesByDate[d] = [];
                         expensesByDate[d].push({ amount: amt, reason: reason });
                     }
@@ -3259,23 +3270,23 @@ on("importExcelInput", "change", async function(e) {
             }
         }
 
-        // 3. استيراد المنهج (الصفحة التالتة)
-        if (wb.SheetNames.includes("خريطة المنهج")) {
-            const syllRows = XLSX.utils.sheet_to_json(wb.Sheets["خريطة المنهج"]);
+        // 3. ط§ط³طھظٹط±ط§ط¯ ط§ظ„ظ…ظ†ظ‡ط¬ (ط§ظ„طµظپط­ط© ط§ظ„طھط§ظ„طھط©)
+        if (wb.SheetNames.includes("ط®ط±ظٹط·ط© ط§ظ„ظ…ظ†ظ‡ط¬")) {
+            const syllRows = XLSX.utils.sheet_to_json(wb.Sheets["ط®ط±ظٹط·ط© ط§ظ„ظ…ظ†ظ‡ط¬"]);
             for(let i=0; i<syllRows.length; i++) {
                 let row = syllRows[i];
-                let name = row["اسم الدرس / الشابتر"];
+                let name = row["ط§ط³ظ… ط§ظ„ط¯ط±ط³ / ط§ظ„ط´ط§ط¨طھط±"];
                 if(name) {
-                    let statusAr = row["الحالة"] || "";
+                    let statusAr = row["ط§ظ„ط­ط§ظ„ط©"] || "";
                     let status = "not_started";
-                    if(statusAr.includes("جاري")) status = "in_progress";
-                    if(statusAr.includes("تم")) status = "completed";
+                    if(statusAr.includes("ط¬ط§ط±ظٹ")) status = "in_progress";
+                    if(statusAr.includes("طھظ…")) status = "completed";
                     
                     syllabusData.push({
                         name: name,
                         status: status,
-                        notes: row["ملاحظات الحصة"] || "",
-                        date: row["تاريخ التحديث"] || nowDateStr()
+                        notes: row["ظ…ظ„ط§ط­ط¸ط§طھ ط§ظ„ط­طµط©"] || "",
+                        date: row["طھط§ط±ظٹط® ط§ظ„طھط­ط¯ظٹط«"] || nowDateStr()
                     });
                 }
             }
@@ -3286,12 +3297,12 @@ on("importExcelInput", "change", async function(e) {
     });
 
     // ==========================================
-    // 17. PREMIUM HOLD-TO-DELETE LOGIC (الضغط المطول)
+    // 17. PREMIUM HOLD-TO-DELETE LOGIC (ط§ظ„ط¶ط؛ط· ط§ظ„ظ…ط·ظˆظ„)
     // ==========================================
     let deleteTimer;
     const delBtn = $("deleteStudentBtn");
     
-    if(delBtn) delBtn.innerHTML = `<span>🗑️ حذف</span>`; 
+    if(delBtn) delBtn.innerHTML = `<span>ًں—‘ï¸ڈ ط­ط°ظپ</span>`; 
 
     function startDeleteHold(e) {
         if(!currentId) return;
@@ -3314,11 +3325,11 @@ on("importExcelInput", "change", async function(e) {
                     for(let i=0; i<extraIds.length; i++) { if (extraIds[i] !== targetId) newExtra.push(extraIds[i]); }
                     extraIds = newExtra;
                 }
-                if (typeof logAction === "function") logAction("حذف طالب", `نقل الطالب ${backup.name || targetId} إلى سلة المحذوفات`);
+                if (typeof logAction === "function") logAction("ط­ط°ظپ ط·ط§ظ„ط¨", `ظ†ظ‚ظ„ ط§ظ„ط·ط§ظ„ط¨ ${backup.name || targetId} ط¥ظ„ظ‰ ط³ظ„ط© ط§ظ„ظ…ط­ط°ظˆظپط§طھ`);
                 saveAll(); updateStudentUI(null); window.switchTab('Home');
                 
                 showUndoToast(t("msg_deleted"), function() {
-                    if (typeof logAction === "function") logAction("استرجاع طالب", `تم استرجاع الطالب ${backup.name || targetId}`);
+                    if (typeof logAction === "function") logAction("ط§ط³طھط±ط¬ط§ط¹ ط·ط§ظ„ط¨", `طھظ… ط§ط³طھط±ط¬ط§ط¹ ط§ظ„ط·ط§ظ„ط¨ ${backup.name || targetId}`);
                     students[targetId] = backup; delete deletedStudents[targetId];
                     revenueByDate[nowDateStr()] = (revenueByDate[nowDateStr()] || 0) + deducted;
                     saveAll(); window.extOpen(targetId); renderReport(nowDateStr()); renderCharts(); showToast(t("msg_undo"));
@@ -3327,19 +3338,19 @@ on("importExcelInput", "change", async function(e) {
 
             if(st.paid > 0) {
                 Swal.fire({
-                    title: 'تأكيد الخصم',
-                    text: currentLang==='ar' ? 'خصم مدفوعاته من إيراد اليوم؟' : 'Deduct from revenue?',
+                    title: 'طھط£ظƒظٹط¯ ط§ظ„ط®طµظ…',
+                    text: currentLang==='ar' ? 'ط®طµظ… ظ…ط¯ظپظˆط¹ط§طھظ‡ ظ…ظ† ط¥ظٹط±ط§ط¯ ط§ظ„ظٹظˆظ…طں' : 'Deduct from revenue?',
                     icon: 'question',
                     showCancelButton: true,
-                    confirmButtonText: currentLang==='ar' ? 'نعم، اخصم' : 'Yes, deduct',
-                    cancelButtonText: currentLang==='ar' ? 'لا تخصم' : 'No'
+                    confirmButtonText: currentLang==='ar' ? 'ظ†ط¹ظ…طŒ ط§ط®طµظ…' : 'Yes, deduct',
+                    cancelButtonText: currentLang==='ar' ? 'ظ„ط§ طھط®طµظ…' : 'No'
                 }).then((res) => {
                     doDelete(res.isConfirmed ? st.paid : 0);
                 });
             } else {
                 doDelete(0);
             }
-        }, 1000); // ثانيتين ضغط متواصل
+        }, 1000); // ط«ط§ظ†ظٹطھظٹظ† ط¶ط؛ط· ظ…طھظˆط§طµظ„
     }
 
     function cancelDeleteHold() {
@@ -3360,7 +3371,7 @@ on("importExcelInput", "change", async function(e) {
     on("openBinBtn", "click", function() { renderBinList(); if ($("recycleBinModal")) $("recycleBinModal").classList.remove("hidden"); });
     on("closeBinBtn", "click", function() { if ($("recycleBinModal")) $("recycleBinModal").classList.add("hidden"); });
     on("emptyBinBtn", "click", function() { 
-        let confMsg = currentLang==='ar' ? "حذف السلة نهائياً؟" : "Empty completely?";
+        let confMsg = currentLang==='ar' ? "ط­ط°ظپ ط§ظ„ط³ظ„ط© ظ†ظ‡ط§ط¦ظٹط§ظ‹طں" : "Empty completely?";
         if(confirm(confMsg)) { deletedStudents = {}; saveAll(); renderBinList(); }
     });
 
@@ -3372,7 +3383,7 @@ on("importExcelInput", "change", async function(e) {
     on("todayCountTopCard", "click", function() {
         const today = nowDateStr(); let ids = attByDate[today] || [];
         if(ids.length === 0) { 
-            let warnMsg = currentLang==='ar' ? "لا يوجد حضور" : "No attendance";
+            let warnMsg = currentLang==='ar' ? "ظ„ط§ ظٹظˆط¬ط¯ ط­ط¶ظˆط±" : "No attendance";
             showToast(warnMsg, "warning"); return; 
         }
         
@@ -3380,7 +3391,7 @@ on("importExcelInput", "change", async function(e) {
         for (let i = 0; i < ids.length; i++) {
             let id = ids[i]; const st = students[id]; 
             if(st) { 
-                let c = st.className ? st.className.trim() : "عام"; 
+                let c = st.className ? st.className.trim() : "ط¹ط§ظ…"; 
                 if(!groups[c]) groups[c] = []; 
                 groups[c].push(st); 
             } 
@@ -3390,12 +3401,12 @@ on("importExcelInput", "change", async function(e) {
         for(let g in groups) { 
             let gColor = getTagColor(g);
             let groupHtml = `<div style="background:#f8f9fa; border-radius:10px; padding:15px; margin-bottom:15px; border-right: 5px solid ${gColor};">`;
-            groupHtml += `<h4 style="color:${gColor}; margin-top:0; margin-bottom:10px; border-bottom:1px solid #ddd; padding-bottom:5px;">📘 ${g} (${groups[g].length})</h4>`;
+            groupHtml += `<h4 style="color:${gColor}; margin-top:0; margin-bottom:10px; border-bottom:1px solid #ddd; padding-bottom:5px;">ًں“ک ${g} (${groups[g].length})</h4>`;
             groupHtml += `<div style="display:flex; flex-wrap:wrap; gap:8px;">`;
             
             for (let j = 0; j < groups[g].length; j++) {
                 let s = groups[g][j];
-                let sName = s.name || 'بدون اسم';
+                let sName = s.name || 'ط¨ط¯ظˆظ† ط§ط³ظ…';
                 groupHtml += `<div class="badge" style="background:#fff; color:#333; border:1px solid ${gColor}; padding:8px 12px; border-radius:8px; cursor:pointer; font-size:13px;" onclick="document.getElementById('todayModal').classList.add('hidden'); window.extOpen('${s.id}')">#${s.id} - ${sName}</div>`;
             }
             groupHtml += `</div></div>`;
@@ -3410,14 +3421,14 @@ on("importExcelInput", "change", async function(e) {
 
     on("resetTermBtn", "click", function() {
         askAdminPass(function() {
-            let msg = currentLang==='ar' ? "تصفير فلوس وغياب الترم بالكامل للجميع؟" : "Reset all fees and attendance?";
+            let msg = currentLang==='ar' ? "طھطµظپظٹط± ظپظ„ظˆط³ ظˆط؛ظٹط§ط¨ ط§ظ„طھط±ظ… ط¨ط§ظ„ظƒط§ظ…ظ„ ظ„ظ„ط¬ظ…ظٹط¹طں" : "Reset all fees and attendance?";
             Swal.fire({
-                title: 'تأكيد التصفير',
+                title: 'طھط£ظƒظٹط¯ ط§ظ„طھطµظپظٹط±',
                 text: msg,
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonText: 'نعم، صفر',
-                cancelButtonText: 'إلغاء'
+                confirmButtonText: 'ظ†ط¹ظ…طŒ طµظپط±',
+                cancelButtonText: 'ط¥ظ„ط؛ط§ط،'
             }).then((res) => {
                 if(res.isConfirmed) {
                     for(let k in students) { students[k].paid = 0; students[k].attendanceDates = []; }
@@ -3429,14 +3440,14 @@ on("importExcelInput", "change", async function(e) {
 
     on("resetBtn", "click", function() {
         askAdminPass(function() {
-            let msg = currentLang==='ar' ? "مسح شامل وإعادة ضبط المصنع للسيستم بالكامل؟" : "Factory Reset the whole system?";
+            let msg = currentLang==='ar' ? "ظ…ط³ط­ ط´ط§ظ…ظ„ ظˆط¥ط¹ط§ط¯ط© ط¶ط¨ط· ط§ظ„ظ…طµظ†ط¹ ظ„ظ„ط³ظٹط³طھظ… ط¨ط§ظ„ظƒط§ظ…ظ„طں" : "Factory Reset the whole system?";
             Swal.fire({
-                title: 'تأكيد ضبط المصنع',
+                title: 'طھط£ظƒظٹط¯ ط¶ط¨ط· ط§ظ„ظ…طµظ†ط¹',
                 text: msg,
                 icon: 'error',
                 showCancelButton: true,
-                confirmButtonText: 'نعم، امسح كل شيء',
-                cancelButtonText: 'إلغاء'
+                confirmButtonText: 'ظ†ط¹ظ…طŒ ط§ظ…ط³ط­ ظƒظ„ ط´ظٹط،',
+                cancelButtonText: 'ط¥ظ„ط؛ط§ط،'
             }).then((res) => {
                 if(res.isConfirmed) { localStorage.clear(); location.reload(); }
             });
@@ -3489,29 +3500,29 @@ function updateDriveUI() {
         const btn = $("driveLoginBtn"); const syncBtn = $("syncNowBtn");
         const statusTxt = $("driveStatusText"); const lastSyncTxt = $("lastSyncText");
         
-        // 1. التحقق من وجود إنترنت حقيقي في الجهاز
+        // 1. ط§ظ„طھط­ظ‚ظ‚ ظ…ظ† ظˆط¬ظˆط¯ ط¥ظ†طھط±ظ†طھ ط­ظ‚ظٹظ‚ظٹ ظپظٹ ط§ظ„ط¬ظ‡ط§ط²
         if (!navigator.onLine) {
             if(statusTxt) { 
-                statusTxt.innerHTML = currentLang === 'ar' ? "🔴 لا يوجد اتصال بالإنترنت" : "🔴 No Internet Connection"; 
+                statusTxt.innerHTML = currentLang === 'ar' ? "ًں”´ ظ„ط§ ظٹظˆط¬ط¯ ط§طھطµط§ظ„ ط¨ط§ظ„ط¥ظ†طھط±ظ†طھ" : "ًں”´ No Internet Connection"; 
                 statusTxt.style.color = "var(--danger)"; 
-                statusTxt.classList.remove("pulse-active"); // وقف النبض
+                statusTxt.classList.remove("pulse-active"); // ظˆظ‚ظپ ط§ظ„ظ†ط¨ط¶
             }
-            if(btn) { btn.innerHTML = currentLang === 'ar' ? "بانتظار عودة الإنترنت..." : "Waiting for network..."; btn.style.background = "#666"; }
+            if(btn) { btn.innerHTML = currentLang === 'ar' ? "ط¨ط§ظ†طھط¸ط§ط± ط¹ظˆط¯ط© ط§ظ„ط¥ظ†طھط±ظ†طھ..." : "Waiting for network..."; btn.style.background = "#666"; }
             if(syncBtn) syncBtn.classList.add("hidden");
-            return; // وقف الدالة هنا لحد ما النت يرجع
+            return; // ظˆظ‚ظپ ط§ظ„ط¯ط§ظ„ط© ظ‡ظ†ط§ ظ„ط­ط¯ ظ…ط§ ط§ظ„ظ†طھ ظٹط±ط¬ط¹
         }
 
-        // 2. لو فيه نت، هل هو رابط بالدرايف؟
+        // 2. ظ„ظˆ ظپظٹظ‡ ظ†طھطŒ ظ‡ظ„ ظ‡ظˆ ط±ط§ط¨ط· ط¨ط§ظ„ط¯ط±ط§ظٹظپطں
         if(accessToken) {
             if(btn) { btn.innerHTML = t("btn_drive_connected"); btn.style.background = "#2ea44f"; }
             if(syncBtn) syncBtn.classList.remove("hidden");
             if(statusTxt) { 
                 statusTxt.innerHTML = t("drive_online"); 
                 statusTxt.style.color = "var(--success)"; 
-                statusTxt.classList.add("pulse-active"); // شغل النبض (اللمبة تنور وتطفي)
+                statusTxt.classList.add("pulse-active"); // ط´ط؛ظ„ ط§ظ„ظ†ط¨ط¶ (ط§ظ„ظ„ظ…ط¨ط© طھظ†ظˆط± ظˆطھط·ظپظٹ)
             }
         } else {
-            // فيه نت بس لسه مربوطش
+            // ظپظٹظ‡ ظ†طھ ط¨ط³ ظ„ط³ظ‡ ظ…ط±ط¨ظˆط·ط´
             if(statusTxt) { 
                 statusTxt.innerHTML = t("drive_offline"); 
                 statusTxt.style.color = "#666"; 
@@ -3527,13 +3538,13 @@ function updateDriveUI() {
     }
     updateDriveUI();
 
-    // أوامر عشان السيستم يراقب النت لايف (لو فصل أو اشتغل يغير اللمبة فوراً)
+    // ط£ظˆط§ظ…ط± ط¹ط´ط§ظ† ط§ظ„ط³ظٹط³طھظ… ظٹط±ط§ظ‚ط¨ ط§ظ„ظ†طھ ظ„ط§ظٹظپ (ظ„ظˆ ظپطµظ„ ط£ظˆ ط§ط´طھط؛ظ„ ظٹط؛ظٹط± ط§ظ„ظ„ظ…ط¨ط© ظپظˆط±ط§ظ‹)
     window.addEventListener('online', updateDriveUI);
     window.addEventListener('offline', updateDriveUI);
 
     on("driveLoginBtn", "click", function() {
         if (typeof google === 'undefined') {
-            return showToast(currentLang === 'ar' ? "جاري تحميل مكتبات جوجل، جرب مرة تانية كمان ثانية..." : "Loading Google libraries...", "warning");
+            return showToast(currentLang === 'ar' ? "ط¬ط§ط±ظٹ طھط­ظ…ظٹظ„ ظ…ظƒطھط¨ط§طھ ط¬ظˆط¬ظ„طŒ ط¬ط±ط¨ ظ…ط±ط© طھط§ظ†ظٹط© ظƒظ…ط§ظ† ط«ط§ظ†ظٹط©..." : "Loading Google libraries...", "warning");
         }
         if (!tokenClient) {
             tokenClient = google.accounts.oauth2.initTokenClient({
@@ -3551,7 +3562,7 @@ function updateDriveUI() {
         tokenClient.requestAccessToken({ prompt: 'consent' });
     });
 
-    // دالة الرفع المدمجة (يدوي أو تلقائي)
+    // ط¯ط§ظ„ط© ط§ظ„ط±ظپط¹ ط§ظ„ظ…ط¯ظ…ط¬ط© (ظٹط¯ظˆظٹ ط£ظˆ طھظ„ظ‚ط§ط¦ظٹ)
     async function backupToDrive(isManual = false) {
         if (!accessToken) return;
         
@@ -3571,7 +3582,7 @@ function updateDriveUI() {
             let url = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
             let method = 'POST';
 
-            // منع التكرار: التحديث إذا كان موجوداً
+            // ظ…ظ†ط¹ ط§ظ„طھظƒط±ط§ط±: ط§ظ„طھط­ط¯ظٹط« ط¥ط°ط§ ظƒط§ظ† ظ…ظˆط¬ظˆط¯ط§ظ‹
             if (data.files && data.files.length > 0) {
                 url = `https://www.googleapis.com/upload/drive/v3/files/${data.files[0].id}?uploadType=multipart`; method = 'PATCH';
             }
@@ -3581,11 +3592,11 @@ function updateDriveUI() {
 
             await fetch(url, { method: method, headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': `multipart/related; boundary=${boundary}` }, body: body });
             
-            // تسجيل وقت المزامنة الناجحة
+            // طھط³ط¬ظٹظ„ ظˆظ‚طھ ط§ظ„ظ…ط²ط§ظ…ظ†ط© ط§ظ„ظ†ط§ط¬ط­ط©
             let now = new Date();
             let timeString = now.toLocaleDateString('ar-EG') + " " + now.toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'});
             localStorage.setItem("last_cloud_sync_time", timeString);
-            localStorage.setItem("last_cloud_sync_date", nowDateStr()); // لضمان عدم التكرار في نفس اليوم
+            localStorage.setItem("last_cloud_sync_date", nowDateStr()); // ظ„ط¶ظ…ط§ظ† ط¹ط¯ظ… ط§ظ„طھظƒط±ط§ط± ظپظٹ ظ†ظپط³ ط§ظ„ظٹظˆظ…
             updateDriveUI();
 
             if (isManual) {
@@ -3595,24 +3606,24 @@ function updateDriveUI() {
             }
         } catch (err) { 
             console.error("Sync Error", err); 
-            if (isManual) showToast(currentLang === 'ar' ? "فشل الرفع، تأكد من الاتصال بالنت" : "Upload failed, check connection", "err");
+            if (isManual) showToast(currentLang === 'ar' ? "ظپط´ظ„ ط§ظ„ط±ظپط¹طŒ طھط£ظƒط¯ ظ…ظ† ط§ظ„ط§طھطµط§ظ„ ط¨ط§ظ„ظ†طھ" : "Upload failed, check connection", "err");
         }
     }
 
-    // ربط زرار السهم بالرفع اليدوي
+    // ط±ط¨ط· ط²ط±ط§ط± ط§ظ„ط³ظ‡ظ… ط¨ط§ظ„ط±ظپط¹ ط§ظ„ظٹط¯ظˆظٹ
     on("syncNowBtn", "click", function() {
         backupToDrive(true);
     });
 
     on("restoreDriveBtn", "click", async function() {
-        if (!accessToken) return showToast(currentLang === 'ar' ? "يرجى الربط بالدرايف أولاً ☁️" : "Please connect to Drive first ☁️", "err");
+        if (!accessToken) return showToast(currentLang === 'ar' ? "ظٹط±ط¬ظ‰ ط§ظ„ط±ط¨ط· ط¨ط§ظ„ط¯ط±ط§ظٹظپ ط£ظˆظ„ط§ظ‹ âکپï¸ڈ" : "Please connect to Drive first âکپï¸ڈ", "err");
         const confirmRes = await Swal.fire({
-            title: 'تحذير شديد',
-            text: currentLang === 'ar' ? "⚠️ تحذير شديد: سيتم مسح كل البيانات الحالية واستبدالها بنسخة السحابة، متأكد؟" : "⚠️ WARNING: Current data will be replaced by cloud backup. Sure?",
+            title: 'طھط­ط°ظٹط± ط´ط¯ظٹط¯',
+            text: currentLang === 'ar' ? "âڑ ï¸ڈ طھط­ط°ظٹط± ط´ط¯ظٹط¯: ط³ظٹطھظ… ظ…ط³ط­ ظƒظ„ ط§ظ„ط¨ظٹط§ظ†ط§طھ ط§ظ„ط­ط§ظ„ظٹط© ظˆط§ط³طھط¨ط¯ط§ظ„ظ‡ط§ ط¨ظ†ط³ط®ط© ط§ظ„ط³ط­ط§ط¨ط©طŒ ظ…طھط£ظƒط¯طں" : "âڑ ï¸ڈ WARNING: Current data will be replaced by cloud backup. Sure?",
             icon: 'error',
             showCancelButton: true,
-            confirmButtonText: 'نعم، استرجع البيانات',
-            cancelButtonText: 'إلغاء'
+            confirmButtonText: 'ظ†ط¹ظ…طŒ ط§ط³طھط±ط¬ط¹ ط§ظ„ط¨ظٹط§ظ†ط§طھ',
+            cancelButtonText: 'ط¥ظ„ط؛ط§ط،'
         });
         if (!confirmRes.isConfirmed) return;
 
@@ -3658,15 +3669,15 @@ function updateDriveUI() {
                     });
                 }
                 
-                showToast(currentLang === 'ar' ? "تم استرجاع البيانات بنجاح، سيتم إعادة التحميل..." : "Data restored successfully. Restarting...");
+                showToast(currentLang === 'ar' ? "طھظ… ط§ط³طھط±ط¬ط§ط¹ ط§ظ„ط¨ظٹط§ظ†ط§طھ ط¨ظ†ط¬ط§ط­طŒ ط³ظٹطھظ… ط¥ط¹ط§ط¯ط© ط§ظ„طھط­ظ…ظٹظ„..." : "Data restored successfully. Restarting...");
                 setTimeout(() => location.reload(), 1500);
-            } else { showToast(currentLang === 'ar' ? "لم يتم العثور على نسخة احتياطية في الدرايف" : "No backup found in Drive", "err"); }
-        } catch (err) { console.error(err); showToast(currentLang === 'ar' ? "فشل الاسترجاع، تأكد من الاتصال بالنت" : "Restore failed, check connection", "err"); }
+            } else { showToast(currentLang === 'ar' ? "ظ„ظ… ظٹطھظ… ط§ظ„ط¹ط«ظˆط± ط¹ظ„ظ‰ ظ†ط³ط®ط© ط§ط­طھظٹط§ط·ظٹط© ظپظٹ ط§ظ„ط¯ط±ط§ظٹظپ" : "No backup found in Drive", "err"); }
+        } catch (err) { console.error(err); showToast(currentLang === 'ar' ? "ظپط´ظ„ ط§ظ„ط§ط³طھط±ط¬ط§ط¹طŒ طھط£ظƒط¯ ظ…ظ† ط§ظ„ط§طھطµط§ظ„ ط¨ط§ظ„ظ†طھ" : "Restore failed, check connection", "err"); }
     });
 // ==========================================
     // 17.8. ASSISTANT MANAGEMENT (SAAS)
     // ==========================================
-    let currentManager = localStorage.getItem("ca_current_username") || "المدير";
+    let currentManager = localStorage.getItem("ca_current_username") || "ط§ظ„ظ…ط¯ظٹط±";
 
     if($("currentShiftManagerName")) $("currentShiftManagerName").innerText = currentManager;
 
@@ -3676,12 +3687,12 @@ function updateDriveUI() {
             const asstP = $("newAsstPassword") ? $("newAsstPassword").value.trim() : "";
             
             if (!rawAsstU || !asstP) {
-                return showToast("أدخل اسم المستخدم وكلمة المرور", "err");
+                return showToast("ط£ط¯ط®ظ„ ط§ط³ظ… ط§ظ„ظ…ط³طھط®ط¯ظ… ظˆظƒظ„ظ…ط© ط§ظ„ظ…ط±ظˆط±", "err");
             }
             
             const asstU = sanitizeKey(rawAsstU);
             const managerId = localStorage.getItem("ca_manager_id");
-            if (!managerId) return showToast("يجب أن تكون مديراً لإضافة مساعدين.", "err");
+            if (!managerId) return showToast("ظٹط¬ط¨ ط£ظ† طھظƒظˆظ† ظ…ط¯ظٹط±ط§ظ‹ ظ„ط¥ط¶ط§ظپط© ظ…ط³ط§ط¹ط¯ظٹظ†.", "err");
             
             try {
                 // 1. Save to Manager's node
@@ -3694,7 +3705,7 @@ function updateDriveUI() {
                 // 2. Save to global mapping
                 await set(ref(database, `global_assistants/${asstU}`), managerId);
                 
-                showToast("تم إنشاء حساب المساعد بنجاح ✅", "success");
+                showToast("طھظ… ط¥ظ†ط´ط§ط، ط­ط³ط§ط¨ ط§ظ„ظ…ط³ط§ط¹ط¯ ط¨ظ†ط¬ط§ط­ âœ…", "success");
                 
                 $("newAsstUsername").value = "";
                 $("newAsstPassword").value = "";
@@ -3702,7 +3713,7 @@ function updateDriveUI() {
                 fetchManagerAssistants();
             } catch (err) {
                 console.error(err);
-                showToast("فشل إنشاء الحساب. تأكد من اتصال الإنترنت.", "err");
+                showToast("ظپط´ظ„ ط¥ظ†ط´ط§ط، ط§ظ„ط­ط³ط§ط¨. طھط£ظƒط¯ ظ…ظ† ط§طھطµط§ظ„ ط§ظ„ط¥ظ†طھط±ظ†طھ.", "err");
             }
         });
     }
@@ -3714,7 +3725,7 @@ function updateDriveUI() {
         const managerId = localStorage.getItem("ca_manager_id");
         if (!managerId) return;
         
-        listEl.innerHTML = `<div class="mutedCenter">جاري التحميل...</div>`;
+        listEl.innerHTML = `<div class="mutedCenter">ط¬ط§ط±ظٹ ط§ظ„طھط­ظ…ظٹظ„...</div>`;
         
         try {
             const snapshot = await get(child(ref(database), `users/${managerId}/settings/assistants`));
@@ -3731,41 +3742,41 @@ function updateDriveUI() {
                     const initial = (uName[0] || "?").toUpperCase();
                     const createdAt = (assistants[key] && assistants[key].created_at)
                         ? new Date(assistants[key].created_at).toLocaleDateString("ar-EG", { day: "numeric", month: "short", year: "numeric" })
-                        : "—";
+                        : "â€”";
                     html += `
                     <div class="assistant-card">
                         <div class="assistant-avatar">${initial}</div>
                         <div class="assistant-info">
                             <div class="assistant-name">${uName}</div>
-                            <div class="assistant-sub">كلمة المرور: ${pass} &nbsp;•&nbsp; تاريخ الإنشاء: ${createdAt}</div>
+                            <div class="assistant-sub">ظƒظ„ظ…ط© ط§ظ„ظ…ط±ظˆط±: ${pass} &nbsp;â€¢&nbsp; طھط§ط±ظٹط® ط§ظ„ط¥ظ†ط´ط§ط،: ${createdAt}</div>
                         </div>
                         <div class="assistant-actions">
                             <button class="btn danger smallBtn" onclick="window.deleteAssistant('${key}')" style="display:flex;align-items:center;gap:5px;">
                                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-                                حذف
+                                ط­ط°ظپ
                             </button>
                         </div>
                     </div>`;
                 }
-                listEl.innerHTML = html || `<div class="mutedCenter">لا يوجد مساعدين مسجلين.</div>`;
+                listEl.innerHTML = html || `<div class="mutedCenter">ظ„ط§ ظٹظˆط¬ط¯ ظ…ط³ط§ط¹ط¯ظٹظ† ظ…ط³ط¬ظ„ظٹظ†.</div>`;
             } else {
-                listEl.innerHTML = `<div class="mutedCenter">لا يوجد مساعدين مسجلين بعد.</div>`;
+                listEl.innerHTML = `<div class="mutedCenter">ظ„ط§ ظٹظˆط¬ط¯ ظ…ط³ط§ط¹ط¯ظٹظ† ظ…ط³ط¬ظ„ظٹظ† ط¨ط¹ط¯.</div>`;
             }
         } catch (err) {
             console.error(err);
-            listEl.innerHTML = `<div class="mutedCenter">فشل جلب قائمة المساعدين.</div>`;
+            listEl.innerHTML = `<div class="mutedCenter">ظپط´ظ„ ط¬ظ„ط¨ ظ‚ط§ط¦ظ…ط© ط§ظ„ظ…ط³ط§ط¹ط¯ظٹظ†.</div>`;
         }
     }
 
 
     window.deleteAssistant = async function(asstKey) {
         const res = await Swal.fire({
-            title: 'تأكيد الحذف',
-            text: currentLang === 'ar' ? `هل أنت متأكد من حذف المساعد نهائياً؟` : `Delete assistant?`,
+            title: 'طھط£ظƒظٹط¯ ط§ظ„ط­ط°ظپ',
+            text: currentLang === 'ar' ? `ظ‡ظ„ ط£ظ†طھ ظ…طھط£ظƒط¯ ظ…ظ† ط­ط°ظپ ط§ظ„ظ…ط³ط§ط¹ط¯ ظ†ظ‡ط§ط¦ظٹط§ظ‹طں` : `Delete assistant?`,
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonText: 'نعم، احذف',
-            cancelButtonText: 'إلغاء'
+            confirmButtonText: 'ظ†ط¹ظ…طŒ ط§ط­ط°ظپ',
+            cancelButtonText: 'ط¥ظ„ط؛ط§ط،'
         });
         if (!res.isConfirmed) return;
         
@@ -3773,11 +3784,11 @@ function updateDriveUI() {
         try {
             await set(ref(database, `users/${managerId}/settings/assistants/${asstKey}`), null);
             await set(ref(database, `global_assistants/${asstKey}`), null);
-            showToast("تم حذف المساعد ✅", "success");
+            showToast("طھظ… ط­ط°ظپ ط§ظ„ظ…ط³ط§ط¹ط¯ âœ…", "success");
             fetchManagerAssistants();
         } catch (err) {
             console.error(err);
-            showToast("فشل في حذف المساعد.", "err");
+            showToast("ظپط´ظ„ ظپظٹ ط­ط°ظپ ط§ظ„ظ…ط³ط§ط¹ط¯.", "err");
         }
     };
     
@@ -3802,14 +3813,14 @@ function updateDriveUI() {
         const body = $("mgrDailyReportBody");
         if (!body) return;
         if (ids.length === 0 && expArr.length === 0) {
-            body.innerHTML = `<div class="mutedCenter">لا يوجد بيانات لهذا اليوم</div>`;
+            body.innerHTML = `<div class="mutedCenter">ظ„ط§ ظٹظˆط¬ط¯ ط¨ظٹط§ظ†ط§طھ ظ„ظ‡ط°ط§ ط§ظ„ظٹظˆظ…</div>`;
             return;
         }
         // Group by class
         let groups = {};
         ids.forEach(id => {
             const st = students[id];
-            const cls = (st && st.className) ? st.className.trim() : "عام";
+            const cls = (st && st.className) ? st.className.trim() : "ط¹ط§ظ…";
             if (!groups[cls]) groups[cls] = { count: 0, revenue: 0 };
             groups[cls].count++;
             if (st && st.paid !== undefined) {
@@ -3822,15 +3833,15 @@ function updateDriveUI() {
             const gColor = getTagColor(g);
             html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-inline-start:4px solid ${gColor};background:var(--bg-inset);border-radius:8px;margin-bottom:8px;">
                 <span style="font-weight:700;color:${gColor};">${g}</span>
-                <span style="font-weight:600;">${groups[g].count} طالب</span>
+                <span style="font-weight:600;">${groups[g].count} ط·ط§ظ„ط¨</span>
             </div>`;
         }
         if (expArr.length > 0) {
-            html += `<div style="margin-top:14px;"><h4 style="color:var(--danger);margin-bottom:8px;">المصروفات</h4>`;
+            html += `<div style="margin-top:14px;"><h4 style="color:var(--danger);margin-bottom:8px;">ط§ظ„ظ…طµط±ظˆظپط§طھ</h4>`;
             expArr.forEach(e => {
                 html += `<div style="display:flex;justify-content:space-between;padding:8px 12px;background:var(--bg-danger-subtle);border-radius:6px;margin-bottom:6px;font-size:0.9em;">
-                    <span>${e.reason || "غير محدد"}</span>
-                    <span style="color:var(--danger);font-weight:700;">${e.amount} ج</span>
+                    <span>${e.reason || "ط؛ظٹط± ظ…ط­ط¯ط¯"}</span>
+                    <span style="color:var(--danger);font-weight:700;">${e.amount} ط¬</span>
                 </div>`;
             });
             html += `</div>`;
@@ -3854,7 +3865,7 @@ function updateDriveUI() {
         // populate class filter
         if (clsSel) {
             const existing = [...clsSel.options].map(o => o.value);
-            const classes  = [...new Set(Object.values(students).map(s => s.className || "عام"))];
+            const classes  = [...new Set(Object.values(students).map(s => s.className || "ط¹ط§ظ…"))];
             classes.forEach(c => {
                 if (!existing.includes(c)) {
                     const opt = document.createElement("option");
@@ -3868,7 +3879,7 @@ function updateDriveUI() {
         Object.values(students).forEach(st => {
             if (!st || !st.name) return;
             if (search && !st.name.toLowerCase().includes(search)) return;
-            const cls  = (st.className || "عام").trim();
+            const cls  = (st.className || "ط¹ط§ظ…").trim();
             if (clsFilter && cls !== clsFilter) return;
             const req  = groupFees[cls] ? toInt(groupFees[cls]) : 0;
             const paid = st.paid || 0;
@@ -3885,7 +3896,7 @@ function updateDriveUI() {
 
         if (!tbody) return;
         if (rows.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7" class="mutedCenter" style="padding:20px;">لا يوجد طلاب</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="7" class="mutedCenter" style="padding:20px;">ظ„ط§ ظٹظˆط¬ط¯ ط·ظ„ط§ط¨</td></tr>`;
             return;
         }
         const gColor = c => getTagColor ? getTagColor(c) : "#888";
@@ -3893,12 +3904,12 @@ function updateDriveUI() {
             <tr style="border-bottom:1px solid var(--border); transition:background 0.2s;" onmouseover="this.style.background='var(--bg-inset)'" onmouseout="this.style.background=''"">
                 <td style="padding:10px 16px;font-weight:600;">${r.st.name}</td>
                 <td style="padding:10px 16px;"><span style="background:${gColor(r.cls)}22;color:${gColor(r.cls)};padding:3px 8px;border-radius:5px;font-size:0.82em;font-weight:700;">${r.cls}</span></td>
-                <td style="padding:10px 16px;">${r.req > 0 ? r.req + " ج" : "—"}</td>
-                <td style="padding:10px 16px;color:var(--success);font-weight:700;">${r.paid > 0 ? r.paid + " ج" : "—"}</td>
-                <td style="padding:10px 16px;color:${r.debt > 0 ? 'var(--danger)' : 'var(--success)'};font-weight:700;">${r.debt > 0 ? r.debt + " ج" : "✓"}</td>
+                <td style="padding:10px 16px;">${r.req > 0 ? r.req + " ط¬" : "â€”"}</td>
+                <td style="padding:10px 16px;color:var(--success);font-weight:700;">${r.paid > 0 ? r.paid + " ط¬" : "â€”"}</td>
+                <td style="padding:10px 16px;color:${r.debt > 0 ? 'var(--danger)' : 'var(--success)'};font-weight:700;">${r.debt > 0 ? r.debt + " ط¬" : "âœ“"}</td>
                 <td style="padding:10px 16px;">${r.attCount}</td>
                 <td style="padding:10px 16px;">
-                    <button class="btn primary smallBtn" onclick="window.extOpen('${r.st.id}')">فتح</button>
+                    <button class="btn primary smallBtn" onclick="window.extOpen('${r.st.id}')">ظپطھط­</button>
                 </td>
             </tr>`).join("");
     }
@@ -3910,13 +3921,13 @@ function updateDriveUI() {
     // 17.11. MANAGER: PERMISSIONS SYSTEM
     // ==========================================
     const PERMISSIONS_DEFS = [
-        { key: "show_revenue",           label: "إظهار الإيراد اليومي",         desc: "يسمح للمساعد برؤية إيراد اليوم في الشريط العلوي" },
-        { key: "can_add_student",        label: "إضافة طالب جديد",              desc: "يسمح للمساعد بإضافة طلاب جديدين للنظام" },
-        { key: "can_manage_packages",    label: "إدارة الباقات والأسعار",        desc: "يسمح للمساعد بتعديل الباقات والأسعار" },
-        { key: "can_view_reports",       label: "الوصول لصفحة التقارير",         desc: "يسمح للمساعد بفتح صفحة التقارير اليومية" },
-        { key: "can_access_marketing",   label: "أدوات التسويق",                desc: "يسمح للمساعد بفتح صفحة أدوات التسويق" },
-        { key: "can_access_session_students", label: "طلاب الحصة",             desc: "يسمح للمساعد بفتح صفحة طلاب الحصة" },
-        { key: "can_request_discount",   label: "طلب خصم / إعفاء",             desc: "يسمح للمساعد بإرسال طلب خصم للمدير لمراجعته" },
+        { key: "show_revenue",           label: "ط¥ط¸ظ‡ط§ط± ط§ظ„ط¥ظٹط±ط§ط¯ ط§ظ„ظٹظˆظ…ظٹ",         desc: "ظٹط³ظ…ط­ ظ„ظ„ظ…ط³ط§ط¹ط¯ ط¨ط±ط¤ظٹط© ط¥ظٹط±ط§ط¯ ط§ظ„ظٹظˆظ… ظپظٹ ط§ظ„ط´ط±ظٹط· ط§ظ„ط¹ظ„ظˆظٹ" },
+        { key: "can_add_student",        label: "ط¥ط¶ط§ظپط© ط·ط§ظ„ط¨ ط¬ط¯ظٹط¯",              desc: "ظٹط³ظ…ط­ ظ„ظ„ظ…ط³ط§ط¹ط¯ ط¨ط¥ط¶ط§ظپط© ط·ظ„ط§ط¨ ط¬ط¯ظٹط¯ظٹظ† ظ„ظ„ظ†ط¸ط§ظ…" },
+        { key: "can_manage_packages",    label: "ط¥ط¯ط§ط±ط© ط§ظ„ط¨ط§ظ‚ط§طھ ظˆط§ظ„ط£ط³ط¹ط§ط±",        desc: "ظٹط³ظ…ط­ ظ„ظ„ظ…ط³ط§ط¹ط¯ ط¨طھط¹ط¯ظٹظ„ ط§ظ„ط¨ط§ظ‚ط§طھ ظˆط§ظ„ط£ط³ط¹ط§ط±" },
+        { key: "can_view_reports",       label: "ط§ظ„ظˆطµظˆظ„ ظ„طµظپط­ط© ط§ظ„طھظ‚ط§ط±ظٹط±",         desc: "ظٹط³ظ…ط­ ظ„ظ„ظ…ط³ط§ط¹ط¯ ط¨ظپطھط­ طµظپط­ط© ط§ظ„طھظ‚ط§ط±ظٹط± ط§ظ„ظٹظˆظ…ظٹط©" },
+        { key: "can_access_marketing",   label: "ط£ط¯ظˆط§طھ ط§ظ„طھط³ظˆظٹظ‚",                desc: "ظٹط³ظ…ط­ ظ„ظ„ظ…ط³ط§ط¹ط¯ ط¨ظپطھط­ طµظپط­ط© ط£ط¯ظˆط§طھ ط§ظ„طھط³ظˆظٹظ‚" },
+        { key: "can_access_session_students", label: "ط·ظ„ط§ط¨ ط§ظ„ط­طµط©",             desc: "ظٹط³ظ…ط­ ظ„ظ„ظ…ط³ط§ط¹ط¯ ط¨ظپطھط­ طµظپط­ط© ط·ظ„ط§ط¨ ط§ظ„ط­طµط©" },
+        { key: "can_request_discount",   label: "ط·ظ„ط¨ ط®طµظ… / ط¥ط¹ظپط§ط،",             desc: "ظٹط³ظ…ط­ ظ„ظ„ظ…ط³ط§ط¹ط¯ ط¨ط¥ط±ط³ط§ظ„ ط·ظ„ط¨ ط®طµظ… ظ„ظ„ظ…ط¯ظٹط± ظ„ظ…ط±ط§ط¬ط¹طھظ‡" },
     ];
 
     // Default: all permissions ON
@@ -3942,17 +3953,17 @@ function updateDriveUI() {
         if (!mid || !isFirebaseConnected) return;
         try {
             await update(ref(database, `users/${mid}/settings/permissions`), currentPermissions);
-            showToast("تم حفظ الصلاحيات ✅", "success");
+            showToast("طھظ… ط­ظپط¸ ط§ظ„طµظ„ط§ط­ظٹط§طھ âœ…", "success");
             // Send notification to assistants
             const msgId = Date.now();
             await update(ref(database, `users/${mid}/assistant_messages/${msgId}`), {
-                title: "تحديث الصلاحيات",
-                body: "قام المدير بتحديث صلاحياتك. بعض الميزات قد تكون تغيرت.",
+                title: "طھط­ط¯ظٹط« ط§ظ„طµظ„ط§ط­ظٹط§طھ",
+                body: "ظ‚ط§ظ… ط§ظ„ظ…ط¯ظٹط± ط¨طھط­ط¯ظٹط« طµظ„ط§ط­ظٹط§طھظƒ. ط¨ط¹ط¶ ط§ظ„ظ…ظٹط²ط§طھ ظ‚ط¯ طھظƒظˆظ† طھط؛ظٹط±طھ.",
                 type: "feature_toggle",
                 timestamp: msgId,
                 read: false
             });
-        } catch(e) { console.error("Save permissions error:", e); showToast("فشل حفظ الصلاحيات", "err"); }
+        } catch(e) { console.error("Save permissions error:", e); showToast("ظپط´ظ„ ط­ظپط¸ ط§ظ„طµظ„ط§ط­ظٹط§طھ", "err"); }
     }
 
     function renderPermissionsPanel() {
@@ -4006,12 +4017,12 @@ function updateDriveUI() {
                 if (!badge) {
                     badge = document.createElement("span");
                     badge.className = "locked-badge";
-                    badge.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> مقفل من المدير`;
+                    badge.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> ظ…ظ‚ظپظ„ ظ…ظ† ط§ظ„ظ…ط¯ظٹط±`;
                     btn.appendChild(badge);
                 }
                 btn.onclick = function(e) {
                     e.stopPropagation();
-                    showToast("هذه الميزة مقفلة من قبل المدير 🔒", "warning");
+                    showToast("ظ‡ط°ظ‡ ط§ظ„ظ…ظٹط²ط© ظ…ظ‚ظپظ„ط© ظ…ظ† ظ‚ط¨ظ„ ط§ظ„ظ…ط¯ظٹط± ًں”’", "warning");
                 };
             } else {
                 btn.classList.remove("locked-feature");
@@ -4064,7 +4075,7 @@ function updateDriveUI() {
         if (!listEl) return;
         const mid = localStorage.getItem("ca_manager_id");
         if (!mid) return;
-        listEl.innerHTML = `<div class="mutedCenter">جاري التحميل...</div>`;
+        listEl.innerHTML = `<div class="mutedCenter">ط¬ط§ط±ظٹ ط§ظ„طھط­ظ…ظٹظ„...</div>`;
         try {
             const snap = await get(child(ref(database), `users/${mid}/requests`));
             const badge = $("managerDecisionsBadge");
@@ -4080,33 +4091,33 @@ function updateDriveUI() {
                     else badge.classList.add("hidden");
                 }
                 if (pending.length === 0) {
-                    listEl.innerHTML = `<div class="mutedCenter">لا توجد طلبات معلقة</div>`;
+                    listEl.innerHTML = `<div class="mutedCenter">ظ„ط§ طھظˆط¬ط¯ ط·ظ„ط¨ط§طھ ظ…ط¹ظ„ظ‚ط©</div>`;
                     return;
                 }
                 pending.forEach(r => {
                     const date = new Date(r.timestamp).toLocaleString("ar-EG");
-                    const typeLabel = r.type === "exemption" ? "إعفاء كامل" : `خصم ${r.amount} ج`;
+                    const typeLabel = r.type === "exemption" ? "ط¥ط¹ظپط§ط، ظƒط§ظ…ظ„" : `ط®طµظ… ${r.amount} ط¬`;
                     html += `<div class="decision-card">
                         <div class="decision-card-info">
                             <div class="decision-student-name">${r.studentName || r.studentId}</div>
-                            <div class="decision-meta">${typeLabel} • طلب من: ${r.requestedBy || "مساعد"} • ${date}</div>
-                            <div class="decision-meta" style="margin-top:4px;">السبب: ${r.reason || "—"}</div>
+                            <div class="decision-meta">${typeLabel} â€¢ ط·ظ„ط¨ ظ…ظ†: ${r.requestedBy || "ظ…ط³ط§ط¹ط¯"} â€¢ ${date}</div>
+                            <div class="decision-meta" style="margin-top:4px;">ط§ظ„ط³ط¨ط¨: ${r.reason || "â€”"}</div>
                         </div>
-                        <div class="decision-amount">${r.type === "exemption" ? "إعفاء" : r.amount + " ج"}</div>
+                        <div class="decision-amount">${r.type === "exemption" ? "ط¥ط¹ظپط§ط،" : r.amount + " ط¬"}</div>
                         <div class="decision-actions">
-                            <button class="btn success smallBtn" onclick="window.approveRequest('${r.id}')">قبول</button>
-                            <button class="btn danger smallBtn" onclick="window.rejectRequest('${r.id}')">رفض</button>
+                            <button class="btn success smallBtn" onclick="window.approveRequest('${r.id}')">ظ‚ط¨ظˆظ„</button>
+                            <button class="btn danger smallBtn" onclick="window.rejectRequest('${r.id}')">ط±ظپط¶</button>
                         </div>
                     </div>`;
                 });
                 listEl.innerHTML = html;
             } else {
                 if (badge) badge.classList.add("hidden");
-                listEl.innerHTML = `<div class="mutedCenter">لا توجد طلبات معلقة</div>`;
+                listEl.innerHTML = `<div class="mutedCenter">ظ„ط§ طھظˆط¬ط¯ ط·ظ„ط¨ط§طھ ظ…ط¹ظ„ظ‚ط©</div>`;
             }
         } catch(e) {
             console.error(e);
-            listEl.innerHTML = `<div class="mutedCenter">فشل جلب الطلبات</div>`;
+            listEl.innerHTML = `<div class="mutedCenter">ظپط´ظ„ ط¬ظ„ط¨ ط§ظ„ط·ظ„ط¨ط§طھ</div>`;
         }
     }
 
@@ -4139,18 +4150,18 @@ function updateDriveUI() {
             // Notify assistant
             const msgId = Date.now();
             await update(ref(database, `users/${mid}/assistant_messages/${msgId}`), {
-                title: "✅ تمت الموافقة على طلبك",
-                body: `وافق المدير على ${r.type === "exemption" ? "إعفاء" : "خصم " + r.amount + " ج"} للطالب ${r.studentName || r.studentId}. السبب: ${r.reason || "—"}`,
+                title: "âœ… طھظ…طھ ط§ظ„ظ…ظˆط§ظپظ‚ط© ط¹ظ„ظ‰ ط·ظ„ط¨ظƒ",
+                body: `ظˆط§ظپظ‚ ط§ظ„ظ…ط¯ظٹط± ط¹ظ„ظ‰ ${r.type === "exemption" ? "ط¥ط¹ظپط§ط،" : "ط®طµظ… " + r.amount + " ط¬"} ظ„ظ„ط·ط§ظ„ط¨ ${r.studentName || r.studentId}. ط§ظ„ط³ط¨ط¨: ${r.reason || "â€”"}`,
                 type: "discount_approved",
                 timestamp: msgId,
                 read: false
             });
 
-            showToast("تمت الموافقة وتطبيق الخصم ✅", "success");
+            showToast("طھظ…طھ ط§ظ„ظ…ظˆط§ظپظ‚ط© ظˆطھط·ط¨ظٹظ‚ ط§ظ„ط®طµظ… âœ…", "success");
             fetchManagerRequests();
         } catch(e) {
             console.error(e);
-            showToast("فشل تنفيذ الطلب", "err");
+            showToast("ظپط´ظ„ طھظ†ظپظٹط° ط§ظ„ط·ظ„ط¨", "err");
         }
     };
 
@@ -4166,18 +4177,18 @@ function updateDriveUI() {
             // Notify assistant
             const msgId = Date.now();
             await update(ref(database, `users/${mid}/assistant_messages/${msgId}`), {
-                title: "❌ تم رفض طلبك",
-                body: `رفض المدير طلب ${r.type === "exemption" ? "الإعفاء" : "الخصم " + r.amount + " ج"} للطالب ${r.studentName || r.studentId}.`,
+                title: "â‌Œ طھظ… ط±ظپط¶ ط·ظ„ط¨ظƒ",
+                body: `ط±ظپط¶ ط§ظ„ظ…ط¯ظٹط± ط·ظ„ط¨ ${r.type === "exemption" ? "ط§ظ„ط¥ط¹ظپط§ط،" : "ط§ظ„ط®طµظ… " + r.amount + " ط¬"} ظ„ظ„ط·ط§ظ„ط¨ ${r.studentName || r.studentId}.`,
                 type: "discount_rejected",
                 timestamp: msgId,
                 read: false
             });
 
-            showToast("تم رفض الطلب", "warning");
+            showToast("طھظ… ط±ظپط¶ ط§ظ„ط·ظ„ط¨", "warning");
             fetchManagerRequests();
         } catch(e) {
             console.error(e);
-            showToast("فشل في الرفض", "err");
+            showToast("ظپط´ظ„ ظپظٹ ط§ظ„ط±ظپط¶", "err");
         }
     };
 
@@ -4187,7 +4198,7 @@ function updateDriveUI() {
             const stId   = $("mgrDirectStudentId") ? $("mgrDirectStudentId").value.trim() : "";
             const amount = $("mgrDirectAmount")    ? toInt($("mgrDirectAmount").value) : 0;
             const reason = $("mgrDirectReason")    ? $("mgrDirectReason").value.trim() : "";
-            if (!stId || !students[stId]) return showToast("الطالب غير موجود", "err");
+            if (!stId || !students[stId]) return showToast("ط§ظ„ط·ط§ظ„ط¨ ط؛ظٹط± ظ…ظˆط¬ظˆط¯", "err");
             const cls = (students[stId].className || "").trim();
             const req = groupFees[cls] ? toInt(groupFees[cls]) : 0;
             if (amount > 0 && req > 0) {
@@ -4199,7 +4210,7 @@ function updateDriveUI() {
             if ($("mgrDirectStudentId")) $("mgrDirectStudentId").value = "";
             if ($("mgrDirectAmount")) $("mgrDirectAmount").value = "";
             if ($("mgrDirectReason")) $("mgrDirectReason").value = "";
-            showToast(`تم تطبيق الخصم على ${students[stId].name} ✅`, "success");
+            showToast(`طھظ… طھط·ط¨ظٹظ‚ ط§ظ„ط®طµظ… ط¹ظ„ظ‰ ${students[stId].name} âœ…`, "success");
         });
     }
 
@@ -4210,7 +4221,7 @@ function updateDriveUI() {
         const st = students[String(studentId)];
         if (!st) return;
         if (!currentPermissions.can_request_discount) {
-            showToast("إرسال طلبات الخصم مقفل من المدير 🔒", "warning");
+            showToast("ط¥ط±ط³ط§ظ„ ط·ظ„ط¨ط§طھ ط§ظ„ط®طµظ… ظ…ظ‚ظپظ„ ظ…ظ† ط§ظ„ظ…ط¯ظٹط± ًں”’", "warning");
             return;
         }
         if ($("discReqStudentId")) $("discReqStudentId").value = studentId;
@@ -4228,8 +4239,8 @@ function updateDriveUI() {
             const reason = $("discReqReason")    ? $("discReqReason").value.trim() : "";
             const mid    = localStorage.getItem("ca_manager_id") || window.CURRENT_MANAGER_ID;
             const st     = students[String(stId)];
-            if (!st || !mid) return showToast("حدث خطأ، تأكد من الاتصال", "err");
-            if (!reason) return showToast("من فضلك اكتب سبب الطلب", "err");
+            if (!st || !mid) return showToast("ط­ط¯ط« ط®ط·ط£طŒ طھط£ظƒط¯ ظ…ظ† ط§ظ„ط§طھطµط§ظ„", "err");
+            if (!reason) return showToast("ظ…ظ† ظپط¶ظ„ظƒ ط§ظƒطھط¨ ط³ط¨ط¨ ط§ظ„ط·ظ„ط¨", "err");
             const reqId = Date.now();
             try {
                 await update(ref(database, `users/${mid}/requests/${reqId}`), {
@@ -4238,15 +4249,15 @@ function updateDriveUI() {
                     type,
                     amount,
                     reason,
-                    requestedBy: localStorage.getItem("ca_current_username") || "مساعد",
+                    requestedBy: localStorage.getItem("ca_current_username") || "ظ…ط³ط§ط¹ط¯",
                     timestamp: reqId,
                     status: "pending"
                 });
                 if ($("discountRequestModal")) $("discountRequestModal").classList.add("hidden");
-                showToast("تم إرسال الطلب للمدير ✅", "success");
+                showToast("طھظ… ط¥ط±ط³ط§ظ„ ط§ظ„ط·ظ„ط¨ ظ„ظ„ظ…ط¯ظٹط± âœ…", "success");
             } catch(e) {
                 console.error(e);
-                showToast("فشل إرسال الطلب، تأكد من الاتصال", "err");
+                showToast("ظپط´ظ„ ط¥ط±ط³ط§ظ„ ط§ظ„ط·ظ„ط¨طŒ طھط£ظƒط¯ ظ…ظ† ط§ظ„ط§طھطµط§ظ„", "err");
             }
         });
     }
@@ -4293,8 +4304,8 @@ function updateDriveUI() {
             const tabsDiv = document.createElement("div");
             tabsDiv.className = "msg-tabs";
             tabsDiv.innerHTML = `
-                <button class="msg-tab-btn active" id="msgTabMessages" onclick="window.switchMsgTab('messages')">الرسائل</button>
-                <button class="msg-tab-btn" id="msgTabActivity" onclick="window.switchMsgTab('activity')">سجل العمليات</button>`;
+                <button class="msg-tab-btn active" id="msgTabMessages" onclick="window.switchMsgTab('messages')">ط§ظ„ط±ط³ط§ط¦ظ„</button>
+                <button class="msg-tab-btn" id="msgTabActivity" onclick="window.switchMsgTab('activity')">ط³ط¬ظ„ ط§ظ„ط¹ظ…ظ„ظٹط§طھ</button>`;
             dropdown.insertBefore(tabsDiv, listEl);
         }
 
@@ -4317,7 +4328,7 @@ function updateDriveUI() {
         const listEl = $("notificationsList");
         if (!listEl) return;
         if (assistantMessages.length === 0) {
-            listEl.innerHTML = `<div style="text-align:center;color:#888;padding:10px;">لا توجد رسائل</div>`;
+            listEl.innerHTML = `<div style="text-align:center;color:#888;padding:10px;">ظ„ط§ طھظˆط¬ط¯ ط±ط³ط§ط¦ظ„</div>`;
             return;
         }
         listEl.innerHTML = assistantMessages.slice(0, 20).map(m => {
@@ -4382,7 +4393,7 @@ function updateDriveUI() {
         if(last !== nowDateStr()) {
             if($("btnTabAdmin")) $("btnTabAdmin").classList.add("needs-backup");
             setTimeout(function() {
-                let msg = currentLang==='ar' ? '⚠️ تذكير: لم تقم بتصدير نسخة Excel اليوم' : '⚠️ Backup reminder';
+                let msg = currentLang==='ar' ? 'âڑ ï¸ڈ طھط°ظƒظٹط±: ظ„ظ… طھظ‚ظ… ط¨طھطµط¯ظٹط± ظ†ط³ط®ط© Excel ط§ظ„ظٹظˆظ…' : 'âڑ ï¸ڈ Backup reminder';
                 showToast(msg, 'warning');
             }, 3000);
         }
@@ -4419,7 +4430,7 @@ function updateDriveUI() {
                 totalRemaining += remain;
 
                 if (remain > 0) {
-                    debtors.push({ id: s.id, name: s.name || "بدون اسم", className: sClass || "عام", remain: remain });
+                    debtors.push({ id: s.id, name: s.name || "ط¨ط¯ظˆظ† ط§ط³ظ…", className: sClass || "ط¹ط§ظ…", remain: remain });
                 }
             }
         }
@@ -4442,14 +4453,14 @@ function updateDriveUI() {
                         <td>${d.id}</td>
                         <td><b>${d.name}</b></td>
                         <td><span class="badge" style="background:${gColor}; border-color:${gColor}; color:#fff;">${d.className}</span></td>
-                        <td style="color:var(--danger); font-weight:bold;">${d.remain} ج</td>
+                        <td style="color:var(--danger); font-weight:bold;">${d.remain} ط¬</td>
                     `;
                     tr.style.cursor = "pointer";
                     tr.onclick = function() { window.extOpen(d.id); };
                     tbody.appendChild(tr);
                 }
                 if (debtors.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="4" class="mutedCenter">${currentLang === 'ar' ? "🎉 لا يوجد طلاب مديونين، الجميع خالص." : "🎉 No debtors found."}</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="4" class="mutedCenter">${currentLang === 'ar' ? "ًںژ‰ ظ„ط§ ظٹظˆط¬ط¯ ط·ظ„ط§ط¨ ظ…ط¯ظٹظˆظ†ظٹظ†طŒ ط§ظ„ط¬ظ…ظٹط¹ ط®ط§ظ„طµ." : "ًںژ‰ No debtors found."}</td></tr>`;
                 }
             }
         }
@@ -4466,7 +4477,7 @@ function updateDriveUI() {
             notes: $("evalNotes") ? $("evalNotes").value.trim() : "",
             followupPlan: $("evalFollowupPlan") ? $("evalFollowupPlan").value.trim() : "",
             needs: $("evalNeeds") ? $("evalNeeds").value.trim() : "",
-            finalRate: $("evalFinalRate") ? $("evalFinalRate").value : "⭐⭐⭐⭐⭐ ممتاز"
+            finalRate: $("evalFinalRate") ? $("evalFinalRate").value : "â­گâ­گâ­گâ­گâ­گ ظ…ظ…طھط§ط²"
         };
         saveAll();
         showToast(t("msg_saved"), "success");
@@ -4474,11 +4485,11 @@ function updateDriveUI() {
 
     function exportColoredReport() {
         if (typeof XLSX === "undefined") {
-            return showToast("⚠️ مكتبة الإكسيل غير موجودة", "err");
+            return showToast("âڑ ï¸ڈ ظ…ظƒطھط¨ط© ط§ظ„ط¥ظƒط³ظٹظ„ ط؛ظٹط± ظ…ظˆط¬ظˆط¯ط©", "err");
         }
         const wb = XLSX.utils.book_new();
 
-        // --- الشيت الأول: الملخص المالي التحليلي ---
+        // --- ط§ظ„ط´ظٹطھ ط§ظ„ط£ظˆظ„: ط§ظ„ظ…ظ„ط®طµ ط§ظ„ظ…ط§ظ„ظٹ ط§ظ„طھط­ظ„ظٹظ„ظٹ ---
         let totalExpected = 0;
         let totalPaid = 0;
         let totalRemaining = 0;
@@ -4499,21 +4510,21 @@ function updateDriveUI() {
                 totalRemaining += remain;
 
                 if (remain > 0) {
-                    debtors.push({ id: s.id, name: s.name || "بدون اسم", className: sClass || "عام", remain: remain });
+                    debtors.push({ id: s.id, name: s.name || "ط¨ط¯ظˆظ† ط§ط³ظ…", className: sClass || "ط¹ط§ظ…", remain: remain });
                 }
             }
         }
 
         const finSummaryRows = [
-            ["البند", "المبلغ (جنيه)"],
-            ["إجمالي المطلوب (الكامل)", totalExpected],
-            ["إجمالي المحصل (الفعلي)", totalPaid],
-            ["إجمالي المتبقي (المديونيات)", totalRemaining]
+            ["ط§ظ„ط¨ظ†ط¯", "ط§ظ„ظ…ط¨ظ„ط؛ (ط¬ظ†ظٹظ‡)"],
+            ["ط¥ط¬ظ…ط§ظ„ظٹ ط§ظ„ظ…ط·ظ„ظˆط¨ (ط§ظ„ظƒط§ظ…ظ„)", totalExpected],
+            ["ط¥ط¬ظ…ط§ظ„ظٹ ط§ظ„ظ…ط­طµظ„ (ط§ظ„ظپط¹ظ„ظٹ)", totalPaid],
+            ["ط¥ط¬ظ…ط§ظ„ظٹ ط§ظ„ظ…طھط¨ظ‚ظٹ (ط§ظ„ظ…ط¯ظٹظˆظ†ظٹط§طھ)", totalRemaining]
         ];
         const wsSummary = XLSX.utils.aoa_to_sheet(finSummaryRows);
         wsSummary["!cols"] = [{ wch: 30 }, { wch: 20 }];
         
-        // تنسيق الألوان للملخص المالي (متوافق مع xlsx-js-style)
+        // طھظ†ط³ظٹظ‚ ط§ظ„ط£ظ„ظˆط§ظ† ظ„ظ„ظ…ظ„ط®طµ ط§ظ„ظ…ط§ظ„ظٹ (ظ…طھظˆط§ظپظ‚ ظ…ط¹ xlsx-js-style)
         if (wsSummary["A1"]) wsSummary["A1"].s = { fill: { fgColor: { rgb: "2B3648" } }, font: { color: { rgb: "FFFFFF" }, bold: true }, alignment: { horizontal: "center" } };
         if (wsSummary["B1"]) wsSummary["B1"].s = { fill: { fgColor: { rgb: "2B3648" } }, font: { color: { rgb: "FFFFFF" }, bold: true }, alignment: { horizontal: "center" } };
         
@@ -4526,17 +4537,17 @@ function updateDriveUI() {
         if (wsSummary["A4"]) wsSummary["A4"].s = { font: { bold: true }, alignment: { horizontal: "right" } };
         if (wsSummary["B4"]) wsSummary["B4"].s = { fill: { fgColor: { rgb: "F8D7DA" } }, font: { bold: true, color: { rgb: "721C24" } }, alignment: { horizontal: "center" } };
 
-        XLSX.utils.book_append_sheet(wb, wsSummary, "الملخص المالي");
+        XLSX.utils.book_append_sheet(wb, wsSummary, "ط§ظ„ظ…ظ„ط®طµ ط§ظ„ظ…ط§ظ„ظٹ");
 
-        // --- الشيت الثاني: قائمة الطلاب المديونين ---
-        const debtRows = [["كود الطالب", "اسم الطالب", "الباقة", "المبلغ المتبقي عليه"]];
+        // --- ط§ظ„ط´ظٹطھ ط§ظ„ط«ط§ظ†ظٹ: ظ‚ط§ط¦ظ…ط© ط§ظ„ط·ظ„ط§ط¨ ط§ظ„ظ…ط¯ظٹظˆظ†ظٹظ† ---
+        const debtRows = [["ظƒظˆط¯ ط§ظ„ط·ط§ظ„ط¨", "ط§ط³ظ… ط§ظ„ط·ط§ظ„ط¨", "ط§ظ„ط¨ط§ظ‚ط©", "ط§ظ„ظ…ط¨ظ„ط؛ ط§ظ„ظ…طھط¨ظ‚ظٹ ط¹ظ„ظٹظ‡"]];
         for (let i = 0; i < debtors.length; i++) {
             debtRows.push([debtors[i].id, debtors[i].name, debtors[i].className, debtors[i].remain]);
         }
         const wsDebts = XLSX.utils.aoa_to_sheet(debtRows);
         wsDebts["!cols"] = [{ wch: 15 }, { wch: 30 }, { wch: 20 }, { wch: 25 }];
         
-        // تنسيق عناوين قائمة المديونيات
+        // طھظ†ط³ظٹظ‚ ط¹ظ†ط§ظˆظٹظ† ظ‚ط§ط¦ظ…ط© ط§ظ„ظ…ط¯ظٹظˆظ†ظٹط§طھ
         const debtHeaders = ["A1", "B1", "C1", "D1"];
         for (let h = 0; h < debtHeaders.length; h++) {
             if (wsDebts[debtHeaders[h]]) wsDebts[debtHeaders[h]].s = { fill: { fgColor: { rgb: "721C24" } }, font: { color: { rgb: "FFFFFF" }, bold: true }, alignment: { horizontal: "center" } };
@@ -4547,21 +4558,21 @@ function updateDriveUI() {
             if (wsDebts["C" + r]) wsDebts["C" + r].s = { alignment: { horizontal: "center" } };
             if (wsDebts["D" + r]) wsDebts["D" + r].s = { fill: { fgColor: { rgb: "F8D7DA" } }, font: { bold: true, color: { rgb: "721C24" } }, alignment: { horizontal: "center" } };
         }
-        XLSX.utils.book_append_sheet(wb, wsDebts, "قائمة المديونيات");
+        XLSX.utils.book_append_sheet(wb, wsDebts, "ظ‚ط§ط¦ظ…ط© ط§ظ„ظ…ط¯ظٹظˆظ†ظٹط§طھ");
 
-        // --- الشيت الثالث: تقرير التقييم الإداري ---
+        // --- ط§ظ„ط´ظٹطھ ط§ظ„ط«ط§ظ„ط«: طھظ‚ط±ظٹط± ط§ظ„طھظ‚ظٹظٹظ… ط§ظ„ط¥ط¯ط§ط±ظٹ ---
         const evalRows = [
-            ["عنصر التقييم", "البيان / التفاصيل"],
-            ["اسم السنتر", evalData.centerName || ""],
-            ["المسؤول", evalData.manager || ""],
-            ["الباقات", evalData.packages || ""],
-            ["عدد الطلبة", evalData.studentsCount || ""],
-            ["الكورسات الحالية", evalData.currentCourses || ""],
-            ["فرص التعاون", evalData.collabOpps || ""],
-            ["ملاحظات", evalData.notes || ""],
-            ["خطة المتابعة", evalData.followupPlan || ""],
-            ["احتياجات السنتر أو المقترحات", evalData.needs || ""],
-            ["التقييم النهائي", evalData.finalRate || ""]
+            ["ط¹ظ†طµط± ط§ظ„طھظ‚ظٹظٹظ…", "ط§ظ„ط¨ظٹط§ظ† / ط§ظ„طھظپط§طµظٹظ„"],
+            ["ط§ط³ظ… ط§ظ„ط³ظ†طھط±", evalData.centerName || ""],
+            ["ط§ظ„ظ…ط³ط¤ظˆظ„", evalData.manager || ""],
+            ["ط§ظ„ط¨ط§ظ‚ط§طھ", evalData.packages || ""],
+            ["ط¹ط¯ط¯ ط§ظ„ط·ظ„ط¨ط©", evalData.studentsCount || ""],
+            ["ط§ظ„ظƒظˆط±ط³ط§طھ ط§ظ„ط­ط§ظ„ظٹط©", evalData.currentCourses || ""],
+            ["ظپط±طµ ط§ظ„طھط¹ط§ظˆظ†", evalData.collabOpps || ""],
+            ["ظ…ظ„ط§ط­ط¸ط§طھ", evalData.notes || ""],
+            ["ط®ط·ط© ط§ظ„ظ…طھط§ط¨ط¹ط©", evalData.followupPlan || ""],
+            ["ط§ط­طھظٹط§ط¬ط§طھ ط§ظ„ط³ظ†طھط± ط£ظˆ ط§ظ„ظ…ظ‚طھط±ط­ط§طھ", evalData.needs || ""],
+            ["ط§ظ„طھظ‚ظٹظٹظ… ط§ظ„ظ†ظ‡ط§ط¦ظٹ", evalData.finalRate || ""]
         ];
         const wsEval = XLSX.utils.aoa_to_sheet(evalRows);
         wsEval["!cols"] = [{ wch: 30 }, { wch: 50 }];
@@ -4573,10 +4584,10 @@ function updateDriveUI() {
             if (wsEval["A" + r]) wsEval["A" + r].s = { font: { bold: true }, alignment: { horizontal: "right" } };
             if (wsEval["B" + r]) wsEval["B" + r].s = { alignment: { horizontal: "right", wrapText: true } };
         }
-        XLSX.utils.book_append_sheet(wb, wsEval, "التقييم الإداري");
+        XLSX.utils.book_append_sheet(wb, wsEval, "ط§ظ„طھظ‚ظٹظٹظ… ط§ظ„ط¥ط¯ط§ط±ظٹ");
 
-        XLSX.writeFile(wb, `تقرير_السنتر_التحليلي_${nowDateStr()}.xlsx`);
-        showToast(currentLang === 'ar' ? "تم تصدير التقرير الملون بنجاح ✅" : "Colored Report Exported ✅", "success");
+        XLSX.writeFile(wb, `طھظ‚ط±ظٹط±_ط§ظ„ط³ظ†طھط±_ط§ظ„طھط­ظ„ظٹظ„ظٹ_${nowDateStr()}.xlsx`);
+        showToast(currentLang === 'ar' ? "طھظ… طھطµط¯ظٹط± ط§ظ„طھظ‚ط±ظٹط± ط§ظ„ظ…ظ„ظˆظ† ط¨ظ†ط¬ط§ط­ âœ…" : "Colored Report Exported âœ…", "success");
     }
 
     on("exportReportExcelBtn", "click", exportColoredReport);
@@ -4603,26 +4614,26 @@ function updateDriveUI() {
         for(let i=0; i<arr.length; i++) {
             let item = arr[i];
             totalRev += toInt(item.amount);
-            let mBadge = item.method === "instapay" ? "📱 إنستاباي" : (item.method === "wallet" ? "🟢 فودافون كاش/محفظة" : "💵 كاش");
+            let mBadge = item.method === "instapay" ? "ًں“± ط¥ظ†ط³طھط§ط¨ط§ظٹ" : (item.method === "wallet" ? "ًںں¢ ظپظˆط¯ط§ظپظˆظ† ظƒط§ط´/ظ…ط­ظپط¸ط©" : "ًں’µ ظƒط§ط´");
             let badgeBg = item.method === "instapay" ? "#e3f2fd" : (item.method === "wallet" ? "#e8f5e9" : "#eef2f5");
             let badgeColor = item.method === "instapay" ? "#0288d1" : (item.method === "wallet" ? "#2e7d32" : "#333");
 
             h += `
             <div class="item flexBetween" style="margin-bottom:10px; padding:12px; background:var(--bg-surface); border:1px solid var(--border); border-radius:8px;">
                 <div>
-                    <b>${item.name}</b> <span class="badge" style="background:#eee; color:#333;">${item.className || "عام"}</span>
+                    <b>${item.name}</b> <span class="badge" style="background:#eee; color:#333;">${item.className || "ط¹ط§ظ…"}</span>
                     <span class="badge" style="background:${badgeBg}; color:${badgeColor}; font-size:0.8em; margin-inline-start:5px;">${mBadge}</span>
-                    <div style="font-size:0.8em; color:var(--text-secondary); margin-top:4px;">⏰ ${item.timestamp || ""} ${item.phone ? `| 📞 ${item.phone}` : ""}</div>
+                    <div style="font-size:0.8em; color:var(--text-secondary); margin-top:4px;">âڈ° ${item.timestamp || ""} ${item.phone ? `| ًں“‍ ${item.phone}` : ""}</div>
                 </div>
                 <div class="row" style="width:auto; gap:10px;">
-                    <span style="color:var(--success); font-weight:bold; font-size:1.1em;">+ ${item.amount} ج</span>
-                    ${item.phone ? `<button class="btn success smallBtn iconOnly" title="مراسلة واتساب" onclick="window.open('https://wa.me/20${item.phone}', '_blank')">💬</button>` : ""}
-                    <button class="btn danger smallBtn iconOnly delete-sess-btn" data-date="${d}" data-index="${i}" title="حذف وإلغاء الدفعة">🗑️</button>
+                    <span style="color:var(--success); font-weight:bold; font-size:1.1em;">+ ${item.amount} ط¬</span>
+                    ${item.phone ? `<button class="btn success smallBtn iconOnly" title="ظ…ط±ط§ط³ظ„ط© ظˆط§طھط³ط§ط¨" onclick="window.open('https://wa.me/20${item.phone}', '_blank')">ًں’¬</button>` : ""}
+                    <button class="btn danger smallBtn iconOnly delete-sess-btn" data-date="${d}" data-index="${i}" title="ط­ط°ظپ ظˆط¥ظ„ط؛ط§ط، ط§ظ„ط¯ظپط¹ط©">ًں—‘ï¸ڈ</button>
                 </div>
             </div>`;
         }
 
-        if(count === 0) h = `<div class="mutedCenter">لا يوجد طلاب مسجلين بالحصة لهذا اليوم</div>`;
+        if(count === 0) h = `<div class="mutedCenter">ظ„ط§ ظٹظˆط¬ط¯ ط·ظ„ط§ط¨ ظ…ط³ط¬ظ„ظٹظ† ط¨ط§ظ„ط­طµط© ظ„ظ‡ط°ط§ ط§ظ„ظٹظˆظ…</div>`;
         slist.innerHTML = h;
 
         if($("sessCountBadge")) $("sessCountBadge").textContent = count;
@@ -4632,13 +4643,13 @@ function updateDriveUI() {
             btn.onclick = function() {
                 let dt = this.getAttribute("data-date");
                 let idx = toInt(this.getAttribute("data-index"));
-                if(confirm("⚠️ متأكد من حذف وإلغاء حضور هذا الطالب المالي لليوم؟")) {
+                if(confirm("âڑ ï¸ڈ ظ…طھط£ظƒط¯ ظ…ظ† ط­ط°ظپ ظˆط¥ظ„ط؛ط§ط، ط­ط¶ظˆط± ظ‡ط°ط§ ط§ظ„ط·ط§ظ„ط¨ ط§ظ„ظ…ط§ظ„ظٹ ظ„ظ„ظٹظˆظ…طں")) {
                     let delItem = sessionStudentsByDate[dt][idx];
                     revenueByDate[dt] = Math.max(0, (revenueByDate[dt] || 0) - toInt(delItem.amount));
                     sessionStudentsByDate[dt].splice(idx, 1);
                     saveAll();
                     renderSessionStudentsList(dt);
-                    showToast("تم إلغاء تسجيل الحضور والمبلغ 🗑️");
+                    showToast("طھظ… ط¥ظ„ط؛ط§ط، طھط³ط¬ظٹظ„ ط§ظ„ط­ط¶ظˆط± ظˆط§ظ„ظ…ط¨ظ„ط؛ ًں—‘ï¸ڈ");
                 }
             };
         });
@@ -4647,12 +4658,12 @@ function updateDriveUI() {
     on("saveSessionStudentBtn", "click", function() {
         let name = $("sessStName") ? $("sessStName").value.trim() : "";
         let phone = $("sessStPhone") ? $("sessStPhone").value.trim() : "";
-        let className = $("sessStClass") ? $("sessStClass").value : "حصة فردية";
+        let className = $("sessStClass") ? $("sessStClass").value : "ط­طµط© ظپط±ط¯ظٹط©";
         let amount = $("sessStAmount") ? toInt($("sessStAmount").value) : 0;
         let method = $("sessStMethod") ? $("sessStMethod").value : "cash";
 
         if(!name || amount <= 0) {
-            showToast("⚠️ يرجى إدخال اسم الطالب والمبلغ بشكل صحيح", "warning");
+            showToast("âڑ ï¸ڈ ظٹط±ط¬ظ‰ ط¥ط¯ط®ط§ظ„ ط§ط³ظ… ط§ظ„ط·ط§ظ„ط¨ ظˆط§ظ„ظ…ط¨ظ„ط؛ ط¨ط´ظƒظ„ طµط­ظٹط­", "warning");
             return;
         }
 
@@ -4674,7 +4685,7 @@ function updateDriveUI() {
 
         saveAll();
         renderSessionStudentsList(today);
-        showToast("تم تسجيل حضور الحصة وتحصيل المبلغ بنجاح ✅", "success");
+        showToast("طھظ… طھط³ط¬ظٹظ„ ط­ط¶ظˆط± ط§ظ„ط­طµط© ظˆطھط­طµظٹظ„ ط§ظ„ظ…ط¨ظ„ط؛ ط¨ظ†ط¬ط§ط­ âœ…", "success");
         playSound("success");
 
         if($("sessStName")) $("sessStName").value = "";
@@ -4682,9 +4693,9 @@ function updateDriveUI() {
         if($("sessStAmount")) $("sessStAmount").value = "";
 
         if(phone) {
-            let centerMgr = evalData.manager || "إدارة السنتر";
-            let mName = method === "instapay" ? "إنستاباي 📱" : (method === "wallet" ? "فودافون كاش 🟢" : "كاش 💵");
-            let msg = `مرحباً ${name}،\nتم تسجيل حضورك بنجاح لحصة اليوم (${className}) ✅\nالمبلغ المدفوع: ${amount} ج (${mName}).\n\nمع تحيات: أ/ ${centerMgr}`;
+            let centerMgr = evalData.manager || "ط¥ط¯ط§ط±ط© ط§ظ„ط³ظ†طھط±";
+            let mName = method === "instapay" ? "ط¥ظ†ط³طھط§ط¨ط§ظٹ ًں“±" : (method === "wallet" ? "ظپظˆط¯ط§ظپظˆظ† ظƒط§ط´ ًںں¢" : "ظƒط§ط´ ًں’µ");
+            let msg = `ظ…ط±ط­ط¨ط§ظ‹ ${name}طŒ\nطھظ… طھط³ط¬ظٹظ„ ط­ط¶ظˆط±ظƒ ط¨ظ†ط¬ط§ط­ ظ„ط­طµط© ط§ظ„ظٹظˆظ… (${className}) âœ…\nط§ظ„ظ…ط¨ظ„ط؛ ط§ظ„ظ…ط¯ظپظˆط¹: ${amount} ط¬ (${mName}).\n\nظ…ط¹ طھط­ظٹط§طھ: ط£/ ${centerMgr}`;
             window.open(`https://wa.me/20${phone}?text=${encodeURIComponent(msg)}`, '_blank');
         }
     });
@@ -4705,16 +4716,16 @@ function updateDriveUI() {
             if(s.payments && s.payments.length > 0) {
                 for(let j=0; j<s.payments.length; j++) {
                     if(s.payments[j].date === today) {
-                        let sClass = s.className ? s.className.trim() : "عام";
+                        let sClass = s.className ? s.className.trim() : "ط¹ط§ظ…";
                         let req = (sClass && groupFees[sClass] !== undefined) ? toInt(groupFees[sClass]) : 0;
                         let remain = req > 0 ? (req - s.paid) : 0;
                         if(remain < 0) remain = 0;
                         
                         let m = s.payments[j].method || "cash";
-                        let mBadge = "💵 كاش";
+                        let mBadge = "ًں’µ ظƒط§ط´";
                         let badgeBg = "#eef2f5"; let badgeColor = "#333";
-                        if (m === "instapay") { mBadge = "📱 إنستاباي"; badgeBg = "#e3f2fd"; badgeColor = "#0288d1"; }
-                        if (m === "wallet") { mBadge = "🟢 فودافون كاش/محفظة"; badgeBg = "#e8f5e9"; badgeColor = "#2e7d32"; }
+                        if (m === "instapay") { mBadge = "ًں“± ط¥ظ†ط³طھط§ط¨ط§ظٹ"; badgeBg = "#e3f2fd"; badgeColor = "#0288d1"; }
+                        if (m === "wallet") { mBadge = "ًںں¢ ظپظˆط¯ط§ظپظˆظ† ظƒط§ط´/ظ…ط­ظپط¸ط©"; badgeBg = "#e8f5e9"; badgeColor = "#2e7d32"; }
 
                         html += `
                         <div class="item flexBetween" style="margin-bottom:8px; cursor:pointer;" onclick="document.getElementById('revenueModal').classList.add('hidden'); window.extOpen('${s.id}')">
@@ -4723,8 +4734,8 @@ function updateDriveUI() {
                                 <span class="badge" style="background:${badgeBg}; color:${badgeColor}; font-size:0.8em; margin-inline-start:5px;">${mBadge}</span>
                             </div>
                             <div style="text-align:left;">
-                                <span style="color:var(--success); font-weight:bold;">+ ${s.payments[j].amount} ج</span><br>
-                                <span style="font-size:11px; color:#666;">المتبقي: ${remain} ج</span>
+                                <span style="color:var(--success); font-weight:bold;">+ ${s.payments[j].amount} ط¬</span><br>
+                                <span style="font-size:11px; color:#666;">ط§ظ„ظ…طھط¨ظ‚ظٹ: ${remain} ط¬</span>
                             </div>
                         </div>`;
                         count++;
@@ -4736,19 +4747,19 @@ function updateDriveUI() {
         let sArr = sessionStudentsByDate[today] || [];
         for(let i=0; i<sArr.length; i++) {
             let item = sArr[i];
-            let mBadge = item.method === "instapay" ? "📱 إنستاباي" : (item.method === "wallet" ? "🟢 فودافون كاش/محفظة" : "💵 كاش");
+            let mBadge = item.method === "instapay" ? "ًں“± ط¥ظ†ط³طھط§ط¨ط§ظٹ" : (item.method === "wallet" ? "ًںں¢ ظپظˆط¯ط§ظپظˆظ† ظƒط§ط´/ظ…ط­ظپط¸ط©" : "ًں’µ ظƒط§ط´");
             let badgeBg = item.method === "instapay" ? "#e3f2fd" : (item.method === "wallet" ? "#e8f5e9" : "#eef2f5");
             let badgeColor = item.method === "instapay" ? "#0288d1" : (item.method === "wallet" ? "#2e7d32" : "#333");
 
             html += `
             <div class="item flexBetween" style="margin-bottom:8px; cursor:pointer;" onclick="document.getElementById('revenueModal').classList.add('hidden'); window.switchTab('SessionStudents'); if($('sessFilterDate')) $('sessFilterDate').value='${today}'; renderSessionStudentsList('${today}');">
                 <div>
-                    <b>${item.name}</b> <span class="badge" style="background:#fff3e0; color:#e65100;">طالب حصة 🎟️</span> <span class="badge" style="background:#eee; color:#333;">${item.className || "عام"}</span>
+                    <b>${item.name}</b> <span class="badge" style="background:#fff3e0; color:#e65100;">ط·ط§ظ„ط¨ ط­طµط© ًںژںï¸ڈ</span> <span class="badge" style="background:#eee; color:#333;">${item.className || "ط¹ط§ظ…"}</span>
                     <span class="badge" style="background:${badgeBg}; color:${badgeColor}; font-size:0.8em; margin-inline-start:5px;">${mBadge}</span>
                 </div>
                 <div style="text-align:left;">
-                    <span style="color:var(--success); font-weight:bold;">+ ${item.amount} ج</span><br>
-                    <span style="font-size:11px; color:#666;">دفع فوري</span>
+                    <span style="color:var(--success); font-weight:bold;">+ ${item.amount} ط¬</span><br>
+                    <span style="font-size:11px; color:#666;">ط¯ظپط¹ ظپظˆط±ظٹ</span>
                 </div>
             </div>`;
             count++;
@@ -4781,7 +4792,7 @@ function updateDriveUI() {
                     updateStudentUI(scannedId);
                     updateTopStats();
                 } else if (scannedId) {
-                    showToast("الطالب غير مسجل: " + scannedId, "err");
+                    showToast("ط§ظ„ط·ط§ظ„ط¨ ط؛ظٹط± ظ…ط³ط¬ظ„: " + scannedId, "err");
                     showFullscreenFeedback(false, false);
                 }
             }
@@ -4869,33 +4880,33 @@ function updateDriveUI() {
             <div class="card item-card flexBetween wrap" style="background: var(--bg-inset); border: 1px solid var(--border); padding: 18px; border-radius: 10px; margin-bottom: 12px; gap: 15px;">
                 <div style="flex: 1; min-width: 220px;">
                     <div style="display:flex; align-items:center; gap:8px;">
-                        <span style="font-size:1.5em;">📘</span>
+                        <span style="font-size:1.5em;">ًں“ک</span>
                         <h4 style="margin:0; color:var(--text); font-size:1.2em;">${b.name}</h4>
                     </div>
                     <div style="font-size:0.9em; color:var(--text-secondary); margin-top:8px; display:flex; gap:15px; flex-wrap:wrap;">
-                        <span>الكمية الكلية: <b>${qty}</b></span>
-                        <span>سعر النسخة: <b>${price} ج</b></span>
-                        <span style="color:#10b981;">المباع: <b>${sold}</b></span>
-                        <span style="color:#f59e0b;">المخزون المتبقي: <b>${remain}</b></span>
+                        <span>ط§ظ„ظƒظ…ظٹط© ط§ظ„ظƒظ„ظٹط©: <b>${qty}</b></span>
+                        <span>ط³ط¹ط± ط§ظ„ظ†ط³ط®ط©: <b>${price} ط¬</b></span>
+                        <span style="color:#10b981;">ط§ظ„ظ…ط¨ط§ط¹: <b>${sold}</b></span>
+                        <span style="color:#f59e0b;">ط§ظ„ظ…ط®ط²ظˆظ† ط§ظ„ظ…طھط¨ظ‚ظٹ: <b>${remain}</b></span>
                     </div>
                 </div>
                 <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
                     <div style="background:var(--bg-surface); padding:8px 15px; border-radius:8px; border:1px solid var(--border); text-align:center;">
-                        <span style="font-size:0.8em; color:var(--text-secondary); display:block;">عائد المذكرة</span>
-                        <strong style="color:var(--primary); font-size:1.2em;">${rev} ج</strong>
+                        <span style="font-size:0.8em; color:var(--text-secondary); display:block;">ط¹ط§ط¦ط¯ ط§ظ„ظ…ط°ظƒط±ط©</span>
+                        <strong style="color:var(--primary); font-size:1.2em;">${rev} ط¬</strong>
                     </div>
                     <button class="btn success" style="padding:10px 18px; font-weight:bold; font-size:1.05em; display:flex; align-items:center; gap:5px;" onclick="sellBookletCopy('${id}')">
-                        🛒 بيع نسخة (+1)
+                        ًں›’ ط¨ظٹط¹ ظ†ط³ط®ط© (+1)
                     </button>
-                    <button class="btn warning smallBtn" title="إرجاع نسخة (-1)" onclick="returnBookletCopy('${id}')">➖</button>
-                    <button class="btn primary smallBtn" title="تعديل العدد الكلي المستلم" onclick="editBookletQty('${id}')">✏️</button>
-                    <button class="btn danger smallBtn" title="حذف المذكرة" onclick="deleteBooklet('${id}')">🗑️</button>
+                    <button class="btn warning smallBtn" title="ط¥ط±ط¬ط§ط¹ ظ†ط³ط®ط© (-1)" onclick="returnBookletCopy('${id}')">â‍–</button>
+                    <button class="btn primary smallBtn" title="طھط¹ط¯ظٹظ„ ط§ظ„ط¹ط¯ط¯ ط§ظ„ظƒظ„ظٹ ط§ظ„ظ…ط³طھظ„ظ…" onclick="editBookletQty('${id}')">âœڈï¸ڈ</button>
+                    <button class="btn danger smallBtn" title="ط­ط°ظپ ط§ظ„ظ…ط°ظƒط±ط©" onclick="deleteBooklet('${id}')">ًں—‘ï¸ڈ</button>
                 </div>
             </div>`;
         }
         
         if (keys.length === 0) {
-            h = `<div class="mutedCenter" style="padding: 30px;">لا توجد مذكرات أو ورق مسجل بالمخزون حالياً .. أضف مذكرة جديدة بالترويسة أعلاه 📚</div>`;
+            h = `<div class="mutedCenter" style="padding: 30px;">ظ„ط§ طھظˆط¬ط¯ ظ…ط°ظƒط±ط§طھ ط£ظˆ ظˆط±ظ‚ ظ…ط³ط¬ظ„ ط¨ط§ظ„ظ…ط®ط²ظˆظ† ط­ط§ظ„ظٹط§ظ‹ .. ط£ط¶ظپ ظ…ط°ظƒط±ط© ط¬ط¯ظٹط¯ط© ط¨ط§ظ„طھط±ظˆظٹط³ط© ط£ط¹ظ„ط§ظ‡ ًں“ڑ</div>`;
         }
         
         blist.innerHTML = h;
@@ -4904,7 +4915,7 @@ function updateDriveUI() {
         if($("statTotalCopiesReceived")) $("statTotalCopiesReceived").textContent = totalReceived;
         if($("statTotalCopiesSold")) $("statTotalCopiesSold").textContent = totalSold;
         if($("statTotalCopiesRemain")) $("statTotalCopiesRemain").textContent = totalRemain;
-        if($("statTotalBookletsRevenue")) $("statTotalBookletsRevenue").textContent = totalRevenue + " ج";
+        if($("statTotalBookletsRevenue")) $("statTotalBookletsRevenue").textContent = totalRevenue + " ط¬";
     };
 
     on("btnSaveBooklet", "click", function() {
@@ -4912,8 +4923,8 @@ function updateDriveUI() {
         let qty = $("bookletQtyInp") ? toInt($("bookletQtyInp").value) : 0;
         let price = $("bookletPriceInp") ? toInt($("bookletPriceInp").value) : 0;
         
-        if (!name) { showToast("يرجى إدخال اسم المذكرة أو الورق", "err"); return; }
-        if (qty <= 0) { showToast("يرجى إدخال عدد النسخ المستلمة", "err"); return; }
+        if (!name) { showToast("ظٹط±ط¬ظ‰ ط¥ط¯ط®ط§ظ„ ط§ط³ظ… ط§ظ„ظ…ط°ظƒط±ط© ط£ظˆ ط§ظ„ظˆط±ظ‚", "err"); return; }
+        if (qty <= 0) { showToast("ظٹط±ط¬ظ‰ ط¥ط¯ط®ط§ظ„ ط¹ط¯ط¯ ط§ظ„ظ†ط³ط® ط§ظ„ظ…ط³طھظ„ظ…ط©", "err"); return; }
         
         let id = "b_" + Date.now();
         bookletsStock[id] = { name: name, qty: qty, price: price, sold: 0 };
@@ -4923,7 +4934,7 @@ function updateDriveUI() {
         if($("bookletNameInp")) $("bookletNameInp").value = "";
         if($("bookletQtyInp")) $("bookletQtyInp").value = "";
         if($("bookletPriceInp")) $("bookletPriceInp").value = "";
-        showToast("تم استلام وإضافة المذكرة للمخزون بنجاح ✅", "success");
+        showToast("طھظ… ط§ط³طھظ„ط§ظ… ظˆط¥ط¶ط§ظپط© ط§ظ„ظ…ط°ظƒط±ط© ظ„ظ„ظ…ط®ط²ظˆظ† ط¨ظ†ط¬ط§ط­ âœ…", "success");
         playSound("beep");
     });
 
@@ -4931,18 +4942,18 @@ function updateDriveUI() {
         if (!bookletsStock[id]) return;
         let b = bookletsStock[id];
         if (b.sold >= b.qty) {
-            showToast("⚠️ انتهى مخزون هذه المذكرة، يرجى تعديل العدد الكلي إذا قمت بطباعة نسخ إضافية.", "err");
+            showToast("âڑ ï¸ڈ ط§ظ†طھظ‡ظ‰ ظ…ط®ط²ظˆظ† ظ‡ط°ظ‡ ط§ظ„ظ…ط°ظƒط±ط©طŒ ظٹط±ط¬ظ‰ طھط¹ط¯ظٹظ„ ط§ظ„ط¹ط¯ط¯ ط§ظ„ظƒظ„ظٹ ط¥ط°ط§ ظ‚ظ…طھ ط¨ط·ط¨ط§ط¹ط© ظ†ط³ط® ط¥ط¶ط§ظپظٹط©.", "err");
             playSound("error");
             return;
         }
         b.sold += 1;
         
-        // تسجيل العائد في إيرادات اليوم التلقائية بالخزينة كاش
+        // طھط³ط¬ظٹظ„ ط§ظ„ط¹ط§ط¦ط¯ ظپظٹ ط¥ظٹط±ط§ط¯ط§طھ ط§ظ„ظٹظˆظ… ط§ظ„طھظ„ظ‚ط§ط¦ظٹط© ط¨ط§ظ„ط®ط²ظٹظ†ط© ظƒط§ط´
         let today = nowDateStr();
         if(!revenueByDate[today]) revenueByDate[today] = [];
         revenueByDate[today].push({
-            stId: `مبيعات مذكرات (#${b.name})`,
-            stName: `بيع نسخة مذكرة: ${b.name}`,
+            stId: `ظ…ط¨ظٹط¹ط§طھ ظ…ط°ظƒط±ط§طھ (#${b.name})`,
+            stName: `ط¨ظٹط¹ ظ†ط³ط®ط© ظ…ط°ظƒط±ط©: ${b.name}`,
             amount: b.price,
             method: "cash",
             ts: Date.now()
@@ -4950,7 +4961,7 @@ function updateDriveUI() {
         
         saveAll();
         renderBookletsStock();
-        showToast(`تم بيع نسخة من ${b.name} وإضافة ${b.price} ج للخزينة كاش ✅`, "success");
+        showToast(`طھظ… ط¨ظٹط¹ ظ†ط³ط®ط© ظ…ظ† ${b.name} ظˆط¥ط¶ط§ظپط© ${b.price} ط¬ ظ„ظ„ط®ط²ظٹظ†ط© ظƒط§ط´ âœ…`, "success");
         playSound("beep");
     };
 
@@ -4958,26 +4969,26 @@ function updateDriveUI() {
         if (!bookletsStock[id]) return;
         let b = bookletsStock[id];
         if (b.sold <= 0) {
-            showToast("لم يتم بيع أي نسخة من هذه المذكرة لإرجاعها", "err");
+            showToast("ظ„ظ… ظٹطھظ… ط¨ظٹط¹ ط£ظٹ ظ†ط³ط®ط© ظ…ظ† ظ‡ط°ظ‡ ط§ظ„ظ…ط°ظƒط±ط© ظ„ط¥ط±ط¬ط§ط¹ظ‡ط§", "err");
             return;
         }
         b.sold -= 1;
         saveAll();
         renderBookletsStock();
-        showToast(`تم إرجاع نسخة من ${b.name} بنجاح ➖`, "warning");
+        showToast(`طھظ… ط¥ط±ط¬ط§ط¹ ظ†ط³ط®ط© ظ…ظ† ${b.name} ط¨ظ†ط¬ط§ط­ â‍–`, "warning");
     };
 
     window.editBookletQty = function(id) {
         if (!bookletsStock[id]) return;
         let b = bookletsStock[id];
-        let nQty = prompt(`تعديل العدد الكلي المستلم لمذكرة (${b.name}):`, b.qty);
+        let nQty = prompt(`طھط¹ط¯ظٹظ„ ط§ظ„ط¹ط¯ط¯ ط§ظ„ظƒظ„ظٹ ط§ظ„ظ…ط³طھظ„ظ… ظ„ظ…ط°ظƒط±ط© (${b.name}):`, b.qty);
         if (nQty !== null) {
             let q = toInt(nQty);
             if (q >= 0) {
                 b.qty = q;
                 saveAll();
                 renderBookletsStock();
-                showToast("تم تحديث العدد الكلي بنجاح ✅");
+                showToast("طھظ… طھط­ط¯ظٹط« ط§ظ„ط¹ط¯ط¯ ط§ظ„ظƒظ„ظٹ ط¨ظ†ط¬ط§ط­ âœ…");
             }
         }
     };
@@ -4985,11 +4996,11 @@ function updateDriveUI() {
     window.deleteBooklet = function(id) {
         if (!bookletsStock[id]) return;
         let b = bookletsStock[id];
-        if (confirm(`هل أنت متأكد من حذف مذكرة (${b.name}) من قائمة الجرد؟`)) {
+        if (confirm(`ظ‡ظ„ ط£ظ†طھ ظ…طھط£ظƒط¯ ظ…ظ† ط­ط°ظپ ظ…ط°ظƒط±ط© (${b.name}) ظ…ظ† ظ‚ط§ط¦ظ…ط© ط§ظ„ط¬ط±ط¯طں`)) {
             delete bookletsStock[id];
             saveAll();
             renderBookletsStock();
-            showToast("تم حذف المذكرة من قائمة المخزون 🗑️");
+            showToast("طھظ… ط­ط°ظپ ط§ظ„ظ…ط°ظƒط±ط© ظ…ظ† ظ‚ط§ط¦ظ…ط© ط§ظ„ظ…ط®ط²ظˆظ† ًں—‘ï¸ڈ");
         }
     };
 
@@ -4998,10 +5009,10 @@ function updateDriveUI() {
     // ==========================================
     window.populateMarketingGroups = function() {
         const sel = $("marketingTargetGroupSelect"); if(!sel) return;
-        let html = `<option value="">-- اختر الباقة / المجموعة --</option>`;
+        let html = `<option value="">-- ط§ط®طھط± ط§ظ„ط¨ط§ظ‚ط© / ط§ظ„ظ…ط¬ظ…ظˆط¹ط© --</option>`;
         let keys = Object.keys(groupFees);
         for(let i=0; i<keys.length; i++) {
-            html += `<option value="${keys[i]}">${keys[i]} (${groupFees[keys[i]]} ج)</option>`;
+            html += `<option value="${keys[i]}">${keys[i]} (${groupFees[keys[i]]} ط¬)</option>`;
         }
         sel.innerHTML = html;
     };
@@ -5015,7 +5026,7 @@ function updateDriveUI() {
         let msgInp = $("marketingMsgBody");
         if (val === "debtors" && msgInp) {
             if (!msgInp.value || msgInp.value.trim() === "") {
-                msgInp.value = "مساء الخير أ/ [اسم_الطالب]،\nنتمنى أن تكون بكل خير.\nحابة أفكّرك بأن الرصيد المتبقي من رسوم الكورس هو [المبلغ] ج، ونستأذنك في استكماله خلال حضورك في أقرب محاضرة لضمان استمرار الخدمة بسلاسة.\nشكراً جداً لتعاونك معنا 🤍";
+                msgInp.value = "ظ…ط³ط§ط، ط§ظ„ط®ظٹط± ط£/ [ط§ط³ظ…_ط§ظ„ط·ط§ظ„ط¨]طŒ\nظ†طھظ…ظ†ظ‰ ط£ظ† طھظƒظˆظ† ط¨ظƒظ„ ط®ظٹط±.\nط­ط§ط¨ط© ط£ظپظƒظ‘ط±ظƒ ط¨ط£ظ† ط§ظ„ط±طµظٹط¯ ط§ظ„ظ…طھط¨ظ‚ظٹ ظ…ظ† ط±ط³ظˆظ… ط§ظ„ظƒظˆط±ط³ ظ‡ظˆ [ط§ظ„ظ…ط¨ظ„ط؛] ط¬طŒ ظˆظ†ط³طھط£ط°ظ†ظƒ ظپظٹ ط§ط³طھظƒظ…ط§ظ„ظ‡ ط®ظ„ط§ظ„ ط­ط¶ظˆط±ظƒ ظپظٹ ط£ظ‚ط±ط¨ ظ…ط­ط§ط¶ط±ط© ظ„ط¶ظ…ط§ظ† ط§ط³طھظ…ط±ط§ط± ط§ظ„ط®ط¯ظ…ط© ط¨ط³ظ„ط§ط³ط©.\nط´ظƒط±ط§ظ‹ ط¬ط¯ط§ظ‹ ظ„طھط¹ط§ظˆظ†ظƒ ظ…ط¹ظ†ط§ ًں¤چ";
             }
         }
     });
@@ -5030,7 +5041,7 @@ function updateDriveUI() {
         let sKeys = Object.keys(students);
         
         if (filter === "session") {
-            // تجميع أرقام طلاب الحصة الفورية لليوم أو لكل الأيام
+            // طھط¬ظ…ظٹط¹ ط£ط±ظ‚ط§ظ… ط·ظ„ط§ط¨ ط§ظ„ط­طµط© ط§ظ„ظپظˆط±ظٹط© ظ„ظ„ظٹظˆظ… ط£ظˆ ظ„ظƒظ„ ط§ظ„ط£ظٹط§ظ…
             let sDates = Object.keys(sessionStudentsByDate);
             let seenPhones = {};
             for(let d=0; d<sDates.length; d++) {
@@ -5039,7 +5050,7 @@ function updateDriveUI() {
                     let sess = arr[k];
                     if (sess.phone && sess.phone.trim() !== "" && !seenPhones[sess.phone]) {
                         seenPhones[sess.phone] = true;
-                        list.push({ name: sess.name || "طالب حصة", phone: sess.phone, desc: `طالب حصة (${sDates[d]})`, remain: 0 });
+                        list.push({ name: sess.name || "ط·ط§ظ„ط¨ ط­طµط©", phone: sess.phone, desc: `ط·ط§ظ„ط¨ ط­طµط© (${sDates[d]})`, remain: 0 });
                     }
                 }
             }
@@ -5056,18 +5067,18 @@ function updateDriveUI() {
                 let remain = req - paid;
                 
                 if (filter === "all") {
-                    list.push({ name: st.name, phone: p, desc: `باقة: ${st.className || "عام"}`, remain: remain > 0 ? remain : 0 });
+                    list.push({ name: st.name, phone: p, desc: `ط¨ط§ظ‚ط©: ${st.className || "ط¹ط§ظ…"}`, remain: remain > 0 ? remain : 0 });
                 } else if (filter === "groups") {
                     if (grp && stClassName === grp) {
-                        list.push({ name: st.name, phone: p, desc: `باقة: ${grp}`, remain: remain > 0 ? remain : 0 });
+                        list.push({ name: st.name, phone: p, desc: `ط¨ط§ظ‚ط©: ${grp}`, remain: remain > 0 ? remain : 0 });
                     }
                 } else if (filter === "vip") {
                     if (st.rank === "vip") {
-                        list.push({ name: st.name, phone: p, desc: `⭐ VIP`, remain: remain > 0 ? remain : 0 });
+                        list.push({ name: st.name, phone: p, desc: `â­گ VIP`, remain: remain > 0 ? remain : 0 });
                     }
                 } else if (filter === "debtors") {
                     if (req > 0 && remain > 0) {
-                        list.push({ name: st.name, phone: p, desc: `متبقي عليه: ${remain} ج`, remain: remain });
+                        list.push({ name: st.name, phone: p, desc: `ظ…طھط¨ظ‚ظٹ ط¹ظ„ظٹظ‡: ${remain} ط¬`, remain: remain });
                     }
                 }
             }
@@ -5087,10 +5098,10 @@ function updateDriveUI() {
             
             let customMsg = msgBody;
             if (customMsg) {
-                customMsg = customMsg.replace(/\[اسم_الطالب\]/g, item.name);
-                customMsg = customMsg.replace(/\[المبلغ\]/g, item.remain || 0);
+                customMsg = customMsg.replace(/\[ط§ط³ظ…_ط§ظ„ط·ط§ظ„ط¨\]/g, item.name);
+                customMsg = customMsg.replace(/\[ط§ظ„ظ…ط¨ظ„ط؛\]/g, item.remain || 0);
             } else {
-                customMsg = `مرحباً بك أ/ ${item.name}،\nيرجى التواصل مع إدارة السنتر.`;
+                customMsg = `ظ…ط±ط­ط¨ط§ظ‹ ط¨ظƒ ط£/ ${item.name}طŒ\nظٹط±ط¬ظ‰ ط§ظ„طھظˆط§طµظ„ ظ…ط¹ ط¥ط¯ط§ط±ط© ط§ظ„ط³ظ†طھط±.`;
             }
             
             let waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(customMsg)}`;
@@ -5098,40 +5109,40 @@ function updateDriveUI() {
             h += `
             <div class="card item-card flexBetween wrap" style="background: var(--bg-inset); border: 1px solid var(--border); padding: 15px; border-radius: 10px; margin-bottom: 10px; gap: 15px;">
                 <div>
-                    <h4 style="margin:0; color:var(--text); font-size:1.1em;">👤 ${item.name}</h4>
+                    <h4 style="margin:0; color:var(--text); font-size:1.1em;">ًں‘¤ ${item.name}</h4>
                     <div style="font-size:0.9em; color:var(--text-secondary); margin-top:5px;">
-                        <span>📱 ${item.phone}</span> | <span style="color:var(--primary);">${item.desc}</span>
+                        <span>ًں“± ${item.phone}</span> | <span style="color:var(--primary);">${item.desc}</span>
                     </div>
                 </div>
                 <a href="${waUrl}" target="_blank" class="btn success" style="padding:8px 18px; text-decoration:none; font-weight:bold; display:flex; align-items:center; gap:5px;">
-                    💬 مراسلة واتساب
+                    ًں’¬ ظ…ط±ط§ط³ظ„ط© ظˆط§طھط³ط§ط¨
                 </a>
             </div>`;
         }
         
         if (list.length === 0) {
-            h = `<div class="mutedCenter" style="padding:30px;">لا يوجد أرقام هواتف مسجلة تطابق الشريحة المحددة 🎯</div>`;
+            h = `<div class="mutedCenter" style="padding:30px;">ظ„ط§ ظٹظˆط¬ط¯ ط£ط±ظ‚ط§ظ… ظ‡ظˆط§طھظپ ظ…ط³ط¬ظ„ط© طھط·ط§ط¨ظ‚ ط§ظ„ط´ط±ظٹط­ط© ط§ظ„ظ…ط­ط¯ط¯ط© ًںژ¯</div>`;
         }
         clist.innerHTML = h;
     };
 
     on("btnFilterCampaign", "click", function() {
         filterCampaignTarget();
-        showToast("تم تصفية الأرقام المستهدفة بنجاح 🔍");
+        showToast("طھظ… طھطµظپظٹط© ط§ظ„ط£ط±ظ‚ط§ظ… ط§ظ„ظ…ط³طھظ‡ط¯ظپط© ط¨ظ†ط¬ط§ط­ ًں”چ");
     });
 
     on("btnCopyCampaignNumbers", "click", function() {
         if (currentCampaignList.length === 0) {
-            showToast("قائمة الأرقام فارغة، قم بتصفية داتا الطلاب أولاً.", "err");
+            showToast("ظ‚ط§ط¦ظ…ط© ط§ظ„ط£ط±ظ‚ط§ظ… ظپط§ط±ط؛ط©طŒ ظ‚ظ… ط¨طھطµظپظٹط© ط¯ط§طھط§ ط§ظ„ط·ظ„ط§ط¨ ط£ظˆظ„ط§ظ‹.", "err");
             return;
         }
         let arr = currentCampaignList.map(item => item.phone);
         let textToCopy = arr.join("\n");
         navigator.clipboard.writeText(textToCopy).then(() => {
-            showToast(`تم نسخ ${arr.length} رقم موبايل بنجاح 📋 (جاهز للصق في برامج الإرسال)`, "success");
+            showToast(`طھظ… ظ†ط³ط® ${arr.length} ط±ظ‚ظ… ظ…ظˆط¨ط§ظٹظ„ ط¨ظ†ط¬ط§ط­ ًں“‹ (ط¬ط§ظ‡ط² ظ„ظ„طµظ‚ ظپظٹ ط¨ط±ط§ظ…ط¬ ط§ظ„ط¥ط±ط³ط§ظ„)`, "success");
             playSound("beep");
         }).catch(() => {
-            showToast("فشل النسخ المباشر، يرجى تكرار المحاولة", "err");
+            showToast("ظپط´ظ„ ط§ظ„ظ†ط³ط® ط§ظ„ظ…ط¨ط§ط´ط±طŒ ظٹط±ط¬ظ‰ طھظƒط±ط§ط± ط§ظ„ظ…ط­ط§ظˆظ„ط©", "err");
         });
     });
 
@@ -5154,22 +5165,22 @@ function updateDriveUI() {
         let msgBody = $("marketingMsgBody") ? $("marketingMsgBody").value.trim() : "";
         let customMsg = msgBody;
         if (customMsg) {
-            customMsg = customMsg.replace(/\[اسم_الطالب\]/g, item.name);
-            customMsg = customMsg.replace(/\[المبلغ\]/g, item.remain || 0);
+            customMsg = customMsg.replace(/\[ط§ط³ظ…_ط§ظ„ط·ط§ظ„ط¨\]/g, item.name);
+            customMsg = customMsg.replace(/\[ط§ظ„ظ…ط¨ظ„ط؛\]/g, item.remain || 0);
         } else {
-            customMsg = `مرحباً بك أ/ ${item.name}،\nيرجى التواصل مع إدارة السنتر.`;
+            customMsg = `ظ…ط±ط­ط¨ط§ظ‹ ط¨ظƒ ط£/ ${item.name}طŒ\nظٹط±ط¬ظ‰ ط§ظ„طھظˆط§طµظ„ ظ…ط¹ ط¥ط¯ط§ط±ط© ط§ظ„ط³ظ†طھط±.`;
         }
 
         let cleanPhone = item.phone.startsWith("0") ? "+2" + item.phone : "+20" + item.phone;
         let waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(customMsg)}`;
 
-        // فتح نافذة المحادثة
+        // ظپطھط­ ظ†ط§ظپط°ط© ط§ظ„ظ…ط­ط§ط¯ط«ط©
         window.open(waUrl, '_blank');
 
         broadcastCurrentIndex++;
         if ($("broadcastProgressText")) $("broadcastProgressText").textContent = `${broadcastCurrentIndex} / ${currentCampaignList.length}`;
         if ($("broadcastCurrentStudentInfo")) {
-            $("broadcastCurrentStudentInfo").innerHTML = `✨ جاري التواصل مع: <b>${item.name}</b> (📱 ${item.phone}) <br><span style="font-size:0.85em; color:#94a3b8; font-weight:normal;">💡 اضغط إرسال (Enter) في نافذة الواتساب المفتوحة.. النافذة التالية تفتح قريباً.</span>`;
+            $("broadcastCurrentStudentInfo").innerHTML = `âœ¨ ط¬ط§ط±ظٹ ط§ظ„طھظˆط§طµظ„ ظ…ط¹: <b>${item.name}</b> (ًں“± ${item.phone}) <br><span style="font-size:0.85em; color:#94a3b8; font-weight:normal;">ًں’، ط§ط¶ط؛ط· ط¥ط±ط³ط§ظ„ (Enter) ظپظٹ ظ†ط§ظپط°ط© ط§ظ„ظˆط§طھط³ط§ط¨ ط§ظ„ظ…ظپطھظˆط­ط©.. ط§ظ„ظ†ط§ظپط°ط© ط§ظ„طھط§ظ„ظٹط© طھظپطھط­ ظ‚ط±ظٹط¨ط§ظ‹.</span>`;
         }
 
         let pct = (broadcastCurrentIndex / currentCampaignList.length) * 100;
@@ -5180,7 +5191,7 @@ function updateDriveUI() {
             return;
         }
 
-        // بدء العد التنازلي للنافذة التالية
+        // ط¨ط¯ط، ط§ظ„ط¹ط¯ ط§ظ„طھظ†ط§ط²ظ„ظٹ ظ„ظ„ظ†ط§ظپط°ط© ط§ظ„طھط§ظ„ظٹط©
         broadcastCurrentCount = broadcastIntervalSeconds;
         if ($("broadcastTimerText")) $("broadcastTimerText").textContent = broadcastCurrentCount;
         
@@ -5199,18 +5210,18 @@ function updateDriveUI() {
         if (broadcastTimer) clearInterval(broadcastTimer);
         broadcastTimer = null;
         broadcastIsPaused = false;
-        if ($("btnPauseBroadcast")) $("btnPauseBroadcast").textContent = "⏸ إيقاف مؤقت";
-        if ($("broadcastStatusTitle")) $("broadcastStatusTitle").textContent = completed ? "🎉 اكتمل البث التلقائي بنجاح" : "⏹ تم إنهاء البث التلقائي";
-        if ($("broadcastStatusSub")) $("broadcastStatusSub").textContent = completed ? "تم فتح جميع المحادثات بنجاح وإرسال الإشعارات بدون التعرض لأي حظر." : "تم إيقاف عملية البث التلقائي بناءً على طلبك.";
+        if ($("btnPauseBroadcast")) $("btnPauseBroadcast").textContent = "âڈ¸ ط¥ظٹظ‚ط§ظپ ظ…ط¤ظ‚طھ";
+        if ($("broadcastStatusTitle")) $("broadcastStatusTitle").textContent = completed ? "ًںژ‰ ط§ظƒطھظ…ظ„ ط§ظ„ط¨ط« ط§ظ„طھظ„ظ‚ط§ط¦ظٹ ط¨ظ†ط¬ط§ط­" : "âڈ¹ طھظ… ط¥ظ†ظ‡ط§ط، ط§ظ„ط¨ط« ط§ظ„طھظ„ظ‚ط§ط¦ظٹ";
+        if ($("broadcastStatusSub")) $("broadcastStatusSub").textContent = completed ? "طھظ… ظپطھط­ ط¬ظ…ظٹط¹ ط§ظ„ظ…ط­ط§ط¯ط«ط§طھ ط¨ظ†ط¬ط§ط­ ظˆط¥ط±ط³ط§ظ„ ط§ظ„ط¥ط´ط¹ط§ط±ط§طھ ط¨ط¯ظˆظ† ط§ظ„طھط¹ط±ط¶ ظ„ط£ظٹ ط­ط¸ط±." : "طھظ… ط¥ظٹظ‚ط§ظپ ط¹ظ…ظ„ظٹط© ط§ظ„ط¨ط« ط§ظ„طھظ„ظ‚ط§ط¦ظٹ ط¨ظ†ط§ط،ظ‹ ط¹ظ„ظ‰ ط·ظ„ط¨ظƒ.";
         if ($("broadcastPulseIcon")) $("broadcastPulseIcon").style.animation = "none";
-        if ($("broadcastCurrentStudentInfo")) $("broadcastCurrentStudentInfo").innerHTML = completed ? "✅ اكتملت المهمة بنجاح" : "تم الإيقاف";
-        showToast(completed ? "اكتمل البث التلقائي الذكي لجميع الطلاب ✅" : "تم إيقاف البث التلقائي ⏹", completed ? "success" : "warning");
+        if ($("broadcastCurrentStudentInfo")) $("broadcastCurrentStudentInfo").innerHTML = completed ? "âœ… ط§ظƒطھظ…ظ„طھ ط§ظ„ظ…ظ‡ظ…ط© ط¨ظ†ط¬ط§ط­" : "طھظ… ط§ظ„ط¥ظٹظ‚ط§ظپ";
+        showToast(completed ? "ط§ظƒطھظ…ظ„ ط§ظ„ط¨ط« ط§ظ„طھظ„ظ‚ط§ط¦ظٹ ط§ظ„ط°ظƒظٹ ظ„ط¬ظ…ظٹط¹ ط§ظ„ط·ظ„ط§ط¨ âœ…" : "طھظ… ط¥ظٹظ‚ط§ظپ ط§ظ„ط¨ط« ط§ظ„طھظ„ظ‚ط§ط¦ظٹ âڈ¹", completed ? "success" : "warning");
         playSound(completed ? "beep" : "error");
     }
 
     on("btnStartAutoBroadcast", "click", function() {
         if (currentCampaignList.length === 0) {
-            showToast("⚠️ قائمة الأرقام فارغة، قم بتصفية داتا الطلاب أولاً.", "err");
+            showToast("âڑ ï¸ڈ ظ‚ط§ط¦ظ…ط© ط§ظ„ط£ط±ظ‚ط§ظ… ظپط§ط±ط؛ط©طŒ ظ‚ظ… ط¨طھطµظپظٹط© ط¯ط§طھط§ ط§ظ„ط·ظ„ط§ط¨ ط£ظˆظ„ط§ظ‹.", "err");
             return;
         }
         if (broadcastTimer) clearInterval(broadcastTimer);
@@ -5220,17 +5231,17 @@ function updateDriveUI() {
         broadcastCurrentCount = broadcastIntervalSeconds;
         
         if ($("broadcastControllerPanel")) $("broadcastControllerPanel").classList.remove("hidden");
-        if ($("broadcastStatusTitle")) $("broadcastStatusTitle").textContent = "🚀 جاري تشغيل البث التلقائي المضاد للحظر (Anti-Ban)...";
-        if ($("broadcastStatusSub")) $("broadcastStatusSub").textContent = "سيتم فتح نوافذ المحادثات تباعاً بفاصل زمني آمن لحماية حسابك من الحظر (Anti-Ban).";
+        if ($("broadcastStatusTitle")) $("broadcastStatusTitle").textContent = "ًںڑ€ ط¬ط§ط±ظٹ طھط´ط؛ظٹظ„ ط§ظ„ط¨ط« ط§ظ„طھظ„ظ‚ط§ط¦ظٹ ط§ظ„ظ…ط¶ط§ط¯ ظ„ظ„ط­ط¸ط± (Anti-Ban)...";
+        if ($("broadcastStatusSub")) $("broadcastStatusSub").textContent = "ط³ظٹطھظ… ظپطھط­ ظ†ظˆط§ظپط° ط§ظ„ظ…ط­ط§ط¯ط«ط§طھ طھط¨ط§ط¹ط§ظ‹ ط¨ظپط§طµظ„ ط²ظ…ظ†ظٹ ط¢ظ…ظ† ظ„ط­ظ…ط§ظٹط© ط­ط³ط§ط¨ظƒ ظ…ظ† ط§ظ„ط­ط¸ط± (Anti-Ban).";
         if ($("broadcastPulseIcon")) $("broadcastPulseIcon").style.animation = "pulse 1.5s infinite";
         if ($("broadcastProgressText")) $("broadcastProgressText").textContent = `0 / ${currentCampaignList.length}`;
         if ($("broadcastProgressBar")) $("broadcastProgressBar").style.width = "0%";
-        if ($("btnPauseBroadcast")) $("btnPauseBroadcast").textContent = "⏸ إيقاف مؤقت";
+        if ($("btnPauseBroadcast")) $("btnPauseBroadcast").textContent = "âڈ¸ ط¥ظٹظ‚ط§ظپ ظ…ط¤ظ‚طھ";
 
-        showToast("🚀 بدء تشغيل البث التلقائي الآمن، يرجى السماح بالنوافذ المنبثقة (Pop-ups)", "success");
+        showToast("ًںڑ€ ط¨ط¯ط، طھط´ط؛ظٹظ„ ط§ظ„ط¨ط« ط§ظ„طھظ„ظ‚ط§ط¦ظٹ ط§ظ„ط¢ظ…ظ†طŒ ظٹط±ط¬ظ‰ ط§ظ„ط³ظ…ط§ط­ ط¨ط§ظ„ظ†ظˆط§ظپط° ط§ظ„ظ…ظ†ط¨ط«ظ‚ط© (Pop-ups)", "success");
         playSound("beep");
         
-        // البدء بالنافذة الأولى فوراً
+        // ط§ظ„ط¨ط¯ط، ط¨ط§ظ„ظ†ط§ظپط°ط© ط§ظ„ط£ظˆظ„ظ‰ ظپظˆط±ط§ظ‹
         startNextBroadcastWindow();
     });
 
@@ -5238,15 +5249,15 @@ function updateDriveUI() {
         if (!broadcastTimer && !broadcastIsPaused) return;
         broadcastIsPaused = !broadcastIsPaused;
         if (broadcastIsPaused) {
-            this.textContent = "▶ استئناف البث";
-            if ($("broadcastStatusTitle")) $("broadcastStatusTitle").textContent = "⏸ البث التلقائي متوقف مؤقتاً...";
+            this.textContent = "â–¶ ط§ط³طھط¦ظ†ط§ظپ ط§ظ„ط¨ط«";
+            if ($("broadcastStatusTitle")) $("broadcastStatusTitle").textContent = "âڈ¸ ط§ظ„ط¨ط« ط§ظ„طھظ„ظ‚ط§ط¦ظٹ ظ…طھظˆظ‚ظپ ظ…ط¤ظ‚طھط§ظ‹...";
             if ($("broadcastPulseIcon")) $("broadcastPulseIcon").style.animation = "none";
-            showToast("تم إيقاف البث مؤقتاً ⏸", "warning");
+            showToast("طھظ… ط¥ظٹظ‚ط§ظپ ط§ظ„ط¨ط« ظ…ط¤ظ‚طھط§ظ‹ âڈ¸", "warning");
         } else {
-            this.textContent = "⏸ إيقاف مؤقت";
-            if ($("broadcastStatusTitle")) $("broadcastStatusTitle").textContent = "🚀 جاري تشغيل البث التلقائي المضاد للحظر (Anti-Ban)...";
+            this.textContent = "âڈ¸ ط¥ظٹظ‚ط§ظپ ظ…ط¤ظ‚طھ";
+            if ($("broadcastStatusTitle")) $("broadcastStatusTitle").textContent = "ًںڑ€ ط¬ط§ط±ظٹ طھط´ط؛ظٹظ„ ط§ظ„ط¨ط« ط§ظ„طھظ„ظ‚ط§ط¦ظٹ ط§ظ„ظ…ط¶ط§ط¯ ظ„ظ„ط­ط¸ط± (Anti-Ban)...";
             if ($("broadcastPulseIcon")) $("broadcastPulseIcon").style.animation = "pulse 1.5s infinite";
-            showToast("تم استئناف البث التلقائي ▶", "success");
+            showToast("طھظ… ط§ط³طھط¦ظ†ط§ظپ ط§ظ„ط¨ط« ط§ظ„طھظ„ظ‚ط§ط¦ظٹ â–¶", "success");
         }
     });
 
@@ -5298,7 +5309,7 @@ function updateDriveUI() {
             const isEnabled = e.target.checked;
             try {
                 await set(ref(database, `users/${getMid()}/settings/dailyApprovalEnabled`), isEnabled);
-                if (typeof showToast === "function") showToast(isEnabled ? "تم تفعيل الاعتماد اليومي" : "تم إيقاف الاعتماد اليومي", "success");
+                if (typeof showToast === "function") showToast(isEnabled ? "طھظ… طھظپط¹ظٹظ„ ط§ظ„ط§ط¹طھظ…ط§ط¯ ط§ظ„ظٹظˆظ…ظٹ" : "طھظ… ط¥ظٹظ‚ط§ظپ ط§ظ„ط§ط¹طھظ…ط§ط¯ ط§ظ„ظٹظˆظ…ظٹ", "success");
                 if (isEnabled) {
                     await update(ref(database, `users/${getMid()}/daily_status`), {
                         status: 'Pending',
@@ -5308,7 +5319,7 @@ function updateDriveUI() {
                 }
             } catch (err) {
                 console.error(err);
-                if (typeof showToast === "function") showToast("حدث خطأ أثناء حفظ الإعداد", "err");
+                if (typeof showToast === "function") showToast("ط­ط¯ط« ط®ط·ط£ ط£ط«ظ†ط§ط، ط­ظپط¸ ط§ظ„ط¥ط¹ط¯ط§ط¯", "err");
             }
         });
 
@@ -5320,7 +5331,7 @@ function updateDriveUI() {
                     lastDate: nowDateStr()
                 });
                 managerDailyRejectNoteContainer.classList.add("hidden");
-                if (typeof showToast === "function") showToast("تم اعتماد تقرير الأمس بنجاح. النظام مفتوح الآن للمساعدين.", "success");
+                if (typeof showToast === "function") showToast("طھظ… ط§ط¹طھظ…ط§ط¯ طھظ‚ط±ظٹط± ط§ظ„ط£ظ…ط³ ط¨ظ†ط¬ط§ط­. ط§ظ„ظ†ط¸ط§ظ… ظ…ظپطھظˆط­ ط§ظ„ط¢ظ† ظ„ظ„ظ…ط³ط§ط¹ط¯ظٹظ†.", "success");
             } catch (err) {
                 console.error(err);
             }
@@ -5333,7 +5344,7 @@ function updateDriveUI() {
         btnConfirmRejectDaily.addEventListener("click", async () => {
             const note = managerDailyRejectNote.value.trim();
             if(!note) {
-                if (typeof showToast === "function") showToast("برجاء كتابة سبب الرفض", "err");
+                if (typeof showToast === "function") showToast("ط¨ط±ط¬ط§ط، ظƒطھط§ط¨ط© ط³ط¨ط¨ ط§ظ„ط±ظپط¶", "err");
                 return;
             }
             try {
@@ -5344,7 +5355,7 @@ function updateDriveUI() {
                 });
                 managerDailyRejectNoteContainer.classList.add("hidden");
                 managerDailyRejectNote.value = '';
-                if (typeof showToast === "function") showToast("تم إيقاف النظام وإرسال سبب الرفض للمساعدين.", "warning");
+                if (typeof showToast === "function") showToast("طھظ… ط¥ظٹظ‚ط§ظپ ط§ظ„ظ†ط¸ط§ظ… ظˆط¥ط±ط³ط§ظ„ ط³ط¨ط¨ ط§ظ„ط±ظپط¶ ظ„ظ„ظ…ط³ط§ط¹ط¯ظٹظ†.", "warning");
             } catch (err) {
                 console.error(err);
             }
@@ -5378,14 +5389,14 @@ function updateDriveUI() {
                 
                 if (effectiveStatus === 'Rejected') {
                     contentBox.style.borderColor = "var(--danger)";
-                    assistantHardLockTitle.textContent = "تم إيقاف النظام (مرفوض)";
+                    assistantHardLockTitle.textContent = "طھظ… ط¥ظٹظ‚ط§ظپ ط§ظ„ظ†ط¸ط§ظ… (ظ…ط±ظپظˆط¶)";
                     assistantHardLockTitle.style.color = "var(--danger)";
-                    assistantHardLockMsg.innerHTML = `تم رفض تقرير الأمس من الإدارة بسبب:<br><strong style="color:var(--danger); display:block; margin-top:10px;">"${note}"</strong>`;
+                    assistantHardLockMsg.innerHTML = `طھظ… ط±ظپط¶ طھظ‚ط±ظٹط± ط§ظ„ط£ظ…ط³ ظ…ظ† ط§ظ„ط¥ط¯ط§ط±ط© ط¨ط³ط¨ط¨:<br><strong style="color:var(--danger); display:block; margin-top:10px;">"${note}"</strong>`;
                 } else {
                     contentBox.style.borderColor = "var(--warning)";
-                    assistantHardLockTitle.textContent = "النظام مغلق مؤقتاً";
+                    assistantHardLockTitle.textContent = "ط§ظ„ظ†ط¸ط§ظ… ظ…ط؛ظ„ظ‚ ظ…ط¤ظ‚طھط§ظ‹";
                     assistantHardLockTitle.style.color = "var(--warning)";
-                    assistantHardLockMsg.innerHTML = "في انتظار اعتماد الإدارة لتقرير الأمس لبدء العمل.";
+                    assistantHardLockMsg.innerHTML = "ظپظٹ ط§ظ†طھط¸ط§ط± ط§ط¹طھظ…ط§ط¯ ط§ظ„ط¥ط¯ط§ط±ط© ظ„طھظ‚ط±ظٹط± ط§ظ„ط£ظ…ط³ ظ„ط¨ط¯ط، ط§ظ„ط¹ظ…ظ„.";
                 }
             }
         }
@@ -5412,7 +5423,7 @@ function updateDriveUI() {
         if (btnSendBroadcast) {
             btnSendBroadcast.addEventListener("click", async () => {
                 const msg = broadcastMsgInput.value.trim();
-                if(!msg) return showToast("أدخل نص الإعلان", "warning");
+                if(!msg) return showToast("ط£ط¯ط®ظ„ ظ†طµ ط§ظ„ط¥ط¹ظ„ط§ظ†", "warning");
                 
                 const mid = getMid();
                 if(!mid) return;
@@ -5427,16 +5438,16 @@ function updateDriveUI() {
                 
                 try {
                     btnSendBroadcast.disabled = true;
-                    btnSendBroadcast.innerHTML = "جاري الإرسال...";
+                    btnSendBroadcast.innerHTML = "ط¬ط§ط±ظٹ ط§ظ„ط¥ط±ط³ط§ظ„...";
                     await set(ref(database, `users/${mid}/global_announcements/${pushId}`), payload);
                     broadcastMsgInput.value = '';
-                    showToast("تم إرسال الإعلان ✅", "success");
+                    showToast("طھظ… ط¥ط±ط³ط§ظ„ ط§ظ„ط¥ط¹ظ„ط§ظ† âœ…", "success");
                 } catch(e) {
                     console.error(e);
-                    showToast("فشل الإرسال", "err");
+                    showToast("ظپط´ظ„ ط§ظ„ط¥ط±ط³ط§ظ„", "err");
                 } finally {
                     btnSendBroadcast.disabled = false;
-                    btnSendBroadcast.innerHTML = "📢 نشر الإعلان";
+                    btnSendBroadcast.innerHTML = "ًں“¢ ظ†ط´ط± ط§ظ„ط¥ط¹ظ„ط§ظ†";
                 }
             });
         }
@@ -5466,19 +5477,19 @@ function updateDriveUI() {
                 // Render list
                 if (listEl) {
                     if (unifiedMessages.length === 0) {
-                        listEl.innerHTML = '<div style="text-align:center; padding:20px; color:#888;">لا توجد رسائل حالياً.</div>';
+                        listEl.innerHTML = '<div style="text-align:center; padding:20px; color:#888;">ظ„ط§ طھظˆط¬ط¯ ط±ط³ط§ط¦ظ„ ط­ط§ظ„ظٹط§ظ‹.</div>';
                     } else {
                         listEl.innerHTML = unifiedMessages.slice(0, 30).map(m => {
                             const dateStr = new Date(m.timestamp).toLocaleString("ar-EG", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
                             const isBroadcast = m._node === 'global_announcements';
-                            const badgeText = isBroadcast ? "المدير" : "تحديثات النظام";
+                            const badgeText = isBroadcast ? "ط§ظ„ظ…ط¯ظٹط±" : "طھط­ط¯ظٹط«ط§طھ ط§ظ„ظ†ط¸ط§ظ…";
                             const badgeBg = isBroadcast ? "var(--primary)" : "var(--success)";
                             const titleHtml = m.title ? `<div style="font-weight:bold; margin-bottom:4px;">${m.title}</div>` : '';
                             const msgText = (m.message || m.body || '').replace(/\n/g, '<br>');
 
                             return `
                                 <div class="notification-item" style="background:var(--bg-inset); padding:12px; border-radius:8px; border:1px solid var(--border); margin-bottom:8px;">
-                                    <div class="notification-trash-btn" onclick="window.deleteMessage('${m.id}', '${m._node}')" title="حذف الرسالة">
+                                    <div class="notification-trash-btn" onclick="window.deleteMessage('${m.id}', '${m._node}')" title="ط­ط°ظپ ط§ظ„ط±ط³ط§ظ„ط©">
                                         <i class="fas fa-trash"></i>
                                     </div>
                                     <div style="margin-bottom:8px;">
@@ -5507,7 +5518,7 @@ function updateDriveUI() {
                 if (isManager && managerBroadcastHistory) {
                     managerBroadcastHistory.innerHTML = '';
                     if(announcements.length === 0) {
-                        managerBroadcastHistory.innerHTML = '<div style="color:#777;">لا يوجد إعلانات سابقة.</div>';
+                        managerBroadcastHistory.innerHTML = '<div style="color:#777;">ظ„ط§ ظٹظˆط¬ط¯ ط¥ط¹ظ„ط§ظ†ط§طھ ط³ط§ط¨ظ‚ط©.</div>';
                     } else {
                         announcements.slice(0, 20).forEach(ann => {
                             const div = document.createElement("div");
@@ -5515,7 +5526,7 @@ function updateDriveUI() {
                             const d = new Date(ann.timestamp);
                             div.innerHTML = `
                                 <div style="display:flex; justify-content:space-between;">
-                                    <div style="font-size:0.85em; color:var(--text-secondary); margin-bottom:5px;">🕒 ${d.toLocaleString()}</div>
+                                    <div style="font-size:0.85em; color:var(--text-secondary); margin-bottom:5px;">ًں•’ ${d.toLocaleString()}</div>
                                     <div class="notification-trash-btn" style="position:static;" onclick="window.deleteMessage('${ann.id}', 'global_announcements')"><i class="fas fa-trash"></i></div>
                                 </div>
                                 <div style="font-weight:bold; margin-bottom:10px; color:var(--text-main);">${(ann.message||'').replace(/\n/g, '<br>')}</div>
@@ -5575,12 +5586,12 @@ function updateDriveUI() {
     async function syncWithFirebase() {
         if (syncInProgress) return;
         if (!window.CURRENT_MANAGER_ID) {
-            showToast("لا يوجد حساب مسجل للمزامنة.", "err");
+            showToast("ظ„ط§ ظٹظˆط¬ط¯ ط­ط³ط§ط¨ ظ…ط³ط¬ظ„ ظ„ظ„ظ…ط²ط§ظ…ظ†ط©.", "err");
             return;
         }
         
         syncInProgress = true;
-        updateSyncUI('syncing', 'جاري المزامنة اليدوية...');
+        updateSyncUI('syncing', 'ط¬ط§ط±ظٹ ط§ظ„ظ…ط²ط§ظ…ظ†ط© ط§ظ„ظٹط¯ظˆظٹط©...');
         
         try {
             const syncPromise = (async () => {
@@ -5594,14 +5605,14 @@ function updateDriveUI() {
 
                     if (!hasUnsavedChanges && localTimestamp >= remoteTimestamp) {
                         console.log("[Sync] Already fully synced.");
-                        showToast("كل البيانات متزامنة بالفعل ✅", "success");
-                        updateSyncUI('online', 'متصل ومتزامن ✅');
+                        showToast("ظƒظ„ ط§ظ„ط¨ظٹط§ظ†ط§طھ ظ…طھط²ط§ظ…ظ†ط© ط¨ط§ظ„ظپط¹ظ„ âœ…", "success");
+                        updateSyncUI('online', 'ظ…طھطµظ„ ظˆظ…طھط²ط§ظ…ظ† âœ…');
                         return;
                     }
 
                     if (localTimestamp > remoteTimestamp) {
-                        // Local is newer — push local data to Firebase
-                        console.log("[Sync] Local is newer → Pushing to Firebase");
+                        // Local is newer â€” push local data to Firebase
+                        console.log("[Sync] Local is newer â†’ Pushing to Firebase");
                         const dbRef = ref(database, `users/${window.CURRENT_MANAGER_ID}`);
                         await update(dbRef, {
                             'students': students,
@@ -5616,10 +5627,10 @@ function updateDriveUI() {
                             'booklets': bookletsStock,
                             '_lastModified': Date.now()
                         });
-                        showToast("تم رفع البيانات المحلية إلى السحابة ✅", "success");
+                        showToast("طھظ… ط±ظپط¹ ط§ظ„ط¨ظٹط§ظ†ط§طھ ط§ظ„ظ…ط­ظ„ظٹط© ط¥ظ„ظ‰ ط§ظ„ط³ط­ط§ط¨ط© âœ…", "success");
                     } else {
-                        // Remote is newer — pull and merge
-                        console.log("[Sync] Server is newer → Pulling from Firebase");
+                        // Remote is newer â€” pull and merge
+                        console.log("[Sync] Server is newer â†’ Pulling from Firebase");
                         
                         // Granular merge for students
                         const remoteStudents = remote.students || {};
@@ -5663,11 +5674,11 @@ function updateDriveUI() {
                         ]);
                         
                         updateTopStats(); updateFinanceSummary(); renderCharts();
-                        showToast("تم تحديث البيانات من السحابة ✅", "success");
+                        showToast("طھظ… طھط­ط¯ظٹط« ط§ظ„ط¨ظٹط§ظ†ط§طھ ظ…ظ† ط§ظ„ط³ط­ط§ط¨ط© âœ…", "success");
                     }
                 } else {
-                    // No remote data — push everything
-                    console.log("[Sync] No remote data found → Initial push");
+                    // No remote data â€” push everything
+                    console.log("[Sync] No remote data found â†’ Initial push");
                     const dbRef = ref(database, `users/${window.CURRENT_MANAGER_ID}`);
                     await update(dbRef, {
                         'students': students,
@@ -5682,11 +5693,11 @@ function updateDriveUI() {
                         'booklets': bookletsStock,
                         '_lastModified': Date.now()
                     });
-                    showToast("تم رفع البيانات لأول مرة ✅", "success");
+                    showToast("طھظ… ط±ظپط¹ ط§ظ„ط¨ظٹط§ظ†ط§طھ ظ„ط£ظˆظ„ ظ…ط±ط© âœ…", "success");
                 }
                 
                 hasUnsavedChanges = false;
-                updateSyncUI('online', 'متصل ومتزامن ✅');
+                updateSyncUI('online', 'ظ…طھطµظ„ ظˆظ…طھط²ط§ظ…ظ† âœ…');
             })();
 
             const timeoutPromise = new Promise((_, reject) => {
@@ -5698,11 +5709,11 @@ function updateDriveUI() {
         } catch(e) {
             console.error("[Sync] Error:", e);
             if (e.message === "SYNC_TIMEOUT") {
-                updateSyncUI('offline', 'فشلت المزامنة - لا يوجد اتصال بالإنترنت');
-                showToast("انتهى وقت المزامنة (تأكد من جودة الإنترنت) ❌", "err");
+                updateSyncUI('offline', 'ظپط´ظ„طھ ط§ظ„ظ…ط²ط§ظ…ظ†ط© - ظ„ط§ ظٹظˆط¬ط¯ ط§طھطµط§ظ„ ط¨ط§ظ„ط¥ظ†طھط±ظ†طھ');
+                showToast("ط§ظ†طھظ‡ظ‰ ظˆظ‚طھ ط§ظ„ظ…ط²ط§ظ…ظ†ط© (طھط£ظƒط¯ ظ…ظ† ط¬ظˆط¯ط© ط§ظ„ط¥ظ†طھط±ظ†طھ) â‌Œ", "err");
             } else {
-                updateSyncUI('offline', 'فشلت المزامنة - خطأ في السيرفر');
-                showToast("فشلت المزامنة. تأكد من اتصال الإنترنت.", "err");
+                updateSyncUI('offline', 'ظپط´ظ„طھ ط§ظ„ظ…ط²ط§ظ…ظ†ط© - ط®ط·ط£ ظپظٹ ط§ظ„ط³ظٹط±ظپط±');
+                showToast("ظپط´ظ„طھ ط§ظ„ظ…ط²ط§ظ…ظ†ط©. طھط£ظƒط¯ ظ…ظ† ط§طھطµط§ظ„ ط§ظ„ط¥ظ†طھط±ظ†طھ.", "err");
             }
         } finally {
             syncInProgress = false;
@@ -5720,7 +5731,7 @@ function updateDriveUI() {
 
     // Startup Sequence
     async function initSystem() {
-        // Step 0: Run storage migration (localStorage → IndexedDB)
+        // Step 0: Run storage migration (localStorage â†’ IndexedDB)
         await initStorageMigration();
         
         // Step 1: Load data (from IndexedDB first, then merge with Firebase)
@@ -5733,12 +5744,18 @@ function updateDriveUI() {
         initDailyApprovalSystem();
         initUnifiedInbox();
 
-        // مزامنة صامتة عند فتح البرنامج في يوم جديد
+        // ظ…ط²ط§ظ…ظ†ط© طµط§ظ…طھط© ط¹ظ†ط¯ ظپطھط­ ط§ظ„ط¨ط±ظ†ط§ظ…ط¬ ظپظٹ ظٹظˆظ… ط¬ط¯ظٹط¯
         if (localStorage.getItem("last_cloud_sync_date") !== nowDateStr()) {
             setTimeout(() => { 
                 if (typeof accessToken !== "undefined" && accessToken) backupToDrive(false); 
             }, 8000);
         }
     }
+
+    // INSTANT PRE-AUTH: Show correct screen immediately before async work
+    // Runs synchronously so user never sees login flash when already logged in
+    checkAuth();
+
     initSystem();
 });
+

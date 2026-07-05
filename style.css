@@ -1637,12 +1637,22 @@ body.flash-green::after { box-shadow: inset 0 0 25px 8px rgba(16,185,129,0.5); t
   position: relative;
   cursor: pointer;
 }
-.cloud-sync-indicator.online { color: #10b981; } /* Green for success */
-.cloud-sync-indicator.offline { color: #ef4444; } /* Red for error/offline */
-.cloud-sync-indicator.pending { color: #f59e0b; } /* Orange for pending */
-.cloud-sync-indicator .fa-sync-alt { color: var(--text-secondary); transition: all 0.3s ease; display: inline-block; }
-.cloud-sync-indicator.syncing #syncIcon { display: inline-block; animation: pulseCloud 1s ease-in-out infinite; color: #f59e0b; }
-.cloud-sync-indicator.syncing .fa-sync-alt { display: inline-block; animation: spinIcon 1s linear infinite; color: #f59e0b; }
+.cloud-sync-indicator.online  { color: #10b981; } /* Green — live & synced */
+.cloud-sync-indicator.offline { color: #ef4444; } /* Red — no internet / failed */
+.cloud-sync-indicator.pending { color: #f59e0b; } /* Orange — unsaved changes */
+.cloud-sync-indicator.syncing { color: #f59e0b; } /* Orange — uploading */
+
+/* Sub-icon: default muted, then spin + orange when syncing */
+.cloud-sync-indicator .fa-sync-alt {
+  color: var(--text-muted, #888);
+  display: inline-block;
+  transition: color 0.3s ease;
+}
+.cloud-sync-indicator.syncing .fa-sync-alt {
+  display: inline-block;
+  animation: spinIcon 0.8s linear infinite;
+  color: #f59e0b;
+}
 
 /* Inbox Message Actions */
 .notification-item {
@@ -1708,13 +1718,13 @@ body.flash-green::after { box-shadow: inset 0 0 25px 8px rgba(16,185,129,0.5); t
 }
 
 @keyframes pulseCloud {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.15); filter: brightness(1.2); }
-  100% { transform: scale(1); }
+  0%   { opacity: 1; }
+  50%  { opacity: 0.6; }
+  100% { opacity: 1; }
 }
 
 @keyframes spinIcon {
-  0% { transform: rotate(0deg); }
+  0%   { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
 
