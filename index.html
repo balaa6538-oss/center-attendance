@@ -14,7 +14,6 @@
   <meta name="theme-color" content="#0B1120">
 
   <link rel="stylesheet" href="style.css?v=STUDIFY_V3">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <script src="./assets/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
@@ -303,24 +302,24 @@
           </span>
         </div>
         <div class="topbar-end" style="position: relative;">
-          <!-- Cloud Sync Indicator (Enhanced) -->
-          <div id="cloudSyncIndicator" class="cloud-sync-indicator offline" title="مزامنة يدوية" style="position: relative; cursor: pointer; margin-inline-end: 10px;">
-            <span id="syncIcon"><i class="fas fa-cloud"></i></span>
+          <!-- Cloud Sync Indicator -->
+          <div id="cloudSyncIndicator" class="cloud-sync-indicator offline" title="غير متصل بالسحابة" style="position: relative; cursor: pointer; margin-inline-end: 10px;">
+            <span id="syncIcon">☁️</span>
             <span id="syncStatusDot" class="sync-status-dot offline"></span>
             <span id="syncPendingBadge" class="sync-pending-badge hidden">!</span>
-            <i class="fas fa-sync-alt" style="position: absolute; bottom: -2px; left: -2px; font-size: 0.45em; background: var(--bg-surface); border-radius: 50%; padding: 2px;"></i>
           </div>
-          
+
           <!-- Notifications Bell -->
           <div id="notificationsToggleBtn" class="topbar-icon-btn" title="رسائل وإشعارات" style="position: relative; cursor: pointer;">
-            <i class="fas fa-inbox"></i>
+            ✉️
             <span id="notificationsBadge" class="notification-badge hidden" style="position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; font-size: 0.7em; padding: 2px 5px; font-weight: bold;">0</span>
           </div>
           
           <!-- Notifications Dropdown -->
           <div id="notificationsDropdown" class="user-profile-dropdown hidden" style="position: absolute; top: 110%; inset-inline-end: 40px; width: 320px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); padding: 12px; z-index: 9999; display: flex; flex-direction: column; gap: 8px;">
             <div style="font-weight: bold; font-size: 0.95em; color: var(--primary); padding: 4px 8px; border-bottom: 1px solid var(--border); margin-bottom: 4px; display: flex; justify-content: space-between;">
-              <span><i class="fas fa-inbox"></i> رسائل وإشعارات</span>
+              <span>✉️ رسائل وإشعارات</span>
+              <span id="markAllReadBtn" style="cursor: pointer; font-size: 0.85em; color: var(--success); font-weight: normal;">تحديد كمقروء</span>
             </div>
             <div id="notificationsList" style="max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
               <div style="text-align: center; color: #888; padding: 10px;">لا توجد رسائل</div>
@@ -331,22 +330,22 @@
             <svg class="theme-svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
           </button>
           
-          <!-- COMPACT ICON TOGGLE BUTTON -->
-          <button id="userProfileToggleBtn" class="topbar-icon-btn" title="قائمة النظام والخروج"><i class="fas fa-cog"></i></button>
+          <!-- COMPACT ICON TOGGLE BUTTON (NO WORDS, REPLACES UNPROFESSIONAL LOGOUT BUTTON) -->
+          <button id="userProfileToggleBtn" class="topbar-icon-btn" title="قائمة النظام والخروج">⚙️</button>
           
           <!-- THE QUICK ACTION DROPDOWN / DRAWER -->
           <div id="userProfileDropdown" class="user-profile-dropdown hidden" style="position: absolute; top: 110%; inset-inline-end: 0; width: 260px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); padding: 12px; z-index: 9999; display: flex; flex-direction: column; gap: 8px;">
-            <div style="font-weight: bold; font-size: 0.95em; color: var(--primary); padding: 4px 8px; border-bottom: 1px solid var(--border); margin-bottom: 4px;" data-i18n="quick_controls_title"><i class="fas fa-tools"></i> قائمة التحكم السريعة</div>
+            <div style="font-weight: bold; font-size: 0.95em; color: var(--primary); padding: 4px 8px; border-bottom: 1px solid var(--border); margin-bottom: 4px;" data-i18n="quick_controls_title">🛠️ قائمة التحكم السريعة</div>
             
             <button id="quickActivityLogBtn" class="btn secondary adminOnly" style="width: 100%; display: flex; align-items: center; gap: 10px; padding: 8px 12px; font-weight: bold; font-size: 0.9em; text-align: start; justify-content: flex-start;">
-              <span><i class="fas fa-clipboard-list"></i></span> <span data-i18n="quick_activity_log">سجل العمليات (Activity Log)</span>
+              <span>📋</span> <span data-i18n="quick_activity_log">سجل العمليات (Activity Log)</span>
             </button>
             
             <div style="border-top: 1px solid var(--border); margin: 4px 0;"></div>
             
             <button id="toggleSoundsBtn" class="btn secondary" style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; font-weight: bold; font-size: 0.9em; text-align: start;">
               <div style="display: flex; align-items: center; gap: 10px;">
-                <span id="soundIcon"><i class="fas fa-volume-up"></i></span> <span>كتم الأصوات</span>
+                <span id="soundIcon">🔊</span> <span>كتم الأصوات</span>
               </div>
               <input type="checkbox" id="muteSoundsToggle" style="pointer-events: none;">
             </button>
@@ -354,7 +353,7 @@
             <div style="border-top: 1px solid var(--border); margin: 4px 0;"></div>
             
             <button id="logoutBtn" class="btn danger" style="width: 100%; padding: 10px; font-weight: bold; font-size: 0.95em; display: flex; align-items: center; justify-content: center; gap: 8px;" data-i18n="btn_logout">
-              <span><i class="fas fa-sign-out-alt"></i></span> <span>خروج من النظام</span>
+              <span>🚪</span> <span>خروج من النظام</span>
             </button>
           </div>
         </div>
