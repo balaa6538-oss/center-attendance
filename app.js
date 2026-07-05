@@ -5166,8 +5166,6 @@ function updateDriveUI() {
         }
     }
 
-    }
-
     // ==========================================
     // 25. NOTICE BOARD (Global Announcements)
     // ==========================================
@@ -5319,18 +5317,18 @@ function updateDriveUI() {
                 const isRead = !!reads[currentAsstId];
                 
                 const div = document.createElement("div");
-                div.style.cssText = \`background: \${isRead ? 'var(--bg-inset)' : 'var(--bg-surface)'}; padding:15px; border-radius:10px; border:1px solid var(--border); opacity: \${isRead ? '0.7' : '1'}; position: relative;\`;
+                div.style.cssText = `background: ${isRead ? 'var(--bg-inset)' : 'var(--bg-surface)'}; padding:15px; border-radius:10px; border:1px solid var(--border); opacity: ${isRead ? '0.7' : '1'}; position: relative;`;
                 
                 const d = new Date(ann.timestamp);
                 
                 // the red dot for unread
-                const dotHtml = isRead ? '' : \`<div style="position:absolute; top:15px; left:15px; width:10px; height:10px; border-radius:50%; background:var(--danger);"></div>\`;
+                const dotHtml = isRead ? '' : `<div style="position:absolute; top:15px; left:15px; width:10px; height:10px; border-radius:50%; background:var(--danger);"></div>`;
                 
-                div.innerHTML = \`
-                    \${dotHtml}
-                    <div style="font-size:0.85em; color:var(--text-secondary); margin-bottom:8px;">🕒 \${d.toLocaleString()}</div>
-                    <div style="font-weight:bold; color:var(--text-main); line-height: 1.5; padding-left: \${!isRead ? '20px' : '0'}">\${ann.message.replace(/\\n/g, '<br>')}</div>
-                \`;
+                div.innerHTML = `
+                    ${dotHtml}
+                    <div style="font-size:0.85em; color:var(--text-secondary); margin-bottom:8px;">🕒 ${d.toLocaleString()}</div>
+                    <div style="font-weight:bold; color:var(--text-main); line-height: 1.5; padding-left: ${!isRead ? '20px' : '0'}">${ann.message.replace(/\n/g, '<br>')}</div>
+                `;
                 
                 noticeBoardList.appendChild(div);
                 
@@ -5338,7 +5336,7 @@ function updateDriveUI() {
                     try {
                         const mid = getMid();
                         if (mid) {
-                            await update(ref(database, \`users/\${mid}/global_announcements/\${ann.id}/readBy\`), {
+                            await update(ref(database, `users/${mid}/global_announcements/${ann.id}/readBy`), {
                                 [currentAsstId]: true
                             });
                         }
