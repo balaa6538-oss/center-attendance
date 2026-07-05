@@ -5586,6 +5586,12 @@ function updateDriveUI() {
             showToast("لا يوجد حساب مسجل للمزامنة.", "err");
             return;
         }
+
+        if (!navigator.onLine || !isFirebaseConnected) {
+            updateSyncUI('offline', 'غير متصل بالإنترنت');
+            showToast("مفيش نت! يرجى التأكد من اتصالك بالإنترنت", "err");
+            return;
+        }
         
         syncInProgress = true;
         updateSyncUI('syncing', 'جاري المزامنة...');
@@ -5601,6 +5607,8 @@ function updateDriveUI() {
                     const localTimestamp = localTimestamps[K_STUDENTS] || 0;
 
                     if (!hasUnsavedChanges && localTimestamp >= remoteTimestamp) {
+                        // Artificial delay so user sees the animation and feels the sync
+                        await new Promise(r => setTimeout(r, 800));
                         showToast("كل البيانات متزامنة بالفعل ✅", "success");
                         return;
                     }

@@ -13,7 +13,17 @@
   <link rel="apple-touch-icon" href="icon-192.png">
   <meta name="theme-color" content="#0B1120">
 
+  <!-- FontAwesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="style.css?v=STUDIFY_V3">
+  
+  <!-- PREVENT THEME FLASH -->
+  <script>
+    (function() {
+      var savedTheme = localStorage.getItem("ca_theme") || "dark";
+      document.documentElement.setAttribute("data-theme", savedTheme);
+    })();
+  </script>
   
   <script src="./assets/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
@@ -304,7 +314,8 @@
         <div class="topbar-end" style="position: relative;">
           <!-- Cloud Sync Indicator -->
           <div id="cloudSyncIndicator" class="cloud-sync-indicator offline" title="غير متصل بالسحابة" style="position: relative; cursor: pointer; margin-inline-end: 10px;">
-            <span id="syncIcon">☁️</span>
+            <i class="fas fa-cloud" id="syncIcon"></i>
+            <i class="fas fa-sync-alt sync-sub-icon"></i>
             <span id="syncStatusDot" class="sync-status-dot offline"></span>
             <span id="syncPendingBadge" class="sync-pending-badge hidden">!</span>
           </div>
