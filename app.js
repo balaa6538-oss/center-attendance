@@ -10,7 +10,7 @@
    ============================================================================= */
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-import { getDatabase, ref, set, get, child, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
+import { getDatabase, ref, set, get, child, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
 
 const firebaseConfig = { 
     apiKey: "AIzaSyCIEfTmssuOHlRw2sbVs4KUOnmoCKxBGfQ", 
@@ -4018,6 +4018,18 @@ function updateDriveUI() {
         }
     }
 
+    // Notifications Dropdown toggle
+    if ($("notificationsToggleBtn")) {
+        $("notificationsToggleBtn").addEventListener("click", (e) => {
+            e.stopPropagation();
+            if ($("notificationsDropdown")) $("notificationsDropdown").classList.toggle("hidden");
+        });
+    }
+
+    if (window.CURRENT_ROLE !== "admin") {
+        // fetchAssistantMessages(); removed, handled by initUnifiedInbox
+    }
+
     // Load permissions for assistant on startup
     if (window.CURRENT_ROLE !== "admin" && window.CURRENT_MANAGER_ID && isFirebaseConnected) {
         (async () => {
@@ -5387,37 +5399,35 @@ function updateDriveUI() {
     // ==========================================
     // 25. NOTICE BOARD (Global Announcements)
     // ==========================================
-    function initNoticeBoardSystem() {
+    // ==========================================
+    // UNIFIED INBOX & BROADCAST SYSTEM
+    // ==========================================
+    function initUnifiedInbox() {
         const getMid = () => window.CURRENT_MANAGER_ID || localStorage.getItem("ca_manager_id");
-        
         const btnSendBroadcast = $("btnSendBroadcast");
         const broadcastMsgInput = $("broadcastMessageInput");
         const managerBroadcastHistory = $("managerBroadcastHistory");
+        const listEl = $("notificationsList");
+        const badge = $("notificationsBadge");
         
-        const btnNoticeBoard = $("btnNoticeBoard");
-        const noticeBadge = $("noticeBadge");
-        const noticeBoardModal = $("noticeBoardModal");
-        const closeNoticeBoardBtn = $("closeNoticeBoardBtn");
-        const noticeBoardList = $("noticeBoardList");
-        
-        let localAnnouncements = [];
-        let currentAsstId = localStorage.getItem("ca_auth_v2") || "unknown_assistant";
+        let unifiedMessages = [];
+        let hiddenMessages = JSON.parse(localStorage.getItem("ca_hidden_msgs") || "[]");
 
         // 1. Send Broadcast (Manager Only)
         if (btnSendBroadcast) {
             btnSendBroadcast.addEventListener("click", async () => {
                 const msg = broadcastMsgInput.value.trim();
-                if(!msg) return showToast(currentLang==='ar' ? "أدخل نص الإعلان" : "Enter message", "warning");
+                if(!msg) return showToast("أدخل نص الإعلان", "warning");
                 
                 const mid = getMid();
                 if(!mid) return;
                 
-                const pushId = Date.now().toString(); // simple ID
+                const pushId = Date.now().toString();
                 const payload = {
                     id: pushId,
                     message: msg,
                     timestamp: Date.now(),
-                    readBy: {}
+                    _node: 'global_announcements'
                 };
                 
                 try {
@@ -5425,143 +5435,143 @@ function updateDriveUI() {
                     btnSendBroadcast.innerHTML = "جاري الإرسال...";
                     await set(ref(database, `users/${mid}/global_announcements/${pushId}`), payload);
                     broadcastMsgInput.value = '';
-                    showToast(currentLang==='ar' ? "تم إرسال الإعلان لجميع المساعدين" : "Broadcast sent!", "success");
+                    showToast("تم إرسال الإعلان ✅", "success");
                 } catch(e) {
                     console.error(e);
-                    showToast(currentLang==='ar' ? "فشل الإرسال" : "Failed to send", "err");
+                    showToast("فشل الإرسال", "err");
                 } finally {
                     btnSendBroadcast.disabled = false;
                     btnSendBroadcast.innerHTML = "📢 نشر الإعلان";
                 }
             });
         }
-        
-        // 2. Listen to Announcements
-        // Need to wait until we know if it's manager or assistant
+
+        // 2. Listen to All Notifications (Unified)
         setTimeout(() => {
             const mid = getMid();
             if(!mid) return;
-            
-            onValue(ref(database, `users/${mid}/global_announcements`), (snap) => {
-                localAnnouncements = [];
-                let unreadCount = 0;
-                const isManager = window.CURRENT_ROLE === 'admin';
+
+            const isManager = window.CURRENT_ROLE === 'admin';
+            let announcements = [];
+            let assistantMsgs = [];
+
+            const renderUnifiedInbox = () => {
+                unifiedMessages = [...announcements, ...assistantMsgs];
                 
-                if(snap.exists()) {
-                    const data = snap.val();
-                    for(let key in data) {
-                        localAnnouncements.push(data[key]);
-                    }
-                    localAnnouncements.sort((a,b) => b.timestamp - a.timestamp);
-                }
+                // Sort newest top
+                unifiedMessages.sort((a,b) => b.timestamp - a.timestamp);
                 
-                if (isManager && managerBroadcastHistory) {
-                    renderManagerBroadcastHistory();
-                }
-                
-                if (!isManager && btnNoticeBoard) {
-                    btnNoticeBoard.style.display = 'inline-block';
-                    localAnnouncements.forEach(ann => {
-                        const reads = ann.readBy || {};
-                        if (!reads[currentAsstId]) {
-                            unreadCount++;
-                        }
-                    });
-                    
-                    if (unreadCount > 0) {
-                        noticeBadge.classList.remove("hidden");
-                        noticeBadge.textContent = unreadCount > 9 ? "+9" : unreadCount;
+                // Filter out hidden/deleted and > 24 hours for assistants
+                unifiedMessages = unifiedMessages.filter(m => {
+                    if (hiddenMessages.includes(m.id)) return false;
+                    if (!isManager && Date.now() - m.timestamp > 86400000) return false; // 24 hours
+                    return true;
+                });
+
+                // Render list
+                if (listEl) {
+                    if (unifiedMessages.length === 0) {
+                        listEl.innerHTML = '<div style="text-align:center; padding:20px; color:#888;">لا توجد رسائل حالياً.</div>';
                     } else {
-                        noticeBadge.classList.add("hidden");
+                        listEl.innerHTML = unifiedMessages.slice(0, 30).map(m => {
+                            const dateStr = new Date(m.timestamp).toLocaleString("ar-EG", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+                            const isBroadcast = m._node === 'global_announcements';
+                            const badgeText = isBroadcast ? "المدير" : "تحديثات النظام";
+                            const badgeBg = isBroadcast ? "var(--primary)" : "var(--success)";
+                            const titleHtml = m.title ? `<div style="font-weight:bold; margin-bottom:4px;">${m.title}</div>` : '';
+                            const msgText = (m.message || m.body || '').replace(/\n/g, '<br>');
+
+                            return `
+                                <div class="notification-item" style="background:var(--bg-inset); padding:12px; border-radius:8px; border:1px solid var(--border); margin-bottom:8px;">
+                                    <div class="notification-trash-btn" onclick="window.deleteMessage('${m.id}', '${m._node}')" title="حذف الرسالة">
+                                        <i class="fas fa-trash"></i>
+                                    </div>
+                                    <div style="margin-bottom:8px;">
+                                        <span class="notification-sender-badge" style="background:${badgeBg};">${badgeText}</span>
+                                        <span style="font-size:0.75em; color:var(--text-secondary);">${dateStr}</span>
+                                    </div>
+                                    ${titleHtml}
+                                    <div style="font-size:0.9em; color:var(--text-main); line-height:1.4;">${msgText}</div>
+                                </div>
+                            `;
+                        }).join("");
                     }
                 }
+
+                // Update badge count
+                if (badge) {
+                    if (unifiedMessages.length > 0) {
+                        badge.textContent = unifiedMessages.length > 9 ? "+9" : unifiedMessages.length;
+                        badge.classList.remove("hidden");
+                    } else {
+                        badge.classList.add("hidden");
+                    }
+                }
+
+                // Render manager history specifically for the manager tab
+                if (isManager && managerBroadcastHistory) {
+                    managerBroadcastHistory.innerHTML = '';
+                    if(announcements.length === 0) {
+                        managerBroadcastHistory.innerHTML = '<div style="color:#777;">لا يوجد إعلانات سابقة.</div>';
+                    } else {
+                        announcements.slice(0, 20).forEach(ann => {
+                            const div = document.createElement("div");
+                            div.style.cssText = "background:var(--bg-inset); padding:15px; border-radius:10px; border:1px solid var(--border); margin-bottom:10px;";
+                            const d = new Date(ann.timestamp);
+                            div.innerHTML = `
+                                <div style="display:flex; justify-content:space-between;">
+                                    <div style="font-size:0.85em; color:var(--text-secondary); margin-bottom:5px;">🕒 ${d.toLocaleString()}</div>
+                                    <div class="notification-trash-btn" style="position:static;" onclick="window.deleteMessage('${ann.id}', 'global_announcements')"><i class="fas fa-trash"></i></div>
+                                </div>
+                                <div style="font-weight:bold; margin-bottom:10px; color:var(--text-main);">${(ann.message||'').replace(/\n/g, '<br>')}</div>
+                            `;
+                            managerBroadcastHistory.appendChild(div);
+                        });
+                    }
+                }
+            };
+
+            // Listeners
+            onValue(ref(database, `users/${mid}/global_announcements`), snap => {
+                announcements = [];
+                if (snap.exists()) {
+                    const data = snap.val();
+                    for(let id in data) announcements.push({ ...data[id], id, _node: 'global_announcements' });
+                }
+                renderUnifiedInbox();
             });
-        }, 1500); // give time for checkAuth() to set role
-        
-        // 3. Render Manager History
-        function renderManagerBroadcastHistory() {
-            if(!managerBroadcastHistory) return;
-            managerBroadcastHistory.innerHTML = '';
-            
-            if(localAnnouncements.length === 0) {
-                managerBroadcastHistory.innerHTML = '<div style="color:#777;">لا يوجد إعلانات سابقة.</div>';
-                return;
-            }
-            
-            const historyToShow = localAnnouncements.slice(0, 20);
-            
-            historyToShow.forEach(ann => {
-                const div = document.createElement("div");
-                div.style.cssText = "background:var(--bg-inset); padding:15px; border-radius:10px; border:1px solid var(--border);";
-                
-                const d = new Date(ann.timestamp);
-                const readsCount = ann.readBy ? Object.keys(ann.readBy).length : 0;
-                
-                div.innerHTML = `
-                    <div style="font-size:0.85em; color:var(--text-secondary); margin-bottom:5px;">🕒 ${d.toLocaleString()}</div>
-                    <div style="font-weight:bold; margin-bottom:10px; color:var(--text-main);">${ann.message.replace(/\n/g, '<br>')}</div>
-                    <div style="font-size:0.85em; color:var(--primary);">👁️ تمت القراءة بواسطة: ${readsCount} مساعد</div>
-                `;
-                managerBroadcastHistory.appendChild(div);
+
+            onValue(ref(database, `users/${mid}/assistant_messages`), snap => {
+                assistantMsgs = [];
+                if (snap.exists()) {
+                    const data = snap.val();
+                    for(let id in data) assistantMsgs.push({ ...data[id], id, _node: 'assistant_messages' });
+                }
+                renderUnifiedInbox();
             });
-        }
-        
-        // 4. Render Assistant Modal
-        if (btnNoticeBoard) {
-            btnNoticeBoard.addEventListener("click", () => {
-                renderAssistantNoticeBoard();
-                noticeBoardModal.classList.remove("hidden");
-            });
-        }
-        if (closeNoticeBoardBtn) {
-            closeNoticeBoardBtn.addEventListener("click", () => {
-                noticeBoardModal.classList.add("hidden");
-            });
-        }
-        
-        async function renderAssistantNoticeBoard() {
-            if(!noticeBoardList) return;
-            noticeBoardList.innerHTML = '';
+
+        }, 1500);
+
+        // Global Delete Function
+        window.deleteMessage = async function(msgId, nodeType) {
+            // Immediately hide locally for quick UX
+            hiddenMessages.push(msgId);
+            localStorage.setItem("ca_hidden_msgs", JSON.stringify(hiddenMessages));
             
-            if(localAnnouncements.length === 0) {
-                noticeBoardList.innerHTML = '<div style="text-align:center; padding:20px; color:#888;">لا توجد إعلانات حالياً.</div>';
-                return;
-            }
+            // Re-render UI immediately
+            const trashBtns = document.querySelectorAll('.notification-trash-btn');
+            trashBtns.forEach(btn => { if(btn.getAttribute('onclick').includes(msgId)) btn.parentElement.style.display = 'none'; });
             
-            const listToShow = localAnnouncements.slice(0, 10);
-            
-            for(const ann of listToShow) {
-                const reads = ann.readBy || {};
-                const isRead = !!reads[currentAsstId];
-                
-                const div = document.createElement("div");
-                div.style.cssText = `background: ${isRead ? 'var(--bg-inset)' : 'var(--bg-surface)'}; padding:15px; border-radius:10px; border:1px solid var(--border); opacity: ${isRead ? '0.7' : '1'}; position: relative;`;
-                
-                const d = new Date(ann.timestamp);
-                
-                // the red dot for unread
-                const dotHtml = isRead ? '' : `<div style="position:absolute; top:15px; left:15px; width:10px; height:10px; border-radius:50%; background:var(--danger);"></div>`;
-                
-                div.innerHTML = `
-                    ${dotHtml}
-                    <div style="font-size:0.85em; color:var(--text-secondary); margin-bottom:8px;">🕒 ${d.toLocaleString()}</div>
-                    <div style="font-weight:bold; color:var(--text-main); line-height: 1.5; padding-left: ${!isRead ? '20px' : '0'}">${ann.message.replace(/\n/g, '<br>')}</div>
-                `;
-                
-                noticeBoardList.appendChild(div);
-                
-                if (!isRead) {
-                    try {
-                        const mid = getMid();
-                        if (mid) {
-                            await update(ref(database, `users/${mid}/global_announcements/${ann.id}/readBy`), {
-                                [currentAsstId]: true
-                            });
-                        }
-                    } catch(e) { console.error("Error marking read", e); }
+            // Delete from Firebase
+            const mid = getMid();
+            if (mid && nodeType) {
+                try {
+                    await remove(ref(database, `users/${mid}/${nodeType}/${msgId}`));
+                } catch(e) {
+                    console.error("Failed to delete from DB", e);
                 }
             }
-        }
+        };
     }
 
     // ==========================================
@@ -5587,6 +5597,15 @@ function updateDriveUI() {
                 const remote = snapshot.val();
                 const remoteTimestamp = remote._lastModified || 0;
                 const localTimestamp = localTimestamps[K_STUDENTS] || 0;
+
+                if (!hasUnsavedChanges && localTimestamp >= remoteTimestamp) {
+                    console.log("[Sync] Already fully synced.");
+                    showToast("كل البيانات متزامنة بالفعل ✅", "success");
+                    updateSyncUI('online', 'متصل ومتزامن ✅');
+                    syncInProgress = false;
+                    if (btn) btn.classList.remove("syncing");
+                    return;
+                }
 
                 if (localTimestamp > remoteTimestamp) {
                     // Local is newer — push local data to Firebase
@@ -5713,7 +5732,7 @@ function updateDriveUI() {
         setTimeout(checkQR, 500);
 
         initDailyApprovalSystem();
-        initNoticeBoardSystem();
+        initUnifiedInbox();
 
         // مزامنة صامتة عند فتح البرنامج في يوم جديد
         if (localStorage.getItem("last_cloud_sync_date") !== nowDateStr()) {
