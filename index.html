@@ -17,7 +17,19 @@
   
   <script src="./assets/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    // Service Worker Registration
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then(reg => console.log('[SW] Registered:', reg.scope))
+          .catch(err => console.warn('[SW] Registration failed:', err));
+      });
+    }
+  </script>
   <style>
     /* Premium SweetAlert2 Theme Overrides */
     div:where(.swal2-container) {
@@ -290,10 +302,16 @@
           </span>
         </div>
         <div class="topbar-end" style="position: relative;">
-          <!-- Cloud Sync Indicator -->
-          <div id="cloudSyncIndicator" class="cloud-sync-indicator offline" title="غير متصل بالسحابة">
+          <!-- Cloud Sync Indicator (Enhanced) -->
+          <div id="cloudSyncIndicator" class="cloud-sync-indicator offline" title="غير متصل بالسحابة" style="position: relative; cursor: pointer;">
             <span id="syncIcon">☁️</span>
+            <span id="syncStatusDot" class="sync-status-dot offline"></span>
+            <span id="syncPendingBadge" class="sync-pending-badge hidden">!</span>
           </div>
+          <!-- Force Sync Button -->
+          <button id="btnForceSync" class="topbar-icon-btn" title="مزامنة يدوية" style="cursor: pointer; margin-inline-end: 6px; font-size: 1.1em; background: none; border: none; color: var(--text-main); padding: 4px 8px; border-radius: 8px; transition: all 0.2s ease;">
+            🔄
+          </button>
           
           <!-- Notice Board Bell (Assistants) -->
           <div id="btnNoticeBoard" class="topbar-icon-btn assistantOnly" title="لوحة الإعلانات" style="position: relative; cursor: pointer; margin-inline-end: 10px; display: none;">

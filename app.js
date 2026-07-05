@@ -33,14 +33,14 @@ let wasOffline = false;
 function setupConnectionTracker() {
     const connectedRef = ref(database, '.info/connected');
     onValue(connectedRef, (snap) => {
-        const indicator = document.getElementById("cloudSyncIndicator");
         if (snap.val() === true) {
             console.log("Firebase Connected! 🟢");
             isFirebaseConnected = true;
-            if(indicator) {
-                indicator.classList.remove("offline");
-                indicator.classList.add("online");
-                indicator.title = "متصل بالسحابة";
+            // Only set to 'online' if there are no pending changes
+            if (!hasUnsavedChanges) {
+                if (typeof updateSyncUI === 'function') updateSyncUI('online', 'متصل ومتزامن ✅');
+            } else {
+                if (typeof updateSyncUI === 'function') updateSyncUI('pending', 'متصل - يوجد تغييرات لم تتم مزامنتها');
             }
             if (wasOffline) {
                 if (typeof showToast === "function") {
@@ -55,18 +55,13 @@ function setupConnectionTracker() {
             console.log("Firebase Disconnected 🔴");
             isFirebaseConnected = false;
             wasOffline = true;
-            if(indicator) {
-                indicator.classList.remove("online");
-                indicator.classList.add("offline");
-                indicator.title = "غير متصل بالسحابة";
-            }
+            if (typeof updateSyncUI === 'function') updateSyncUI('offline', 'غير متصل بالسحابة');
         }
     });
 
     // Warn user before closing if offline and there are potential unsaved changes
     window.addEventListener('beforeunload', (e) => {
         if (hasUnsavedChanges && !isFirebaseConnected) {
-            // Cancel the event and show prompt
             e.preventDefault();
             e.returnValue = 'تحذير: لا يوجد اتصال بالإنترنت، هناك بيانات لم يتم مزامنتها مع السحابة!';
             return e.returnValue;
@@ -121,6 +116,141 @@ document.addEventListener('DOMContentLoaded', function() {
     const K_EVAL         = "ca_eval_form_v1";
     const K_SESSION_STUDENTS = "ca_session_students_v1";
     const K_BOOKLETS     = "ca_booklets_v1";
+
+    // ==========================================
+    // 2.5 SECURE STORAGE LAYER (localForage + CryptoJS)
+    // ==========================================
+    const ENCRYPTION_KEY = "Studify_S3cur3_K3y_2026!";
+    
+    // Data keys that are HEAVY and must go to localForage (IndexedDB)
+    const HEAVY_DATA_KEYS = [K_STUDENTS, K_ATT_BY_DATE, K_REVENUE, K_GROUP_FEES, 
+                             K_EXPENSES, K_DELETED, K_SYLLABUS, K_EVAL, 
+                             K_SESSION_STUDENTS, K_BOOKLETS];
+
+    // Keys that STAY in localStorage (tiny, need synchronous boot access)
+    // K_AUTH, K_ROLE, K_LANG, K_THEME, K_BG_IMAGE, K_NOTEBOOK, K_LAST_BACKUP,
+    // ca_manager_id, ca_current_username, ca_muted, ca_migrated, etc.
+
+    // Sync state tracking
+    let localTimestamps = {}; // { ca_students_v6: 1720180000000, ... }
+    let syncInProgress = false;
+
+    // --- Encryption Helpers ---
+    function encryptData(data) {
+        try {
+            const jsonStr = JSON.stringify(data);
+            return CryptoJS.AES.encrypt(jsonStr, ENCRYPTION_KEY).toString();
+        } catch(e) {
+            console.error("[Encrypt] Failed:", e);
+            return JSON.stringify(data); // Fallback: save unencrypted
+        }
+    }
+
+    function decryptData(cipherText) {
+        try {
+            if (!cipherText) return null;
+            // If it's not encrypted (legacy data), parse directly
+            if (cipherText.startsWith('{') || cipherText.startsWith('[') || cipherText.startsWith('"')) {
+                return JSON.parse(cipherText);
+            }
+            const bytes = CryptoJS.AES.decrypt(cipherText, ENCRYPTION_KEY);
+            const decrypted = bytes.toString(CryptoJS.enc.Utf8);
+            if (!decrypted) return null;
+            return JSON.parse(decrypted);
+        } catch(e) {
+            console.error("[Decrypt] Failed:", e);
+            // Try parsing as plain JSON (migration scenario)
+            try { return JSON.parse(cipherText); } catch(e2) { return null; }
+        }
+    }
+
+    // --- Async Storage Wrappers ---
+    async function secureSave(key, data) {
+        try {
+            const encrypted = encryptData(data);
+            await localforage.setItem(key, encrypted);
+            // Update local timestamp
+            localTimestamps[key] = Date.now();
+            await localforage.setItem('_timestamps', localTimestamps);
+        } catch(e) {
+            console.error("[secureSave] Error for key:", key, e);
+        }
+    }
+
+    async function secureLoad(key, fallback) {
+        try {
+            const raw = await localforage.getItem(key);
+            if (raw === null || raw === undefined) return fallback;
+            const decrypted = decryptData(raw);
+            return decrypted !== null ? decrypted : fallback;
+        } catch(e) {
+            console.error("[secureLoad] Error for key:", key, e);
+            return fallback;
+        }
+    }
+
+    // --- Migration: localStorage → localForage (One-time) ---
+    async function initStorageMigration() {
+        const migrated = await localforage.getItem('_idb_migrated');
+        if (migrated === true) {
+            console.log("[Migration] Already migrated to IndexedDB. Skipping.");
+            // Load timestamps
+            localTimestamps = (await localforage.getItem('_timestamps')) || {};
+            return;
+        }
+
+        console.log("[Migration] Starting localStorage → IndexedDB migration...");
+        let migratedCount = 0;
+
+        for (const key of HEAVY_DATA_KEYS) {
+            const raw = localStorage.getItem(key);
+            if (raw) {
+                try {
+                    const parsed = JSON.parse(raw);
+                    await secureSave(key, parsed);
+                    localStorage.removeItem(key); // Free up the 5MB space
+                    migratedCount++;
+                    console.log(`[Migration] ✅ Migrated: ${key}`);
+                } catch(e) {
+                    console.error(`[Migration] ❌ Failed for ${key}:`, e);
+                }
+            }
+        }
+
+        // Mark migration as complete
+        await localforage.setItem('_idb_migrated', true);
+        localTimestamps = (await localforage.getItem('_timestamps')) || {};
+        console.log(`[Migration] Complete! Migrated ${migratedCount} keys to IndexedDB.`);
+        
+        if (migratedCount > 0 && typeof showToast === 'function') {
+            showToast("تم ترقية قاعدة البيانات المحلية بنجاح ✅", "success");
+        }
+    }
+
+    // --- Sync UI Helpers ---
+    function updateSyncUI(state, title) {
+        // state: 'online' | 'offline' | 'pending' | 'syncing'
+        const indicator = document.getElementById("cloudSyncIndicator");
+        const dot = document.getElementById("syncStatusDot");
+        const badge = document.getElementById("syncPendingBadge");
+        
+        if (indicator) {
+            indicator.classList.remove("online", "offline", "pending", "syncing");
+            indicator.classList.add(state);
+            indicator.title = title || "";
+        }
+        if (dot) {
+            dot.classList.remove("online", "offline", "pending");
+            dot.classList.add(state === 'syncing' ? 'pending' : state);
+        }
+        if (badge) {
+            if (state === 'pending') {
+                badge.classList.remove("hidden");
+            } else {
+                badge.classList.add("hidden");
+            }
+        }
+    }
 
     // GLOBAL TENANT STATE
     window.CURRENT_MANAGER_ID = localStorage.getItem("ca_manager_id") || "";
@@ -849,25 +979,31 @@ document.addEventListener('DOMContentLoaded', function() {
     // ==========================================
     // 6. DATA MANAGEMENT (Storage Layer)
     // ==========================================
-    function saveAll() {
+    async function saveAll() {
         try {
             hasUnsavedChanges = true;
-            localStorage.setItem(K_STUDENTS, JSON.stringify(students));
-            localStorage.setItem(K_ATT_BY_DATE, JSON.stringify(attByDate));
-            localStorage.setItem(K_REVENUE, JSON.stringify(revenueByDate));
-            localStorage.setItem(K_GROUP_FEES, JSON.stringify(groupFees)); 
-            localStorage.setItem(K_EXPENSES, JSON.stringify(expensesByDate));
-            localStorage.setItem(K_DELETED, JSON.stringify(deletedStudents));
-            localStorage.setItem(K_SYLLABUS, JSON.stringify(syllabusData));
-            localStorage.setItem(K_EVAL, JSON.stringify(evalData));
-            localStorage.setItem(K_SESSION_STUDENTS, JSON.stringify(sessionStudentsByDate));
-            localStorage.setItem(K_BOOKLETS, JSON.stringify(bookletsStock));
+            updateSyncUI('pending', 'جاري الحفظ...');
+
+            // Save to IndexedDB (encrypted, async, no 5MB limit)
+            await Promise.all([
+                secureSave(K_STUDENTS, students),
+                secureSave(K_ATT_BY_DATE, attByDate),
+                secureSave(K_REVENUE, revenueByDate),
+                secureSave(K_GROUP_FEES, groupFees),
+                secureSave(K_EXPENSES, expensesByDate),
+                secureSave(K_DELETED, deletedStudents),
+                secureSave(K_SYLLABUS, syllabusData),
+                secureSave(K_EVAL, evalData),
+                secureSave(K_SESSION_STUDENTS, sessionStudentsByDate),
+                secureSave(K_BOOKLETS, bookletsStock)
+            ]);
+
             updateTopStats(); updateFinanceSummary(); renderCharts();
             if (typeof renderReportsPage === "function") renderReportsPage();
 
+            // Push to Firebase
             if (window.CURRENT_MANAGER_ID) {
-                const indicator = document.getElementById("cloudSyncIndicator");
-                if (indicator) indicator.classList.add("syncing");
+                updateSyncUI('syncing', 'جاري المزامنة مع السحابة...');
                 
                 const dbRef = ref(database, `users/${window.CURRENT_MANAGER_ID}`);
                 update(dbRef, {
@@ -880,30 +1016,35 @@ document.addEventListener('DOMContentLoaded', function() {
                     'syllabus': syllabusData,
                     'evaluations': evalData,
                     'sessionStudents': sessionStudentsByDate,
-                    'booklets': bookletsStock
+                    'booklets': bookletsStock,
+                    '_lastModified': Date.now()
                 }).then(() => {
                     hasUnsavedChanges = false;
-                    if (indicator) indicator.classList.remove("syncing");
+                    updateSyncUI('online', 'متصل ومتزامن ✅');
                 }).catch(e => {
                     console.error("Firebase update error:", e);
-                    if (indicator) indicator.classList.remove("syncing");
+                    updateSyncUI('pending', 'تغييرات محلية لم تتم مزامنتها');
                 });
             }
         } catch(e) { 
-            showToast("مساحة التخزين ممتلئة. يرجى مسح بعض البيانات القديمة لتوفير مساحة.", "err"); 
+            console.error("saveAll error:", e);
+            showToast("حدث خطأ أثناء حفظ البيانات.", "err"); 
         }
     }
 
-    function saveAttendanceOnly() {
+    async function saveAttendanceOnly() {
         try {
             hasUnsavedChanges = true;
-            localStorage.setItem(K_STUDENTS, JSON.stringify(students));
-            localStorage.setItem(K_ATT_BY_DATE, JSON.stringify(attByDate));
+            updateSyncUI('pending', 'جاري حفظ الحضور...');
+            
+            await Promise.all([
+                secureSave(K_STUDENTS, students),
+                secureSave(K_ATT_BY_DATE, attByDate)
+            ]);
             updateTopStats();
 
             if (window.CURRENT_MANAGER_ID) {
-                const indicator = document.getElementById("cloudSyncIndicator");
-                if (indicator) indicator.classList.add("syncing");
+                updateSyncUI('syncing', 'جاري المزامنة...');
                 
                 const dbRef = ref(database, `users/${window.CURRENT_MANAGER_ID}`);
                 update(dbRef, {
@@ -916,72 +1057,131 @@ document.addEventListener('DOMContentLoaded', function() {
                     'syllabus': syllabusData,
                     'evaluations': evalData,
                     'sessionStudents': sessionStudentsByDate,
-                    'booklets': bookletsStock
+                    'booklets': bookletsStock,
+                    '_lastModified': Date.now()
                 }).then(() => {
                     hasUnsavedChanges = false;
-                    if (indicator) indicator.classList.remove("syncing");
+                    updateSyncUI('online', 'متصل ومتزامن ✅');
                 }).catch(e => {
                     console.error("Firebase update error:", e);
-                    if (indicator) indicator.classList.remove("syncing");
+                    updateSyncUI('pending', 'تغييرات محلية لم تتم مزامنتها');
                 });
             }
         } catch(e) { 
-            showToast("مساحة التخزين ممتلئة. يرجى مسح بعض البيانات القديمة لتوفير مساحة.", "err"); 
+            console.error("saveAttendanceOnly error:", e);
+            showToast("حدث خطأ أثناء حفظ البيانات.", "err"); 
         }
     }
 
     async function loadAll() {
         try {
             let fromFirebase = false;
+            
+            // Step 1: Load local data from IndexedDB first (instant, offline-ready)
+            students       = await secureLoad(K_STUDENTS, {});
+            deletedStudents= await secureLoad(K_DELETED, {});
+            attByDate      = await secureLoad(K_ATT_BY_DATE, {});
+            revenueByDate  = await secureLoad(K_REVENUE, {});
+            expensesByDate = await secureLoad(K_EXPENSES, {});
+            groupFees      = await secureLoad(K_GROUP_FEES, {});
+            syllabusData   = await secureLoad(K_SYLLABUS, []);
+            evalData       = await secureLoad(K_EVAL, {});
+            sessionStudentsByDate = await secureLoad(K_SESSION_STUDENTS, {});
+            bookletsStock  = await secureLoad(K_BOOKLETS, {});
+            console.log("[loadAll] Local data loaded from IndexedDB");
+
+            // Step 2: Try to fetch from Firebase and merge
             try {
                 if (window.CURRENT_MANAGER_ID) {
+                    updateSyncUI('syncing', 'جاري جلب البيانات من السحابة...');
                     const dbRef = ref(database);
                     const snapshot = await get(child(dbRef, `users/${window.CURRENT_MANAGER_ID}`));
                     if (snapshot.exists()) {
-                        const data = snapshot.val();
-                    students = data.students || {};
-                    deletedStudents = data.deletedStudents || {};
-                    attByDate = data.attendance || {};
-                    revenueByDate = data.finances?.revenue || {};
-                    expensesByDate = data.finances?.expenses || {};
-                    groupFees = data.packages || {};
-                    syllabusData = data.syllabus || [];
-                    evalData = data.evaluations || {};
-                    sessionStudentsByDate = data.sessionStudents || {};
-                    bookletsStock = data.booklets || {};
-                    fromFirebase = true;
-                    
-                    localStorage.setItem(K_STUDENTS, JSON.stringify(students));
-                    localStorage.setItem(K_ATT_BY_DATE, JSON.stringify(attByDate));
-                    localStorage.setItem(K_REVENUE, JSON.stringify(revenueByDate));
-                    localStorage.setItem(K_GROUP_FEES, JSON.stringify(groupFees)); 
-                    localStorage.setItem(K_EXPENSES, JSON.stringify(expensesByDate));
-                    localStorage.setItem(K_DELETED, JSON.stringify(deletedStudents));
-                    localStorage.setItem(K_SYLLABUS, JSON.stringify(syllabusData));
-                    localStorage.setItem(K_EVAL, JSON.stringify(evalData));
-                    localStorage.setItem(K_SESSION_STUDENTS, JSON.stringify(sessionStudentsByDate));
-                    localStorage.setItem(K_BOOKLETS, JSON.stringify(bookletsStock));
-                    console.log("Data loaded successfully from Firebase");
+                        const remote = snapshot.val();
+                        const remoteTimestamp = remote._lastModified || 0;
+                        const localTimestamp = localTimestamps[K_STUDENTS] || 0;
+
+                        if (remoteTimestamp >= localTimestamp) {
+                            // Server is newer or equal — use server data
+                            students = remote.students || students;
+                            deletedStudents = remote.deletedStudents || deletedStudents;
+                            attByDate = remote.attendance || attByDate;
+                            revenueByDate = remote.finances?.revenue || revenueByDate;
+                            expensesByDate = remote.finances?.expenses || expensesByDate;
+                            groupFees = remote.packages || groupFees;
+                            syllabusData = remote.syllabus || syllabusData;
+                            evalData = remote.evaluations || evalData;
+                            sessionStudentsByDate = remote.sessionStudents || sessionStudentsByDate;
+                            bookletsStock = remote.booklets || bookletsStock;
+                            console.log("[loadAll] Server data is newer — using Firebase data");
+                        } else {
+                            // Local is newer — merge granularly (field-level)
+                            console.log("[loadAll] Local data is newer — performing granular merge");
+                            const remoteStudents = remote.students || {};
+                            const remoteAtt = remote.attendance || {};
+                            
+                            // Merge students: keep the record with the newer lastModified
+                            for (const id in remoteStudents) {
+                                const remoteStudent = remoteStudents[id];
+                                const localStudent = students[id];
+                                if (!localStudent) {
+                                    students[id] = remoteStudent; // New student from server
+                                } else {
+                                    const rMod = remoteStudent.lastModified || 0;
+                                    const lMod = localStudent.lastModified || 0;
+                                    if (rMod > lMod) {
+                                        students[id] = remoteStudent;
+                                    }
+                                }
+                            }
+                            
+                            // Merge attendance: keep the record with more entries per date
+                            for (const date in remoteAtt) {
+                                if (!attByDate[date]) {
+                                    attByDate[date] = remoteAtt[date];
+                                }
+                                // If both exist, keep the one with more data
+                                else {
+                                    const localCount = Object.keys(attByDate[date]).length;
+                                    const remoteCount = Object.keys(remoteAtt[date]).length;
+                                    if (remoteCount > localCount) {
+                                        attByDate[date] = remoteAtt[date];
+                                    }
+                                }
+                            }
+                        }
+
+                        // Cache the merged/fetched data back to IndexedDB
+                        await Promise.all([
+                            secureSave(K_STUDENTS, students),
+                            secureSave(K_ATT_BY_DATE, attByDate),
+                            secureSave(K_REVENUE, revenueByDate),
+                            secureSave(K_GROUP_FEES, groupFees),
+                            secureSave(K_EXPENSES, expensesByDate),
+                            secureSave(K_DELETED, deletedStudents),
+                            secureSave(K_SYLLABUS, syllabusData),
+                            secureSave(K_EVAL, evalData),
+                            secureSave(K_SESSION_STUDENTS, sessionStudentsByDate),
+                            secureSave(K_BOOKLETS, bookletsStock)
+                        ]);
+
+                        fromFirebase = true;
+                        hasUnsavedChanges = false;
+                        updateSyncUI('online', 'متصل ومتزامن ✅');
+                        console.log("[loadAll] Data synced and cached to IndexedDB ✅");
                     }
                 }
             } catch(e) {
-                console.error("Firebase load failed, falling back to local storage:", e);
+                console.error("[loadAll] Firebase load failed, using local data:", e);
+                updateSyncUI('offline', 'غير متصل - تعمل من البيانات المحلية');
             }
 
-            if (!fromFirebase) {
-                students       = JSON.parse(localStorage.getItem(K_STUDENTS) || "{}");
-                revenueByDate  = JSON.parse(localStorage.getItem(K_REVENUE) || "{}");
-                expensesByDate = JSON.parse(localStorage.getItem(K_EXPENSES) || "{}");
-                attByDate      = JSON.parse(localStorage.getItem(K_ATT_BY_DATE) || "{}");
-                groupFees      = JSON.parse(localStorage.getItem(K_GROUP_FEES) || "{}");
-                deletedStudents= JSON.parse(localStorage.getItem(K_DELETED) || "{}");
-                syllabusData   = JSON.parse(localStorage.getItem(K_SYLLABUS) || "[]");
-                evalData       = JSON.parse(localStorage.getItem(K_EVAL) || "{}");
-                sessionStudentsByDate = JSON.parse(localStorage.getItem(K_SESSION_STUDENTS) || "{}");
-                bookletsStock  = JSON.parse(localStorage.getItem(K_BOOKLETS) || "{}");
-                console.log("Data loaded from local storage");
+            if (!fromFirebase && Object.keys(students).length > 0) {
+                console.log("[loadAll] Working offline with IndexedDB data");
+                updateSyncUI('pending', 'تعمل من البيانات المحلية');
             }
             
+            // Populate eval form fields
             if($("evalCenterName")) $("evalCenterName").value = evalData.centerName || "";
             if($("evalManager")) $("evalManager").value = evalData.manager || "";
             if($("evalPackages")) $("evalPackages").value = evalData.packages || "";
@@ -2142,7 +2342,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    window.logout = function() {
+    window.logout = async function() {
+        // Clear IndexedDB (localForage)
+        try { await localforage.clear(); } catch(e) { console.error("localForage clear error:", e); }
+        
+        // Clear auth keys from localStorage
         localStorage.removeItem(K_AUTH);
         localStorage.removeItem(K_ROLE);
         localStorage.removeItem("ca_manager_id");
@@ -5360,8 +5564,148 @@ function updateDriveUI() {
         }
     }
 
+    // ==========================================
+    // FORCE SYNC & MANUAL SYNC
+    // ==========================================
+    async function syncWithFirebase() {
+        if (syncInProgress) return;
+        if (!window.CURRENT_MANAGER_ID) {
+            showToast("لا يوجد حساب مسجل للمزامنة.", "err");
+            return;
+        }
+        
+        syncInProgress = true;
+        updateSyncUI('syncing', 'جاري المزامنة اليدوية...');
+        const btn = document.getElementById("btnForceSync");
+        if (btn) btn.classList.add("syncing");
+        
+        try {
+            // Fetch remote data
+            const snapshot = await get(child(ref(database), `users/${window.CURRENT_MANAGER_ID}`));
+            
+            if (snapshot.exists()) {
+                const remote = snapshot.val();
+                const remoteTimestamp = remote._lastModified || 0;
+                const localTimestamp = localTimestamps[K_STUDENTS] || 0;
+
+                if (localTimestamp > remoteTimestamp) {
+                    // Local is newer — push local data to Firebase
+                    console.log("[Sync] Local is newer → Pushing to Firebase");
+                    const dbRef = ref(database, `users/${window.CURRENT_MANAGER_ID}`);
+                    await update(dbRef, {
+                        'students': students,
+                        'attendance': attByDate,
+                        'finances/revenue': revenueByDate,
+                        'packages': groupFees,
+                        'finances/expenses': expensesByDate,
+                        'deletedStudents': deletedStudents,
+                        'syllabus': syllabusData,
+                        'evaluations': evalData,
+                        'sessionStudents': sessionStudentsByDate,
+                        'booklets': bookletsStock,
+                        '_lastModified': Date.now()
+                    });
+                    showToast("تم رفع البيانات المحلية إلى السحابة ✅", "success");
+                } else {
+                    // Remote is newer — pull and merge
+                    console.log("[Sync] Server is newer → Pulling from Firebase");
+                    
+                    // Granular merge for students
+                    const remoteStudents = remote.students || {};
+                    for (const id in remoteStudents) {
+                        const remoteStudent = remoteStudents[id];
+                        const localStudent = students[id];
+                        if (!localStudent) {
+                            students[id] = remoteStudent;
+                        } else {
+                            const rMod = remoteStudent.lastModified || 0;
+                            const lMod = localStudent.lastModified || 0;
+                            if (rMod > lMod) {
+                                students[id] = remoteStudent;
+                            }
+                        }
+                    }
+                    
+                    // For other entities, take the remote version if server is newer
+                    attByDate = remote.attendance || attByDate;
+                    revenueByDate = remote.finances?.revenue || revenueByDate;
+                    expensesByDate = remote.finances?.expenses || expensesByDate;
+                    groupFees = remote.packages || groupFees;
+                    deletedStudents = remote.deletedStudents || deletedStudents;
+                    syllabusData = remote.syllabus || syllabusData;
+                    evalData = remote.evaluations || evalData;
+                    sessionStudentsByDate = remote.sessionStudents || sessionStudentsByDate;
+                    bookletsStock = remote.booklets || bookletsStock;
+                    
+                    // Save merged data locally
+                    await Promise.all([
+                        secureSave(K_STUDENTS, students),
+                        secureSave(K_ATT_BY_DATE, attByDate),
+                        secureSave(K_REVENUE, revenueByDate),
+                        secureSave(K_GROUP_FEES, groupFees),
+                        secureSave(K_EXPENSES, expensesByDate),
+                        secureSave(K_DELETED, deletedStudents),
+                        secureSave(K_SYLLABUS, syllabusData),
+                        secureSave(K_EVAL, evalData),
+                        secureSave(K_SESSION_STUDENTS, sessionStudentsByDate),
+                        secureSave(K_BOOKLETS, bookletsStock)
+                    ]);
+                    
+                    updateTopStats(); updateFinanceSummary(); renderCharts();
+                    showToast("تم تحديث البيانات من السحابة ✅", "success");
+                }
+            } else {
+                // No remote data — push everything
+                console.log("[Sync] No remote data found → Initial push");
+                const dbRef = ref(database, `users/${window.CURRENT_MANAGER_ID}`);
+                await update(dbRef, {
+                    'students': students,
+                    'attendance': attByDate,
+                    'finances/revenue': revenueByDate,
+                    'packages': groupFees,
+                    'finances/expenses': expensesByDate,
+                    'deletedStudents': deletedStudents,
+                    'syllabus': syllabusData,
+                    'evaluations': evalData,
+                    'sessionStudents': sessionStudentsByDate,
+                    'booklets': bookletsStock,
+                    '_lastModified': Date.now()
+                });
+                showToast("تم رفع البيانات لأول مرة ✅", "success");
+            }
+            
+            hasUnsavedChanges = false;
+            updateSyncUI('online', 'متصل ومتزامن ✅');
+        } catch(e) {
+            console.error("[Sync] Error:", e);
+            updateSyncUI('pending', 'فشلت المزامنة - حاول مرة أخرى');
+            showToast("فشلت المزامنة. تأكد من اتصال الإنترنت.", "err");
+        } finally {
+            syncInProgress = false;
+            if (btn) btn.classList.remove("syncing");
+        }
+    }
+
+    // Force Sync Button Handler
+    if ($("btnForceSync")) {
+        $("btnForceSync").addEventListener("click", function() {
+            syncWithFirebase();
+        });
+    }
+    
+    // Cloud Sync Indicator Click Handler (same as Force Sync)
+    if ($("cloudSyncIndicator")) {
+        $("cloudSyncIndicator").addEventListener("click", function() {
+            syncWithFirebase();
+        });
+    }
+
     // Startup Sequence
     async function initSystem() {
+        // Step 0: Run storage migration (localStorage → IndexedDB)
+        await initStorageMigration();
+        
+        // Step 1: Load data (from IndexedDB first, then merge with Firebase)
         await loadAll(); 
         ensureBase500(); 
         checkAuth(); 
