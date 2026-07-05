@@ -4018,14 +4018,6 @@ function updateDriveUI() {
         }
     }
 
-    // Notifications Dropdown toggle
-    if ($("notificationsToggleBtn")) {
-        $("notificationsToggleBtn").addEventListener("click", (e) => {
-            e.stopPropagation();
-            if ($("notificationsDropdown")) $("notificationsDropdown").classList.toggle("hidden");
-        });
-    }
-
     if (window.CURRENT_ROLE !== "admin") {
         // fetchAssistantMessages(); removed, handled by initUnifiedInbox
     }
@@ -4340,15 +4332,7 @@ function updateDriveUI() {
         catch(e) { console.error(e); }
     };
 
-    // Hook: when notifications dropdown opens, render properly
-    on("notificationsToggleBtn", "click", function() {
-        setTimeout(() => {
-            if (window.CURRENT_ROLE !== "admin") renderAssistantNotifDropdown();
-        }, 50);
-    });
 
-    // Fetch messages for assistant on startup
-    if (window.CURRENT_ROLE !== "admin") fetchAssistantMessages();
 
     // showAddAsstModal button
     if ($("showAddAsstModalBtn")) {
@@ -5586,8 +5570,6 @@ function updateDriveUI() {
         
         syncInProgress = true;
         updateSyncUI('syncing', 'جاري المزامنة اليدوية...');
-        const btn = document.getElementById("btnForceSync");
-        if (btn) btn.classList.add("syncing");
         
         try {
             // Fetch remote data
@@ -5603,7 +5585,6 @@ function updateDriveUI() {
                     showToast("كل البيانات متزامنة بالفعل ✅", "success");
                     updateSyncUI('online', 'متصل ومتزامن ✅');
                     syncInProgress = false;
-                    if (btn) btn.classList.remove("syncing");
                     return;
                 }
 
@@ -5701,16 +5682,10 @@ function updateDriveUI() {
             showToast("فشلت المزامنة. تأكد من اتصال الإنترنت.", "err");
         } finally {
             syncInProgress = false;
-            if (btn) btn.classList.remove("syncing");
         }
     }
 
-    // Force Sync Button Handler
-    if ($("btnForceSync")) {
-        $("btnForceSync").addEventListener("click", function() {
-            syncWithFirebase();
-        });
-    }
+
     
     // Cloud Sync Indicator Click Handler (same as Force Sync)
     if ($("cloudSyncIndicator")) {

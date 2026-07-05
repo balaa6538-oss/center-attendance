@@ -304,15 +304,12 @@
         </div>
         <div class="topbar-end" style="position: relative;">
           <!-- Cloud Sync Indicator (Enhanced) -->
-          <div id="cloudSyncIndicator" class="cloud-sync-indicator offline" title="غير متصل بالسحابة" style="position: relative; cursor: pointer;">
+          <div id="cloudSyncIndicator" class="cloud-sync-indicator offline" title="مزامنة يدوية" style="position: relative; cursor: pointer; margin-inline-end: 10px;">
             <span id="syncIcon"><i class="fas fa-cloud"></i></span>
             <span id="syncStatusDot" class="sync-status-dot offline"></span>
             <span id="syncPendingBadge" class="sync-pending-badge hidden">!</span>
+            <i class="fas fa-sync-alt" style="position: absolute; bottom: -2px; left: -2px; font-size: 0.45em; background: var(--bg-surface); color: var(--text-secondary); border-radius: 50%; padding: 2px;"></i>
           </div>
-          <!-- Force Sync Button -->
-          <button id="btnForceSync" class="topbar-icon-btn" title="مزامنة يدوية" style="cursor: pointer; margin-inline-end: 6px; font-size: 1.1em; background: none; border: none; color: var(--text-main); padding: 4px 8px; border-radius: 8px; transition: all 0.2s ease;">
-            <i class="fas fa-sync-alt"></i>
-          </button>
           
           <!-- Notifications Bell -->
           <div id="notificationsToggleBtn" class="topbar-icon-btn" title="رسائل وإشعارات" style="position: relative; cursor: pointer;">
