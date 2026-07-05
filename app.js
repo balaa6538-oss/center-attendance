@@ -890,7 +890,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
         } catch(e) { 
-            showToast("الذاكرة ممتلئة، يرجى حذف الخلفية لتوفير مساحة", "err"); 
+            showToast("مساحة التخزين ممتلئة. يرجى مسح بعض البيانات القديمة لتوفير مساحة.", "err"); 
         }
     }
 
@@ -926,7 +926,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
         } catch(e) { 
-            showToast("الذاكرة ممتلئة، يرجى حذف الخلفية لتوفير مساحة", "err"); 
+            showToast("مساحة التخزين ممتلئة. يرجى مسح بعض البيانات القديمة لتوفير مساحة.", "err"); 
         }
     }
 
@@ -1008,10 +1008,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function ensureBase500() {
+        let added = false;
         for (let i = BASE_MIN_ID; i <= BASE_MAX_ID; i++) { 
-            if(!students[String(i)]) students[String(i)] = makeEmptyStudent(i); 
+            if(!students[String(i)]) {
+                students[String(i)] = makeEmptyStudent(i); 
+                added = true;
+            }
         }
-        saveAll();
+        if (added) saveAll();
     }
 
     // ==========================================
@@ -2049,6 +2053,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if($("managerLoginBtn")) {
         on("managerLoginBtn", "click", async function() {
+            if ($("loginBox") && $("loginBox").classList.contains("hidden")) return;
+            
             const rawU = $("managerUser") ? $("managerUser").value.trim() : "";
             const p = $("managerPass") ? $("managerPass").value.trim() : "";
             if (!rawU || !p) return showToast("أدخل البريد الإلكتروني وكلمة المرور", "err");
@@ -2084,6 +2090,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if($("assistantLoginBtn")) {
         on("assistantLoginBtn", "click", async function() {
+            if ($("loginBox") && $("loginBox").classList.contains("hidden")) return;
+            
             const rawU = $("assistantUser") ? $("assistantUser").value.trim() : "";
             const p = $("assistantPass") ? $("assistantPass").value.trim() : "";
             if (!rawU || !p) return showToast("أدخل اسم المستخدم وكلمة المرور", "err");
