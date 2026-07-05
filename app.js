@@ -256,6 +256,17 @@ document.addEventListener('DOMContentLoaded', function() {
     window.CURRENT_MANAGER_ID = localStorage.getItem("ca_manager_id") || "";
     window.CURRENT_ROLE = localStorage.getItem(K_ROLE) || "";
 
+    // Self-healing for legacy mobile sessions
+    if (localStorage.getItem(K_AUTH) === "1" && !window.CURRENT_MANAGER_ID) {
+        if (window.CURRENT_ROLE === "admin") {
+            window.CURRENT_MANAGER_ID = "ahmedqutb11232_gmail_com"; // Default legacy admin
+            localStorage.setItem("ca_manager_id", window.CURRENT_MANAGER_ID);
+        } else {
+            // Force re-login for assistants if manager ID is lost
+            localStorage.removeItem(K_AUTH);
+        }
+    }
+
     // ==========================================
     // 2. GLOBAL SYSTEM STATE
     // ==========================================
