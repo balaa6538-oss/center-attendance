@@ -5166,6 +5166,188 @@ function updateDriveUI() {
         }
     }
 
+    }
+
+    // ==========================================
+    // 25. NOTICE BOARD (Global Announcements)
+    // ==========================================
+    function initNoticeBoardSystem() {
+        const getMid = () => window.CURRENT_MANAGER_ID || localStorage.getItem("ca_manager_id");
+        
+        const btnSendBroadcast = $("btnSendBroadcast");
+        const broadcastMsgInput = $("broadcastMessageInput");
+        const managerBroadcastHistory = $("managerBroadcastHistory");
+        
+        const btnNoticeBoard = $("btnNoticeBoard");
+        const noticeBadge = $("noticeBadge");
+        const noticeBoardModal = $("noticeBoardModal");
+        const closeNoticeBoardBtn = $("closeNoticeBoardBtn");
+        const noticeBoardList = $("noticeBoardList");
+        
+        let localAnnouncements = [];
+        let currentAsstId = localStorage.getItem("ca_auth_v2") || "unknown_assistant";
+
+        // 1. Send Broadcast (Manager Only)
+        if (btnSendBroadcast) {
+            btnSendBroadcast.addEventListener("click", async () => {
+                const msg = broadcastMsgInput.value.trim();
+                if(!msg) return showToast(currentLang==='ar' ? "أدخل نص الإعلان" : "Enter message", "warning");
+                
+                const mid = getMid();
+                if(!mid) return;
+                
+                const pushId = Date.now().toString(); // simple ID
+                const payload = {
+                    id: pushId,
+                    message: msg,
+                    timestamp: Date.now(),
+                    readBy: {}
+                };
+                
+                try {
+                    btnSendBroadcast.disabled = true;
+                    btnSendBroadcast.innerHTML = "جاري الإرسال...";
+                    await set(ref(database, `users/${mid}/global_announcements/${pushId}`), payload);
+                    broadcastMsgInput.value = '';
+                    showToast(currentLang==='ar' ? "تم إرسال الإعلان لجميع المساعدين" : "Broadcast sent!", "success");
+                } catch(e) {
+                    console.error(e);
+                    showToast(currentLang==='ar' ? "فشل الإرسال" : "Failed to send", "err");
+                } finally {
+                    btnSendBroadcast.disabled = false;
+                    btnSendBroadcast.innerHTML = "📢 نشر الإعلان";
+                }
+            });
+        }
+        
+        // 2. Listen to Announcements
+        // Need to wait until we know if it's manager or assistant
+        setTimeout(() => {
+            const mid = getMid();
+            if(!mid) return;
+            
+            onValue(ref(database, `users/${mid}/global_announcements`), (snap) => {
+                localAnnouncements = [];
+                let unreadCount = 0;
+                const isManager = window.CURRENT_ROLE === 'admin';
+                
+                if(snap.exists()) {
+                    const data = snap.val();
+                    for(let key in data) {
+                        localAnnouncements.push(data[key]);
+                    }
+                    localAnnouncements.sort((a,b) => b.timestamp - a.timestamp);
+                }
+                
+                if (isManager && managerBroadcastHistory) {
+                    renderManagerBroadcastHistory();
+                }
+                
+                if (!isManager && btnNoticeBoard) {
+                    btnNoticeBoard.style.display = 'inline-block';
+                    localAnnouncements.forEach(ann => {
+                        const reads = ann.readBy || {};
+                        if (!reads[currentAsstId]) {
+                            unreadCount++;
+                        }
+                    });
+                    
+                    if (unreadCount > 0) {
+                        noticeBadge.classList.remove("hidden");
+                        noticeBadge.textContent = unreadCount > 9 ? "+9" : unreadCount;
+                    } else {
+                        noticeBadge.classList.add("hidden");
+                    }
+                }
+            });
+        }, 1500); // give time for checkAuth() to set role
+        
+        // 3. Render Manager History
+        function renderManagerBroadcastHistory() {
+            if(!managerBroadcastHistory) return;
+            managerBroadcastHistory.innerHTML = '';
+            
+            if(localAnnouncements.length === 0) {
+                managerBroadcastHistory.innerHTML = '<div style="color:#777;">لا يوجد إعلانات سابقة.</div>';
+                return;
+            }
+            
+            const historyToShow = localAnnouncements.slice(0, 20);
+            
+            historyToShow.forEach(ann => {
+                const div = document.createElement("div");
+                div.style.cssText = "background:var(--bg-inset); padding:15px; border-radius:10px; border:1px solid var(--border);";
+                
+                const d = new Date(ann.timestamp);
+                const readsCount = ann.readBy ? Object.keys(ann.readBy).length : 0;
+                
+                div.innerHTML = `
+                    <div style="font-size:0.85em; color:var(--text-secondary); margin-bottom:5px;">🕒 ${d.toLocaleString()}</div>
+                    <div style="font-weight:bold; margin-bottom:10px; color:var(--text-main);">${ann.message.replace(/\n/g, '<br>')}</div>
+                    <div style="font-size:0.85em; color:var(--primary);">👁️ تمت القراءة بواسطة: ${readsCount} مساعد</div>
+                `;
+                managerBroadcastHistory.appendChild(div);
+            });
+        }
+        
+        // 4. Render Assistant Modal
+        if (btnNoticeBoard) {
+            btnNoticeBoard.addEventListener("click", () => {
+                renderAssistantNoticeBoard();
+                noticeBoardModal.classList.remove("hidden");
+            });
+        }
+        if (closeNoticeBoardBtn) {
+            closeNoticeBoardBtn.addEventListener("click", () => {
+                noticeBoardModal.classList.add("hidden");
+            });
+        }
+        
+        async function renderAssistantNoticeBoard() {
+            if(!noticeBoardList) return;
+            noticeBoardList.innerHTML = '';
+            
+            if(localAnnouncements.length === 0) {
+                noticeBoardList.innerHTML = '<div style="text-align:center; padding:20px; color:#888;">لا توجد إعلانات حالياً.</div>';
+                return;
+            }
+            
+            const listToShow = localAnnouncements.slice(0, 10);
+            
+            for(const ann of listToShow) {
+                const reads = ann.readBy || {};
+                const isRead = !!reads[currentAsstId];
+                
+                const div = document.createElement("div");
+                div.style.cssText = \`background: \${isRead ? 'var(--bg-inset)' : 'var(--bg-surface)'}; padding:15px; border-radius:10px; border:1px solid var(--border); opacity: \${isRead ? '0.7' : '1'}; position: relative;\`;
+                
+                const d = new Date(ann.timestamp);
+                
+                // the red dot for unread
+                const dotHtml = isRead ? '' : \`<div style="position:absolute; top:15px; left:15px; width:10px; height:10px; border-radius:50%; background:var(--danger);"></div>\`;
+                
+                div.innerHTML = \`
+                    \${dotHtml}
+                    <div style="font-size:0.85em; color:var(--text-secondary); margin-bottom:8px;">🕒 \${d.toLocaleString()}</div>
+                    <div style="font-weight:bold; color:var(--text-main); line-height: 1.5; padding-left: \${!isRead ? '20px' : '0'}">\${ann.message.replace(/\\n/g, '<br>')}</div>
+                \`;
+                
+                noticeBoardList.appendChild(div);
+                
+                if (!isRead) {
+                    try {
+                        const mid = getMid();
+                        if (mid) {
+                            await update(ref(database, \`users/\${mid}/global_announcements/\${ann.id}/readBy\`), {
+                                [currentAsstId]: true
+                            });
+                        }
+                    } catch(e) { console.error("Error marking read", e); }
+                }
+            }
+        }
+    }
+
     // Startup Sequence
     async function initSystem() {
         await loadAll(); 
@@ -5175,6 +5357,7 @@ function updateDriveUI() {
         setTimeout(checkQR, 500);
 
         initDailyApprovalSystem();
+        initNoticeBoardSystem();
 
         // مزامنة صامتة عند فتح البرنامج في يوم جديد
         if (localStorage.getItem("last_cloud_sync_date") !== nowDateStr()) {
