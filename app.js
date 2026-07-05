@@ -4902,6 +4902,143 @@ function updateDriveUI() {
         endBroadcast(false);
     });
 
+    // ==========================================
+    // DAILY ADMINISTRATIVE HARD-LOCK SYSTEM
+    // ==========================================
+    function initDailyApprovalSystem() {
+        const mgrSettingDailyApproval = document.getElementById("mgrSettingDailyApproval");
+        const assistantHardLockOverlay = document.getElementById("assistantHardLockOverlay");
+        const assistantHardLockTitle = document.getElementById("assistantHardLockTitle");
+        const assistantHardLockMsg = document.getElementById("assistantHardLockMsg");
+        const managerDailyApprovalWidget = document.getElementById("managerDailyApprovalWidget");
+        const btnApproveDaily = document.getElementById("btnApproveDaily");
+        const btnRejectDaily = document.getElementById("btnRejectDaily");
+        const btnConfirmRejectDaily = document.getElementById("btnConfirmRejectDaily");
+        const managerDailyRejectNoteContainer = document.getElementById("managerDailyRejectNoteContainer");
+        const managerDailyRejectNote = document.getElementById("managerDailyRejectNote");
+
+        if(!mgrSettingDailyApproval || !managerDailyApprovalWidget || !assistantHardLockOverlay) return;
+
+        let dailyApprovalEnabled = false;
+        let dailyStatusObj = null;
+
+        // Auto-detect manager ID
+        const getMid = () => localStorage.getItem("ca_manager_id") || window.CURRENT_MANAGER_ID;
+
+        // 1. Listen to Settings Toggle State
+        onValue(ref(database, `users/${getMid()}/settings/dailyApprovalEnabled`), (snap) => {
+            dailyApprovalEnabled = snap.val() === true;
+            if(window.CURRENT_ROLE === 'admin') {
+                mgrSettingDailyApproval.checked = dailyApprovalEnabled;
+                managerDailyApprovalWidget.classList.toggle("hidden", !dailyApprovalEnabled);
+            }
+            evaluateAssistantLock();
+        });
+
+        // 2. Listen to Daily Status
+        onValue(ref(database, `users/${getMid()}/daily_status`), (snap) => {
+            dailyStatusObj = snap.val() || { status: 'Pending', lastDate: '', managerNote: '' };
+            evaluateAssistantLock();
+        });
+
+        // Manager Side Logic
+        mgrSettingDailyApproval.addEventListener("change", async (e) => {
+            const isEnabled = e.target.checked;
+            try {
+                await set(ref(database, `users/${getMid()}/settings/dailyApprovalEnabled`), isEnabled);
+                if (typeof showToast === "function") showToast(isEnabled ? "تم تفعيل الاعتماد اليومي" : "تم إيقاف الاعتماد اليومي", "success");
+                if (isEnabled) {
+                    await update(ref(database, `users/${getMid()}/daily_status`), {
+                        status: 'Pending',
+                        managerNote: '',
+                        lastDate: nowDateStr()
+                    });
+                }
+            } catch (err) {
+                console.error(err);
+                if (typeof showToast === "function") showToast("حدث خطأ أثناء حفظ الإعداد", "err");
+            }
+        });
+
+        btnApproveDaily.addEventListener("click", async () => {
+            try {
+                await set(ref(database, `users/${getMid()}/daily_status`), {
+                    status: 'Approved',
+                    managerNote: '',
+                    lastDate: nowDateStr()
+                });
+                managerDailyRejectNoteContainer.classList.add("hidden");
+                if (typeof showToast === "function") showToast("تم اعتماد تقرير الأمس بنجاح. النظام مفتوح الآن للمساعدين.", "success");
+            } catch (err) {
+                console.error(err);
+            }
+        });
+
+        btnRejectDaily.addEventListener("click", () => {
+            managerDailyRejectNoteContainer.classList.remove("hidden");
+        });
+
+        btnConfirmRejectDaily.addEventListener("click", async () => {
+            const note = managerDailyRejectNote.value.trim();
+            if(!note) {
+                if (typeof showToast === "function") showToast("برجاء كتابة سبب الرفض", "err");
+                return;
+            }
+            try {
+                await set(ref(database, `users/${getMid()}/daily_status`), {
+                    status: 'Rejected',
+                    managerNote: note,
+                    lastDate: nowDateStr()
+                });
+                managerDailyRejectNoteContainer.classList.add("hidden");
+                managerDailyRejectNote.value = '';
+                if (typeof showToast === "function") showToast("تم إيقاف النظام وإرسال سبب الرفض للمساعدين.", "warning");
+            } catch (err) {
+                console.error(err);
+            }
+        });
+
+        // Assistant Side Logic
+        function evaluateAssistantLock() {
+            if (window.CURRENT_ROLE === 'admin') {
+                assistantHardLockOverlay.classList.add("hidden");
+                return;
+            }
+
+            if (!dailyApprovalEnabled) {
+                assistantHardLockOverlay.classList.add("hidden");
+                return;
+            }
+
+            // Auto-reset logic: if date is different, lock it
+            let effectiveStatus = dailyStatusObj?.status || 'Pending';
+            const note = dailyStatusObj?.managerNote || '';
+            
+            if (dailyStatusObj?.lastDate !== nowDateStr()) {
+                effectiveStatus = 'Pending';
+            }
+
+            if (effectiveStatus === 'Approved') {
+                assistantHardLockOverlay.classList.add("hidden");
+            } else {
+                assistantHardLockOverlay.classList.remove("hidden");
+                const contentBox = document.getElementById("assistantHardLockContent");
+                
+                if (effectiveStatus === 'Rejected') {
+                    contentBox.style.borderColor = "var(--danger)";
+                    assistantHardLockTitle.textContent = "تم إيقاف النظام (مرفوض)";
+                    assistantHardLockTitle.style.color = "var(--danger)";
+                    assistantHardLockMsg.innerHTML = `تم رفض تقرير الأمس من الإدارة بسبب:<br><strong style="color:var(--danger); display:block; margin-top:10px;">"${note}"</strong>`;
+                } else {
+                    contentBox.style.borderColor = "var(--warning)";
+                    assistantHardLockTitle.textContent = "النظام مغلق مؤقتاً";
+                    assistantHardLockTitle.style.color = "var(--warning)";
+                    assistantHardLockMsg.innerHTML = "في انتظار اعتماد الإدارة لتقرير الأمس لبدء العمل.";
+                }
+            }
+        }
+    }
+
     // Startup Sequence
     async function initSystem() {
         await loadAll(); 
@@ -4910,6 +5047,8 @@ function updateDriveUI() {
         applyLanguage(); 
         checkDailyBackup();
         setTimeout(checkQR, 500);
+
+        initDailyApprovalSystem();
 
         // مزامنة صامتة عند فتح البرنامج في يوم جديد
         if (localStorage.getItem("last_cloud_sync_date") !== nowDateStr()) {

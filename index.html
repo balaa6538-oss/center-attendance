@@ -202,7 +202,20 @@
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
     <!-- MAIN CONTENT -->
-    <main class="main-content">
+    <main class="main-content" style="position: relative;">
+
+      <!-- ASSISTANT HARD LOCK OVERLAY -->
+      <div id="assistantHardLockOverlay" class="hidden" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-body); z-index: 99999; display: flex; align-items: center; justify-content: center; text-align: center; padding: 20px;">
+        <div id="assistantHardLockContent" style="max-width: 600px; padding: 30px; border-radius: 12px; background: var(--bg-surface); box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 2px solid var(--warning);">
+          <h2 style="margin-bottom: 15px; font-size: 1.5em; display: flex; align-items: center; justify-content: center; gap: 10px;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span id="assistantHardLockTitle">النظام مغلق مؤقتاً</span>
+          </h2>
+          <p id="assistantHardLockMsg" style="font-size: 1.1em; color: var(--text-color); line-height: 1.6;">
+            في انتظار اعتماد الإدارة لتقرير الأمس لبدء العمل.
+          </p>
+        </div>
+      </div>
 
       <!-- TOPBAR -->
       <header class="topbar">
@@ -1328,6 +1341,34 @@
 
         <!-- ====== DAILY REPORT ====== -->
         <div id="managerDailyReportView" class="manager-view">
+          
+          <!-- MANAGER DAILY APPROVAL WIDGET -->
+          <div id="managerDailyApprovalWidget" class="hidden" style="background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+              <div>
+                <h3 style="margin-bottom: 4px; display: flex; align-items: center; gap: 8px;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                  مراجعة التقرير اليومي
+                </h3>
+                <p class="muted" style="font-size: 0.9em; margin: 0;">الرجاء مراجعة بيانات الأمس، النظام مغلق عند المساعدين حتى يتم الاعتماد.</p>
+              </div>
+              <div style="display: flex; gap: 10px;">
+                <button id="btnApproveDaily" class="btn success" style="display: flex; align-items: center; gap: 6px;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> موافق
+                </button>
+                <button id="btnRejectDaily" class="btn danger" style="display: flex; align-items: center; gap: 6px;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> رفض
+                </button>
+              </div>
+            </div>
+            <div id="managerDailyRejectNoteContainer" class="hidden" style="margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border);">
+              <label class="lbl">سبب الرفض (يظهر للمساعدين):</label>
+              <div style="display: flex; gap: 10px;">
+                <input type="text" id="managerDailyRejectNote" class="inp" placeholder="اكتب سبب الرفض هنا..." style="flex: 1;">
+                <button id="btnConfirmRejectDaily" class="btn danger">تأكيد الرفض</button>
+              </div>
+            </div>
+          </div>
           <div class="manager-stats-grid" id="managerDailyStatsGrid">
             <div class="manager-stat-card" style="--stat-color: var(--success); --stat-bg: var(--bg-success-subtle);">
               <div class="manager-stat-icon">
@@ -1500,6 +1541,16 @@
               <div class="flexBetween" style="background:var(--bg-inset); padding:14px; border-radius:var(--radius-sm);">
                 <span style="font-weight:600; font-size:0.9em;">إعادة تعيين المزامنة</span>
                 <button class="btn danger smallBtn" onclick="localStorage.removeItem('last_cloud_sync_date'); showToast && showToast('تم الإعادة ✅', 'success');">إعادة التعيين</button>
+              </div>
+              <div class="flexBetween" style="background:var(--bg-inset); padding:14px; border-radius:var(--radius-sm);">
+                <div>
+                  <span style="font-weight:600; font-size:0.9em; display:block; margin-bottom:4px;">تفعيل الاعتماد اليومي</span>
+                  <p class="muted" style="font-size:0.8em; margin:0; max-width: 250px;">سيتم قفل النظام تماماً عند المساعدين حتى تقوم باعتماد تقرير الأمس.</p>
+                </div>
+                <label class="switch" style="margin:0;">
+                  <input type="checkbox" id="mgrSettingDailyApproval">
+                  <span class="slider round"></span>
+                </label>
               </div>
             </div>
           </div>
