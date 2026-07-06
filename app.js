@@ -1108,7 +1108,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (window.CURRENT_MANAGER_ID) {
                     updateSyncUI('syncing', 'جاري جلب البيانات من السحابة...');
                     const dbRef = ref(database);
-                    const snapshot = await get(child(dbRef, `users/${window.CURRENT_MANAGER_ID}`));
+                    
+                    // Wrap get in a 10-second timeout to prevent infinite hang on refresh with no internet
+                    const fetchWork = get(child(dbRef, `users/${window.CURRENT_MANAGER_ID}`));
+                    const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('SYNC_TIMEOUT')), 10000));
+                    const snapshot = await Promise.race([fetchWork, timeout]);
+                    
                     if (snapshot.exists()) {
                         const remote = snapshot.val();
                         const remoteTimestamp = remote._lastModified || 0;
@@ -5712,6 +5717,19 @@ function updateDriveUI() {
             syncWithFirebase();
         });
     }
+
+    // Automatic Online/Offline Detection
+    window.addEventListener('offline', () => {
+        updateSyncUI('offline', 'تم قطع الاتصال بالإنترنت');
+        showToast("انقطع الاتصال بالإنترنت", "err");
+    });
+    
+    window.addEventListener('online', () => {
+        updateSyncUI('pending', 'عاد الاتصال بالإنترنت، جاري المزامنة...');
+        setTimeout(() => {
+            syncWithFirebase();
+        }, 2000);
+    });
 
     // Startup Sequence
     async function initSystem() {
