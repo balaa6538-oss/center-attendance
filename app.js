@@ -1194,9 +1194,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 updateSyncUI('offline', 'غير متصل - تعمل من البيانات المحلية');
             }
 
-            if (!fromFirebase && Object.keys(students).length > 0) {
-                console.log("[loadAll] Working offline with IndexedDB data");
-                updateSyncUI('pending', 'تعمل من البيانات المحلية');
+            if (!fromFirebase) {
+                if (Object.keys(students).length > 0) {
+                    console.log("[loadAll] Working offline with IndexedDB data");
+                    updateSyncUI('pending', 'تعمل من البيانات المحلية');
+                } else {
+                    updateSyncUI('online', 'جاهز للعمل');
+                }
             }
             
             // Populate eval form fields
@@ -5614,6 +5618,7 @@ function updateDriveUI() {
                     if (!hasUnsavedChanges && localTimestamp >= remoteTimestamp) {
                         // Artificial delay so user sees the animation and feels the sync
                         await new Promise(r => setTimeout(r, 800));
+                        updateSyncUI('online', 'متصل ومتزامن ✅');
                         showToast("كل البيانات متزامنة بالفعل ✅", "success");
                         return;
                     }
