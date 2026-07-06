@@ -1623,89 +1623,67 @@ body.flash-green::after { box-shadow: inset 0 0 25px 8px rgba(16,185,129,0.5); t
 .text-purple { color: #a855f7 !important; }
 .text-danger { color: #ef4444 !important; }
 
-/* ── CLOUD SYNC INDICATOR ── */
-.cloud-sync-indicator {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--bg-inset);
-  font-size: 1.1em;
-  transition: background 0.3s ease, box-shadow 0.3s ease;
+/* ── CUSTOM CLOUD SYNC SVG ── */
+.cloud-sync-wrapper {
   position: relative;
+  width: 48px;
+  height: 32px;
   cursor: pointer;
+  margin-inline-end: 10px;
 }
 
-/* --- State Colors (applied via background glow + dot) --- */
-.cloud-sync-indicator.online {
-  background: rgba(16, 185, 129, 0.15);
-  box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
-  color: #10b981;
-}
-.cloud-sync-indicator.offline {
-  background: rgba(239, 68, 68, 0.15);
-  box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
-  color: #ef4444;
-}
-.cloud-sync-indicator.pending {
-  background: rgba(245, 158, 11, 0.15);
-  box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
-  color: #f59e0b;
-}
-.cloud-sync-indicator.syncing {
-  background: rgba(245, 158, 11, 0.15);
-  box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
-  color: #f59e0b;
+.cloud-vector {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+  transition: fill 0.3s ease;
 }
 
-/* --- Sync Icon Animation --- */
-.cloud-sync-indicator.syncing #syncIcon {
-  display: inline-block;
-  animation: syncPulse 0.8s ease-in-out infinite alternate;
-}
+/* Base Cloud Colors based on state */
+.cloud-sync-wrapper.online .cloud-vector { fill: #10b981; } /* Green */
+.cloud-sync-wrapper.pending .cloud-vector,
+.cloud-sync-wrapper.syncing .cloud-vector { fill: #f59e0b; } /* Yellow/Orange */
+.cloud-sync-wrapper.offline .cloud-vector { fill: #ef4444; } /* Red */
 
-@keyframes syncPulse {
-  0%   { transform: scale(1); opacity: 1; }
-  100% { transform: scale(1.1); opacity: 0.8; }
-}
-
-/* Sub-icon: default muted, then spin + orange when syncing */
-.sync-sub-icon {
+/* Sync Button inside cloud */
+.sync-button {
   position: absolute;
-  font-size: 0.5em;
-  color: var(--text-muted, #888);
-  bottom: 0px;
-  left: 0px;
-  background: var(--bg-inset);
+  bottom: -4px;
+  left: -4px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  padding: 2px;
-  transition: color 0.3s ease;
-}
-.cloud-sync-indicator.syncing .sync-sub-icon {
-  animation: spinIcon 0.8s linear infinite;
-  color: #f59e0b;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.6);
+  transition: background-color 0.3s ease;
+  padding: 0;
+  outline: none;
+  border: 2px solid var(--bg-inset); /* separate from cloud */
+  pointer-events: none; /* Let parent handle clicks */
 }
 
-@keyframes spinIcon {
-  0%   { transform: rotate(0deg); }
+.sync-icon {
+  width: 14px;
+  height: 14px;
+}
+
+/* Button Colors */
+.cloud-sync-wrapper.online .sync-button { background-color: #10b981; }
+.cloud-sync-wrapper.pending .sync-button,
+.cloud-sync-wrapper.syncing .sync-button { background-color: #f59e0b; }
+.cloud-sync-wrapper.offline .sync-button { background-color: #ef4444; }
+
+/* Spinning animation when syncing */
+.cloud-sync-wrapper.syncing .sync-icon {
+  animation: spin 1.5s linear infinite;
+}
+
+@keyframes spin {
   100% { transform: rotate(360deg); }
 }
-
-.sync-status-dot {
-  position: absolute;
-  bottom: 2px;
-  right: 2px;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  border: 2px solid var(--bg-inset);
-  transition: background 0.3s ease;
-}
-.sync-status-dot.online { background: #10b981; box-shadow: 0 0 6px rgba(16, 185, 129, 0.6); }
-.sync-status-dot.offline { background: #ef4444; box-shadow: 0 0 6px rgba(239, 68, 68, 0.6); }
-.sync-status-dot.pending { background: #f59e0b; box-shadow: 0 0 6px rgba(245, 158, 11, 0.6); animation: pulse-pending 2s ease-in-out infinite; }
 
 .sync-pending-badge {
   position: absolute;

@@ -20,7 +20,7 @@
   <!-- PREVENT THEME FLASH -->
   <script>
     (function() {
-      var savedTheme = localStorage.getItem("ca_theme") || "dark";
+      var savedTheme = localStorage.getItem("ca_theme_v1") || "dark";
       document.documentElement.setAttribute("data-theme", savedTheme);
     })();
   </script>
@@ -312,11 +312,18 @@
           </span>
         </div>
         <div class="topbar-end" style="position: relative;">
-          <!-- Cloud Sync Indicator -->
-          <div id="cloudSyncIndicator" class="cloud-sync-indicator offline" title="غير متصل بالسحابة" style="position: relative; cursor: pointer; margin-inline-end: 10px;">
-            <i class="fas fa-cloud" id="syncIcon"></i>
-            <i class="fas fa-sync-alt sync-sub-icon"></i>
-            <span id="syncStatusDot" class="sync-status-dot offline"></span>
+          <!-- Custom Cloud Sync SVG (User requested design) -->
+          <div id="cloudSyncIndicator" class="cloud-sync-wrapper offline" title="غير متصل بالسحابة">
+            <!-- تصميم السحابة -->
+            <svg class="cloud-vector" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M17.5 19c2.48 0 4.5-2.02 4.5-4.5 0-2.28-1.7-4.18-3.92-4.46C17.41 6.84 14.47 4.5 11 4.5 7.14 4.5 4 7.64 4 11.5c0 .35.03.69.08 1.02C1.78 13.06 0 15.08 0 17.5 0 20.53 2.47 23 5.5 23h12c2.48 0 4.5-2.02 4.5-4.5z"/>
+            </svg>
+            <!-- زر المزامنة الصغير -->
+            <button id="syncSubBtn" class="sync-button" aria-label="مزامنة" tabindex="-1">
+              <svg class="sync-icon" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+                 <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/>
+              </svg>
+            </button>
             <span id="syncPendingBadge" class="sync-pending-badge hidden">!</span>
           </div>
 
