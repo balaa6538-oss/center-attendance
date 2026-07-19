@@ -1329,15 +1329,19 @@ document.addEventListener('DOMContentLoaded', function() {
             $("currentUserBadgeText").innerText = isAdmin ? (currentLang === "ar" ? "👑 مسؤول عام" : "👑 Admin") : (currentLang === "ar" ? "👥 مساعد" : "👥 Assistant");
         }
         
-        // TEMPORARILY: Give Assistant full permissions (don't hide anything)
+        // Show base UI elements for all roles first
         document.querySelectorAll(".adminOnly").forEach(el => {
             if (!el.classList.contains("tab-section")) {
                 el.classList.remove("hidden"); 
             }
         });
-        
         if($("deleteStudentBtn")) $("deleteStudentBtn").classList.remove("hidden");
         if($("correctPayBtn")) $("correctPayBtn").classList.remove("hidden");
+        
+        // For assistants: apply granular Firebase-based permissions
+        if (!isAdmin) {
+            applyPermissionsToAssistantUI();
+        }
     }
 
     function askAdminPass(cb) {
@@ -3985,12 +3989,20 @@ function updateDriveUI() {
     window.onPermissionToggle = function(key, val) {
         currentPermissions[key] = val;
         savePermissionsToFirebase();
-        applyPermissionsToAssistantUI();
+    };
+
+    // ── CENTRAL PERMISSION-TO-UI MAP ──
+    // To add a NEW permission in the future, just add an entry here + in PERMISSIONS_DEFS above.
+    const PERMISSION_TAB_MAP = {
+        can_view_reports:              { btnId: "btnTabReports" },
+        can_access_marketing:          { btnId: "btnTabMarketing" },
+        can_access_session_students:   { btnId: "btnTabSessionStudents" },
     };
 
     function applyPermissionsToAssistantUI() {
-        if (window.CURRENT_ROLE === "admin") return; // Manager sees everything
-        // Revenue visibility
+        if (currentUserRole === "admin") return; // Manager sees everything
+
+        // 1. Revenue visibility
         const revPill = document.querySelector(".stat-pill.adminOnly");
         if (revPill) {
             if (!currentPermissions.show_revenue) {
@@ -4001,18 +4013,14 @@ function updateDriveUI() {
                 revPill.style.pointerEvents = "";
             }
         }
-        // Tab locks
-        const tabLockMap = {
-            can_view_reports:         { tabId: "secReports", btnId: "btnTabReports" },
-            can_access_marketing:     { tabId: "secMarketing", btnId: "btnTabMarketing" },
-            can_access_session_students: { tabId: "secSessionStudents", btnId: "btnTabSessionStudents" },
-        };
-        Object.entries(tabLockMap).forEach(([key, { tabId, btnId }]) => {
+
+        // 2. Tab/Section locks (uses central map)
+        Object.entries(PERMISSION_TAB_MAP).forEach(([permKey, { btnId }]) => {
             const btn = $(btnId);
             if (!btn) return;
-            if (!currentPermissions[key]) {
+            if (!currentPermissions[permKey]) {
+                // LOCK
                 btn.classList.add("locked-feature");
-                // Add or update locked badge
                 let badge = btn.querySelector(".locked-badge");
                 if (!badge) {
                     badge = document.createElement("span");
@@ -4020,47 +4028,80 @@ function updateDriveUI() {
                     badge.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> مقفل من المدير`;
                     btn.appendChild(badge);
                 }
-                btn.onclick = function(e) {
-                    e.stopPropagation();
-                    showToast("هذه الميزة مقفلة من قبل المدير 🔒", "warning");
-                };
             } else {
+                // UNLOCK
                 btn.classList.remove("locked-feature");
                 const badge = btn.querySelector(".locked-badge");
                 if (badge) badge.remove();
-                btn.onclick = null; // Restore original handler
             }
         });
-        // Add student lock
-        const addStBtn = $("addStudentBtn") || document.querySelector("[data-action='addStudent']");
-        if (addStBtn && !currentPermissions.can_add_student) {
-            addStBtn.classList.add("locked-feature");
-        } else if (addStBtn) {
-            addStBtn.classList.remove("locked-feature");
+
+        // 3. Add student lock (correct ID: addNewBtn)
+        const addStBtn = $("addNewBtn");
+        if (addStBtn) {
+            if (!currentPermissions.can_add_student) {
+                addStBtn.classList.add("locked-feature");
+                addStBtn.title = "مقفل من المدير 🔒";
+            } else {
+                addStBtn.classList.remove("locked-feature");
+                addStBtn.title = "";
+            }
+        }
+
+        // 4. Manage packages lock
+        const pkgBtn = $("quickGroupFeesBtn");
+        if (pkgBtn) {
+            if (!currentPermissions.can_manage_packages) {
+                pkgBtn.classList.add("locked-feature");
+                pkgBtn.title = "مقفل من المدير 🔒";
+            } else {
+                pkgBtn.classList.remove("locked-feature");
+                pkgBtn.title = "";
+            }
+        }
+
+        // 5. Discount request lock
+        const discountBtn = $("correctPayBtn");
+        if (discountBtn) {
+            if (!currentPermissions.can_request_discount) {
+                discountBtn.classList.add("locked-feature");
+                discountBtn.title = "مقفل من المدير 🔒";
+            } else {
+                discountBtn.classList.remove("locked-feature");
+                discountBtn.title = "";
+            }
         }
     }
 
-    // Load permissions for assistant on startup
-    if (window.CURRENT_ROLE !== "admin" && window.CURRENT_MANAGER_ID && isFirebaseConnected) {
-        (async () => {
-            await loadPermissions();
-            applyPermissionsToAssistantUI();
-            // Also listen for real-time updates
-            const permRef = ref(database, `users/${window.CURRENT_MANAGER_ID}/settings/permissions`);
-            onValue(permRef, snap => {
-                if (snap.exists()) {
-                    const saved = snap.val();
-                    PERMISSIONS_DEFS.forEach(p => {
-                        if (saved[p.key] !== undefined) currentPermissions[p.key] = saved[p.key];
-                    });
-                    applyPermissionsToAssistantUI();
+    // ── REAL-TIME PERMISSIONS LISTENER ──
+    // Called from initSystem() after data loads to guarantee reliability.
+    let _permListenerRegistered = false;
+    function setupPermissionsListener() {
+        if (_permListenerRegistered) return;
+        const mid = window.CURRENT_MANAGER_ID || localStorage.getItem("ca_manager_id");
+        if (!mid) return;
+        _permListenerRegistered = true;
+
+        // Firebase onValue works even when offline — it caches and syncs automatically.
+        const permRef = ref(database, `users/${mid}/settings/permissions`);
+        onValue(permRef, snap => {
+            if (snap.exists()) {
+                const saved = snap.val();
+                PERMISSIONS_DEFS.forEach(p => {
+                    if (saved[p.key] !== undefined) currentPermissions[p.key] = saved[p.key];
+                });
+            }
+            // Always re-apply — whether admin (to refresh panel) or assistant (to lock/unlock UI)
+            if (currentUserRole !== "admin") {
+                applyPermissionsToAssistantUI();
+            } else {
+                // For manager: re-render the toggles panel if it's open
+                if ($("managerPermissionsView") && !$("managerPermissionsView").classList.contains("hidden")) {
+                    renderPermissionsPanel();
                 }
-            });
-        })();
-    }
-    // Load for manager too (to show current state in panel)
-    if (window.CURRENT_ROLE === "admin" && window.CURRENT_MANAGER_ID && isFirebaseConnected) {
-        loadPermissions();
+            }
+        });
+        console.log("[Permissions] Real-time listener registered for:", mid);
     }
 
     // ==========================================
@@ -5750,6 +5791,10 @@ function updateDriveUI() {
 
         initDailyApprovalSystem();
         initNoticeBoardSystem();
+
+        // Step 2: Setup real-time permissions listener (works for both admin & assistant)
+        await loadPermissions();
+        setupPermissionsListener();
 
         // مزامنة صامتة عند فتح البرنامج في يوم جديد
         if (localStorage.getItem("last_cloud_sync_date") !== nowDateStr()) {
