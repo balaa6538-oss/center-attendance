@@ -4073,6 +4073,17 @@ function updateDriveUI() {
         }
     }
 
+    function updateManagerPermissionsUI() {
+        if (!document.getElementById("managerPermissionsView") || document.getElementById("managerPermissionsView").classList.contains("hidden")) return;
+        
+        PERMISSIONS_DEFS.forEach(p => {
+            const checkbox = document.getElementById("perm_" + p.key);
+            if (checkbox && checkbox.checked !== !!currentPermissions[p.key]) {
+                checkbox.checked = !!currentPermissions[p.key];
+            }
+        });
+    }
+
     // ── REAL-TIME PERMISSIONS LISTENER ──
     // Called from initSystem() after data loads to guarantee reliability.
     let _permListenerRegistered = false;
@@ -4092,11 +4103,13 @@ function updateDriveUI() {
                 });
             }
             
-            // Only re-apply UI locks if it's the assistant
             if (currentUserRole !== "admin") {
+                // Apply locks to assistant UI
                 applyPermissionsToAssistantUI();
+            } else {
+                // Safely update manager toggle switches without breaking the UI
+                updateManagerPermissionsUI();
             }
-            // (Removed manager UI re-render here to prevent destroying checkboxes while clicking)
         });
         console.log("[Permissions] Real-time listener registered for:", mid);
     }
