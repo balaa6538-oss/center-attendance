@@ -3954,7 +3954,7 @@ function updateDriveUI() {
 
     async function savePermissionsToFirebase() {
         const mid = localStorage.getItem("ca_manager_id");
-        if (!mid || !isFirebaseConnected) return;
+        if (!mid) return; // Removed isFirebaseConnected to allow offline queuing
         try {
             await update(ref(database, `users/${mid}/settings/permissions`), currentPermissions);
             showToast("تم حفظ الصلاحيات ✅", "success");
@@ -4091,15 +4091,12 @@ function updateDriveUI() {
                     if (saved[p.key] !== undefined) currentPermissions[p.key] = saved[p.key];
                 });
             }
-            // Always re-apply — whether admin (to refresh panel) or assistant (to lock/unlock UI)
+            
+            // Only re-apply UI locks if it's the assistant
             if (currentUserRole !== "admin") {
                 applyPermissionsToAssistantUI();
-            } else {
-                // For manager: re-render the toggles panel if it's open
-                if ($("managerPermissionsView") && !$("managerPermissionsView").classList.contains("hidden")) {
-                    renderPermissionsPanel();
-                }
             }
+            // (Removed manager UI re-render here to prevent destroying checkboxes while clicking)
         });
         console.log("[Permissions] Real-time listener registered for:", mid);
     }
