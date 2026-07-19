@@ -5763,29 +5763,7 @@ function updateDriveUI() {
     // This prevents login page flash when user is already logged in
     checkAuth();
 
-    // Animated Logo Interaction (3D Flip)
-    const managerLogoBox = document.getElementById('managerLogoBox');
-    const managerPass = document.getElementById('managerPass');
-    const managerUser = document.getElementById('managerUser');
-    
-    if (managerLogoBox) {
-        if (managerPass) {
-            managerPass.addEventListener('focus', () => {
-                managerLogoBox.classList.add('hide-face');
-            });
-            managerPass.addEventListener('blur', () => {
-                managerLogoBox.classList.remove('hide-face');
-            });
-        }
-        if (managerUser) {
-            managerUser.addEventListener('focus', () => {
-                managerLogoBox.classList.add('looking');
-            });
-            managerUser.addEventListener('blur', () => {
-                managerLogoBox.classList.remove('looking');
-            });
-        }
-    }
+
 
     initSystem();
 });
