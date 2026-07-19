@@ -2088,3 +2088,62 @@ body.flash-green::after { box-shadow: inset 0 0 25px 8px rgba(16,185,129,0.5); t
   .manager-nav-item { white-space: nowrap; }
   .manager-stats-grid { grid-template-columns: 1fr; }
 }
+
+/* Animated Login Logo Paws */
+.animated-logo-container {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 10px;
+  overflow: hidden;
+  border-radius: 50%; /* in case the logo itself is round, keeps paws inside bounds mostly */
+}
+.animated-logo-container img {
+  position: relative;
+  z-index: 2;
+  transition: transform 0.3s ease;
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+}
+.paw {
+  position: absolute;
+  bottom: -40px;
+  width: 40px;
+  height: 40px;
+  background: #cbd5e1;
+  border-radius: 50%;
+  z-index: 3;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+.paw::after {
+  content: '';
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 22px;
+  height: 16px;
+  background: #94a3b8;
+  border-radius: 50%;
+}
+.paw-left {
+  left: 10px;
+}
+.paw-right {
+  right: 10px;
+}
+/* States */
+.animated-logo-container.covering-eyes .paw-left {
+  bottom: 30%;
+  left: 20%;
+  transform: translateX(-20%);
+}
+.animated-logo-container.covering-eyes .paw-right {
+  bottom: 30%;
+  right: 20%;
+  transform: translateX(20%);
+}
+.animated-logo-container.looking-down img {
+  transform: translateY(5px) scale(1.05);
+}
