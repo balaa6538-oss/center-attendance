@@ -3573,10 +3573,25 @@ function updateDriveUI() {
         if (isManual) showToast(t("msg_sync_wait"), "warning");
 
         let backupData = {};
+        // 1. Settings from localStorage
         for (let i = 0; i < localStorage.length; i++) {
             let key = localStorage.key(i);
             if (key.startsWith("ca_")) backupData[key] = localStorage.getItem(key);
         }
+        
+        // 2. Add heavy data from memory (since they are in IndexedDB, not localStorage)
+        backupData[K_STUDENTS] = JSON.stringify(students || {});
+        backupData[K_ATT_BY_DATE] = JSON.stringify(attByDate || {});
+        backupData[K_REVENUE] = JSON.stringify(revenueByDate || {});
+        backupData[K_GROUP_FEES] = JSON.stringify(groupFees || {});
+        backupData[K_EXPENSES] = JSON.stringify(expensesByDate || {});
+        backupData[K_DELETED] = JSON.stringify(deletedStudents || {});
+        backupData[K_SYLLABUS] = JSON.stringify(syllabusData || []);
+        backupData[K_EVAL] = JSON.stringify(evalData || {});
+        backupData[K_SESSION_STUDENTS] = JSON.stringify(sessionStudentsByDate || {});
+        backupData[K_BOOKLETS] = JSON.stringify(bookletsStock || {});
+        backupData[K_EXTRA_IDS] = JSON.stringify(extraIds || []);
+
         const fileContent = JSON.stringify(backupData);
         const metadata = { name: BACKUP_FILE_NAME, mimeType: 'application/json' };
 
@@ -3639,37 +3654,57 @@ function updateDriveUI() {
                 const fileRes = await fetch(`https://www.googleapis.com/drive/v3/files/${data.files[0].id}?alt=media`, { headers: { 'Authorization': `Bearer ${accessToken}` } });
                 const backupData = await fileRes.json();
                 
-                // Selective Merge: Extract ONLY business data from backup
-                const businessKeys = [
-                    K_STUDENTS, K_EXTRA_IDS, K_ATT_BY_DATE, K_REVENUE, 
-                    K_DELETED, K_NOTEBOOK, K_GROUP_FEES, K_EXPENSES, 
-                    K_SYLLABUS, K_EVAL, K_SESSION_STUDENTS, K_BOOKLETS
-                ];
+                // Helper to fallback to older backup keys (e.g. v5)
+                const safeGet = (keys) => {
+                    for(let k of keys) { if (backupData[k] !== undefined) return backupData[k]; }
+                    return undefined;
+                };
                 
-                // Keep the current localStorage session keys completely intact
-                businessKeys.forEach(key => {
-                    if (backupData[key] !== undefined) {
-                        localStorage.setItem(key, backupData[key]);
-                    }
-                });
+                const restoreMap = {
+                    [K_STUDENTS]: safeGet([K_STUDENTS, "ca_students_v5", "ca_students_v4"]),
+                    [K_EXTRA_IDS]: safeGet([K_EXTRA_IDS, "ca_extra_ids_v5"]),
+                    [K_ATT_BY_DATE]: safeGet([K_ATT_BY_DATE, "ca_att_by_date_v5"]),
+                    [K_REVENUE]: safeGet([K_REVENUE, "ca_revenue_v5"]),
+                    [K_DELETED]: safeGet([K_DELETED, "ca_deleted_v8", "ca_deleted_v7"]),
+                    [K_NOTEBOOK]: backupData[K_NOTEBOOK],
+                    [K_GROUP_FEES]: backupData[K_GROUP_FEES],
+                    [K_EXPENSES]: backupData[K_EXPENSES],
+                    [K_SYLLABUS]: backupData[K_SYLLABUS],
+                    [K_EVAL]: backupData[K_EVAL],
+                    [K_SESSION_STUDENTS]: backupData[K_SESSION_STUDENTS],
+                    [K_BOOKLETS]: backupData[K_BOOKLETS]
+                };
 
-                // 2. Push to Firebase if manager is logged in
+                // Save data correctly (to IndexedDB for heavy data, localStorage for lightweight)
+                for (const [key, value] of Object.entries(restoreMap)) {
+                    if (value !== undefined) {
+                        if (HEAVY_DATA_KEYS.includes(key)) {
+                            try {
+                                await secureSave(key, JSON.parse(value));
+                            } catch (e) { console.error("Restore parse err", key); }
+                        } else {
+                            localStorage.setItem(key, value);
+                        }
+                    }
+                }
+
+                // Push to Firebase if manager is logged in
                 if (window.CURRENT_MANAGER_ID) {
                     const indicator = document.getElementById("cloudSyncIndicator");
                     if (indicator) indicator.classList.add("syncing");
                     
                     const dbRef = ref(database, `users/${window.CURRENT_MANAGER_ID}`);
                     await update(dbRef, {
-                        'students': JSON.parse(backupData[K_STUDENTS] || "{}"),
-                        'attendance': JSON.parse(backupData[K_ATT_BY_DATE] || "{}"),
-                        'finances/revenue': JSON.parse(backupData[K_REVENUE] || "{}"),
-                        'packages': JSON.parse(backupData[K_GROUP_FEES] || "{}"),
-                        'finances/expenses': JSON.parse(backupData[K_EXPENSES] || "{}"),
-                        'deletedStudents': JSON.parse(backupData[K_DELETED] || "{}"),
-                        'syllabus': JSON.parse(backupData[K_SYLLABUS] || "[]"),
-                        'evaluations': JSON.parse(backupData[K_EVAL] || "{}"),
-                        'sessionStudents': JSON.parse(backupData[K_SESSION_STUDENTS] || "{}"),
-                        'booklets': JSON.parse(backupData[K_BOOKLETS] || "{}")
+                        'students': JSON.parse(restoreMap[K_STUDENTS] || "{}"),
+                        'attendance': JSON.parse(restoreMap[K_ATT_BY_DATE] || "{}"),
+                        'finances/revenue': JSON.parse(restoreMap[K_REVENUE] || "{}"),
+                        'packages': JSON.parse(restoreMap[K_GROUP_FEES] || "{}"),
+                        'finances/expenses': JSON.parse(restoreMap[K_EXPENSES] || "{}"),
+                        'deletedStudents': JSON.parse(restoreMap[K_DELETED] || "{}"),
+                        'syllabus': JSON.parse(restoreMap[K_SYLLABUS] || "[]"),
+                        'evaluations': JSON.parse(restoreMap[K_EVAL] || "{}"),
+                        'sessionStudents': JSON.parse(restoreMap[K_SESSION_STUDENTS] || "{}"),
+                        'booklets': JSON.parse(restoreMap[K_BOOKLETS] || "{}")
                     });
                 }
                 
