@@ -989,43 +989,43 @@
 
             <div class="settings-grid">
               <div class="settings-card success-card">
-                <h3 data-i18n="set_data_title">💾 البيانات والنسخ الاحتياطي</h3>
+                <h3 data-i18n="set_data_title">البيانات والنسخ الاحتياطي</h3>
                 <div style="display:flex; flex-direction:column; gap:10px;">
-                  <button class="btn success w100" id="exportExcelBtn" style="padding:12px; font-weight:bold;" data-i18n="btn_export_ex">📥 تصدير البيانات (Excel)</button>
-                  <button class="btn w100" id="importExcelBtnFake" style="padding:12px;" data-i18n="btn_import_ex">📤 استيراد بيانات (Excel)</button>
+                  <button class="btn success w100" id="exportExcelBtn" style="padding:12px; font-weight:bold;" data-i18n="btn_export_ex">تصدير البيانات (Excel)</button>
+                  <button class="btn w100" id="importExcelBtnFake" style="padding:12px;" data-i18n="btn_import_ex">استيراد بيانات (Excel)</button>
                   <input type="file" id="importExcelInput" accept=".xlsx, .xls" hidden>
                   
                   <hr style="border: 1px dashed var(--border); margin: 5px 0;">
 
                   <div style="display:flex; justify-content:space-between; align-items:center; padding: 0 5px;">
-                    <span id="driveStatusText" style="font-size: 13px; font-weight: bold; color: var(--text-secondary);" data-i18n="drive_offline">⚪ غير متصل</span>
+                    <span id="driveStatusText" style="font-size: 13px; font-weight: bold; color: var(--text-secondary);" data-i18n="drive_offline">غير متصل</span>
                     <span id="lastSyncText" style="font-size: 11px; color: var(--text-secondary);"></span>
                   </div>
 
-                  <button class="btn primary w100" id="driveLoginBtn" style="padding:12px; font-weight:bold;" data-i18n="btn_drive_login">ربط بجوجل درايف ☁️</button>
+                  <button class="btn primary w100" id="driveLoginBtn" style="padding:12px; font-weight:bold;" data-i18n="btn_drive_login">ربط بجوجل درايف</button>
                   <div class="row" style="gap:5px;">
-                    <button class="btn warning w100" id="restoreDriveBtn" style="padding:12px; font-weight:bold;" data-i18n="btn_drive_restore">استرجاع من السحاب 🔄</button>
+                    <button class="btn warning w100" id="restoreDriveBtn" style="padding:12px; font-weight:bold;" data-i18n="btn_drive_restore">استرجاع من السحاب</button>
                     <button class="btn success hidden" id="syncNowBtn" style="padding:12px; flex:0.3;" title="Manual Sync">⬆️</button>
                   </div>
 
                   <hr style="border: 1px dashed var(--border); margin: 5px 0;">
 
-                  <button class="btn danger w100" id="openBinBtn" style="padding:12px;" data-i18n="btn_recycle">🗑️ سلة المحذوفات</button>
+                  <button class="btn danger w100" id="openBinBtn" style="padding:12px;" data-i18n="btn_recycle">سلة المحذوفات</button>
                 </div>
               </div>
 
               <div class="settings-card">
-                <h3 data-i18n="set_ui_title">🎨 المظهر والتخصيص</h3>
+                <h3 data-i18n="set_ui_title">المظهر والتخصيص</h3>
                 <div style="display:flex; flex-direction:column; gap:15px;">
                   <div>
                     <label data-i18n="lbl_theme">ثيم البرنامج:</label>
                     <select id="themeSelector" class="inp" style="width:100%; margin-top:5px;">
-                      <option value="light" data-i18n="theme_light">☀️ الوضع الفاتح (Light Mode)</option>
-                      <option value="dark" data-i18n="theme_dark">🌙 الوضع الليلي (Dark Mode)</option>
+                      <option value="light" data-i18n="theme_light">الوضع الفاتح (Light Mode)</option>
+                      <option value="dark" data-i18n="theme_dark">الوضع الليلي (Dark Mode)</option>
                     </select>
                   </div>
                   <div style="display: flex; gap: 5px;">
-                    <button class="btn secondary" id="changeBgBtn" style="flex:1;" onclick="document.getElementById('bgInput').click()" data-i18n="btn_change_bg">🖼️ تغيير الخلفية</button>
+                    <button class="btn secondary" id="changeBgBtn" style="flex:1;" onclick="document.getElementById('bgInput').click()" data-i18n="btn_change_bg">تغيير الخلفية</button>
                     <button class="btn danger" id="removeBgBtn" title="إزالة الخلفية" style="padding: 10px 15px;">🗑️</button>
                   </div>
                   <input type="file" id="bgInput" accept="image/*" hidden>

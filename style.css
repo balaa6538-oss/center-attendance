@@ -2284,4 +2284,31 @@ body.flash-green::after { box-shadow: inset 0 0 25px 8px rgba(16,185,129,0.5); t
   .manager-stats-grid { grid-template-columns: 1fr; }
 }
 
+/* Vector Status Chips (Replaces Emojis) */
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.82em;
+  font-weight: 700;
+}
+.status-chip.success {
+  background: var(--bg-success-subtle);
+  color: var(--success);
+}
+.status-chip.danger {
+  background: var(--bg-danger-subtle);
+  color: var(--danger);
+}
+.status-chip.warning {
+  background: var(--bg-warning-subtle);
+  color: var(--warning);
+}
+.status-chip.muted {
+  background: var(--bg-inset);
+  color: var(--text-muted);
+}
+
 

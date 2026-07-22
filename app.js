@@ -5973,16 +5973,16 @@ function updateDriveUI() {
     // CLOUD DATA MONITOR
     // ==========================================
     const CLOUD_MONITOR_SECTIONS = [
-        { key: 'students',         firebaseKey: 'students',              label: '👥 الطلاب',                  localVar: () => students },
-        { key: 'attendance',       firebaseKey: 'attendance',            label: '📋 الحضور',                  localVar: () => attByDate },
-        { key: 'revenue',          firebaseKey: 'finances/revenue',      label: '💰 الإيرادات',               localVar: () => revenueByDate },
-        { key: 'expenses',         firebaseKey: 'finances/expenses',     label: '🧾 المصروفات',               localVar: () => expensesByDate },
-        { key: 'packages',         firebaseKey: 'packages',             label: '📦 الباقات',                 localVar: () => groupFees },
-        { key: 'deletedStudents',  firebaseKey: 'deletedStudents',      label: '🗑️ المحذوفات',              localVar: () => deletedStudents },
-        { key: 'syllabus',         firebaseKey: 'syllabus',             label: '📚 المنهج',                  localVar: () => syllabusData },
-        { key: 'evaluations',      firebaseKey: 'evaluations',          label: '📝 التقييمات',               localVar: () => evalData },
-        { key: 'sessionStudents',  firebaseKey: 'sessionStudents',      label: '🎟️ طلاب الحصة',            localVar: () => sessionStudentsByDate },
-        { key: 'booklets',         firebaseKey: 'booklets',             label: '📖 المذكرات',                localVar: () => bookletsStock },
+        { key: 'students',         firebaseKey: 'students',              label: 'الطلاب',                  localVar: () => students },
+        { key: 'attendance',       firebaseKey: 'attendance',            label: 'الحضور والغياب',          localVar: () => attByDate },
+        { key: 'revenue',          firebaseKey: 'finances/revenue',      label: 'الإيرادات اليومية',        localVar: () => revenueByDate },
+        { key: 'expenses',         firebaseKey: 'finances/expenses',     label: 'المصروفات',               localVar: () => expensesByDate },
+        { key: 'packages',         firebaseKey: 'packages',             label: 'الباقات والأسعار',        localVar: () => groupFees },
+        { key: 'deletedStudents',  firebaseKey: 'deletedStudents',      label: 'سلة المحذوفات',           localVar: () => deletedStudents },
+        { key: 'syllabus',         firebaseKey: 'syllabus',             label: 'المنهج الدراسي',          localVar: () => syllabusData },
+        { key: 'evaluations',      firebaseKey: 'evaluations',          label: 'تقييمات الطلاب',          localVar: () => evalData },
+        { key: 'sessionStudents',  firebaseKey: 'sessionStudents',      label: 'طلاب الحصة الفورية',      localVar: () => sessionStudentsByDate },
+        { key: 'booklets',         firebaseKey: 'booklets',             label: 'المذكرات والكتب',         localVar: () => bookletsStock },
     ];
 
     function countData(data) {
@@ -5999,13 +5999,13 @@ function updateDriveUI() {
 
         const mid = window.CURRENT_MANAGER_ID || localStorage.getItem("ca_manager_id");
         if (!mid) {
-            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:30px; color:var(--danger);">⚠️ لم يتم تسجيل الدخول — لا يمكن فحص السحابة</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:30px; color:var(--danger);">لم يتم تسجيل الدخول — لا يمكن فحص السحابة</td></tr>`;
             return;
         }
 
         // Show loading
         tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:30px;"><div style="display:inline-block; width:24px; height:24px; border:3px solid var(--border); border-top-color:var(--primary); border-radius:50%; animation: spin 0.8s linear infinite;"></div> جاري جلب البيانات من السيرفر...</td></tr>`;
-        if ($("cloudMonitorOverallIcon")) $("cloudMonitorOverallIcon").textContent = "⏳";
+        if ($("cloudMonitorOverallIcon")) $("cloudMonitorOverallIcon").innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
         if ($("cloudMonitorOverallText")) $("cloudMonitorOverallText").textContent = "جاري الفحص...";
 
         try {
@@ -6023,7 +6023,6 @@ function updateDriveUI() {
 
             for (const sec of CLOUD_MONITOR_SECTIONS) {
                 const localData = sec.localVar();
-                // Navigate nested Firebase keys (e.g. "finances/revenue")
                 let remoteData = remote;
                 for (const part of sec.firebaseKey.split('/')) {
                     remoteData = remoteData ? remoteData[part] : undefined;
@@ -6033,23 +6032,18 @@ function updateDriveUI() {
                 const cloudCount = countData(remoteData);
 
                 let status = '';
-                let statusStyle = '';
                 if (!remoteData && localCount === 0) {
-                    status = '➖ فارغ';
-                    statusStyle = 'color:var(--text-muted);';
+                    status = '<span class="status-chip muted">فارغ</span>';
                     matchCount++;
                 } else if (!remoteData && localCount > 0) {
-                    status = '⚠️ غير موجود بالسحابة!';
-                    statusStyle = 'color:var(--danger); font-weight:700;';
+                    status = '<span class="status-chip danger">غير موجود بالسحابة</span>';
                     missingCloud++;
                     mismatchCount++;
                 } else if (localCount === cloudCount) {
-                    status = '✅ متطابق';
-                    statusStyle = 'color:var(--success); font-weight:700;';
+                    status = '<span class="status-chip success">متطابق</span>';
                     matchCount++;
                 } else {
-                    status = `⚠️ مختلف (فرق: ${Math.abs(localCount - cloudCount)})`;
-                    statusStyle = 'color:var(--warning); font-weight:700;';
+                    status = `<span class="status-chip warning">مختلف (فرق: ${Math.abs(localCount - cloudCount)})</span>`;
                     mismatchCount++;
                 }
 
@@ -6057,7 +6051,7 @@ function updateDriveUI() {
                     <td style="padding:12px 16px; font-weight:600;">${sec.label}</td>
                     <td style="padding:12px 16px; text-align:center; font-weight:700;">${localCount}</td>
                     <td style="padding:12px 16px; text-align:center; font-weight:700;">${cloudCount}</td>
-                    <td style="padding:12px 16px; text-align:center; ${statusStyle}">${status}</td>
+                    <td style="padding:12px 16px; text-align:center;">${status}</td>
                 </tr>`;
             }
 
@@ -6065,9 +6059,9 @@ function updateDriveUI() {
             const lastMod = remote._lastModified;
             const lastModStr = lastMod ? new Date(lastMod).toLocaleString('ar-EG') : 'غير متاح';
             rows += `<tr style="border-bottom:1px solid var(--border); background:var(--bg-inset);">
-                <td style="padding:12px 16px; font-weight:600;">🕐 آخر تعديل سحابي</td>
+                <td style="padding:12px 16px; font-weight:600;">آخر تعديل سحابي</td>
                 <td style="padding:12px 16px; text-align:center;" colspan="2">${lastModStr}</td>
-                <td style="padding:12px 16px; text-align:center; color:var(--primary); font-weight:700;">📡 مسجل</td>
+                <td style="padding:12px 16px; text-align:center; color:var(--primary); font-weight:700;">مسجل</td>
             </tr>`;
 
             tbody.innerHTML = rows;
@@ -6088,19 +6082,19 @@ function updateDriveUI() {
             // Overall status
             const card = $("cloudMonitorStatusCard");
             if (mismatchCount === 0) {
-                if ($("cloudMonitorOverallIcon")) $("cloudMonitorOverallIcon").textContent = "✅";
+                if ($("cloudMonitorOverallIcon")) $("cloudMonitorOverallIcon").innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`;
                 if ($("cloudMonitorOverallText")) $("cloudMonitorOverallText").textContent = "كل الأقسام متزامنة بأمان";
                 if (card) card.style.background = "linear-gradient(135deg, #059669, #10b981)";
             } else {
-                if ($("cloudMonitorOverallIcon")) $("cloudMonitorOverallIcon").textContent = "⚠️";
+                if ($("cloudMonitorOverallIcon")) $("cloudMonitorOverallIcon").innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
                 if ($("cloudMonitorOverallText")) $("cloudMonitorOverallText").textContent = `يوجد ${mismatchCount} أقسام غير متطابقة`;
                 if (card) card.style.background = "linear-gradient(135deg, #d97706, #f59e0b)";
             }
 
             // Build tree view
             if (treeEl) {
-                let tree = `<span style="color:#10b981;">📂</span> users/\n`;
-                tree += `  <span style="color:#10b981;">📂</span> ${mid}/\n`;
+                let tree = `<span style="color:var(--success);">users/</span>\n`;
+                tree += `  <span style="color:var(--success);">${mid}/</span>\n`;
                 const allKeys = Object.keys(remote).filter(k => k !== '_lastModified').sort();
                 for (let i = 0; i < allKeys.length; i++) {
                     const k = allKeys[i];
@@ -6112,30 +6106,29 @@ function updateDriveUI() {
                     if (typeof val === 'object' && val !== null) {
                         const subKeys = Object.keys(val);
                         const count = subKeys.length;
-                        tree += `    ${connector}<span style="color:#3b82f6;">📂</span> <strong>${k}</strong> <span style="color:#6b7280;">(${count} عنصر)</span>\n`;
-                        // Show first 3 sub-keys as preview
+                        tree += `    ${connector}<span style="color:var(--primary);"><strong>${k}</strong></span> <span style="color:var(--text-secondary);">(${count} عنصر)</span>\n`;
                         const preview = subKeys.slice(0, 3);
                         for (let j = 0; j < preview.length; j++) {
                             const subIsLast = j === preview.length - 1 && count <= 3;
                             const sc = subIsLast ? '└── ' : '├── ';
-                            tree += `    ${subConnector}${sc}<span style="color:#8b5cf6;">📄</span> ${preview[j]}\n`;
+                            tree += `    ${subConnector}${sc}<span style="color:var(--text-primary);">${preview[j]}</span>\n`;
                         }
                         if (count > 3) {
-                            tree += `    ${subConnector}└── <span style="color:#6b7280;">... و ${count - 3} عنصر آخر</span>\n`;
+                            tree += `    ${subConnector}└── <span style="color:var(--text-secondary);">... و ${count - 3} عنصر آخر</span>\n`;
                         }
                     } else {
-                        tree += `    ${connector}<span style="color:#f59e0b;">📄</span> ${k}: <span style="color:#6b7280;">${String(val).substring(0, 50)}</span>\n`;
+                        tree += `    ${connector}<span style="color:var(--warning);">${k}</span>: <span style="color:var(--text-secondary);">${String(val).substring(0, 50)}</span>\n`;
                     }
                 }
-                tree += `    └── <span style="color:#f59e0b;">📄</span> _lastModified: <span style="color:#6b7280;">${lastModStr}</span>\n`;
+                tree += `    └── <span style="color:var(--warning);">_lastModified</span>: <span style="color:var(--text-secondary);">${lastModStr}</span>\n`;
                 treeEl.innerHTML = `<pre style="margin:0; white-space:pre; overflow-x:auto;">${tree}</pre>`;
             }
 
-            showToast("تم فحص السحابة بنجاح ✅", "success");
+            showToast("تم فحص السحابة بنجاح", "success");
         } catch (err) {
             console.error("[CloudMonitor] Error:", err);
-            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:30px; color:var(--danger);">❌ فشل الاتصال بالسيرفر: ${err.message}</td></tr>`;
-            if ($("cloudMonitorOverallIcon")) $("cloudMonitorOverallIcon").textContent = "❌";
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:30px; color:var(--danger);">فشل الاتصال بالسيرفر: ${err.message}</td></tr>`;
+            if ($("cloudMonitorOverallIcon")) $("cloudMonitorOverallIcon").innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`;
             if ($("cloudMonitorOverallText")) $("cloudMonitorOverallText").textContent = "فشل الفحص";
             if ($("cloudMonitorStatusCard")) $("cloudMonitorStatusCard").style.background = "linear-gradient(135deg, #dc2626, #ef4444)";
         }
