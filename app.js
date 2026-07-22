@@ -953,6 +953,22 @@ document.addEventListener('DOMContentLoaded', function() {
     // 5. GLOBAL NAVIGATION & TABS
     // ==========================================
     window.switchTab = function(tabId) {
+        // Hard Security Guard: Block locked tabs for assistants
+        if (currentUserRole !== "admin" && typeof currentPermissions !== "undefined") {
+            if (tabId === "Reports" && !currentPermissions.can_view_reports) {
+                showToast("عفواً، قسم التقارير مقفل من المدير 🔒", "err");
+                return;
+            }
+            if (tabId === "Marketing" && !currentPermissions.can_access_marketing) {
+                showToast("عفواً، قسم أدوات التسويق مقفل من المدير 🔒", "err");
+                return;
+            }
+            if (tabId === "SessionStudents" && !currentPermissions.can_access_session_students) {
+                showToast("عفواً، قسم طلاب الحصة مقفل من المدير 🔒", "err");
+                return;
+            }
+        }
+
         document.querySelectorAll('.tab-section').forEach(s => s.classList.add('hidden'));
         const target = $("sec" + tabId); 
         if(target) target.classList.remove('hidden');
@@ -2458,7 +2474,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     on("quickGroupFeesBtn", "click", function() {
+        if (currentUserRole !== "admin" && (!currentPermissions || !currentPermissions.can_manage_packages)) {
+            showToast("عفواً، تعديل الباقات والأسعار مقفل من المدير 🔒", "err");
+            return;
+        }
         if($("userProfileDropdown")) $("userProfileDropdown").classList.add("hidden");
+        renderGroupFeesModal();
         if($("groupFeesModal")) $("groupFeesModal").classList.remove("hidden");
     });
     on("quickExportBtn", "click", function() {
@@ -2549,6 +2570,10 @@ on("quickAttendId", "keypress", function(e) {
     });
 
     on("addNewBtn", "click", function() {
+        if (currentUserRole !== "admin" && (!currentPermissions || !currentPermissions.can_add_student)) {
+            showToast("عفواً، إضافة طالب جديد مقفلة من المدير 🔒", "err");
+            return;
+        }
         const id = $("newId") ? toInt($("newId").value) : 0;
         if(!id) return;
         
@@ -2766,6 +2791,10 @@ on("quickAttendId", "keypress", function(e) {
     };
 
     on("correctPayBtn", "click", function() {
+        if (currentUserRole !== "admin" && (!currentPermissions || !currentPermissions.can_request_discount)) {
+            showToast("عفواً، خصم/إعفاء الطلاب مقفل من المدير 🔒", "err");
+            return;
+        }
         if(!currentId) return; 
         Swal.fire({
             title: currentLang === 'ar' ? 'قيمة الخصم' : 'Deduct amount',
@@ -4121,6 +4150,9 @@ function updateDriveUI() {
             if (!currentPermissions[permKey]) {
                 // LOCK
                 btn.classList.add("locked-feature");
+                btn.style.pointerEvents = "none";
+                btn.style.opacity = "0.4";
+                btn.style.filter = "grayscale(100%)";
                 let badge = btn.querySelector(".locked-badge");
                 if (!badge) {
                     badge = document.createElement("span");
@@ -4131,6 +4163,9 @@ function updateDriveUI() {
             } else {
                 // UNLOCK
                 btn.classList.remove("locked-feature");
+                btn.style.pointerEvents = "";
+                btn.style.opacity = "";
+                btn.style.filter = "";
                 const badge = btn.querySelector(".locked-badge");
                 if (badge) badge.remove();
             }
@@ -4141,9 +4176,13 @@ function updateDriveUI() {
         if (addStBtn) {
             if (!currentPermissions.can_add_student) {
                 addStBtn.classList.add("locked-feature");
+                addStBtn.style.pointerEvents = "none";
+                addStBtn.style.opacity = "0.4";
                 addStBtn.title = "مقفل من المدير 🔒";
             } else {
                 addStBtn.classList.remove("locked-feature");
+                addStBtn.style.pointerEvents = "";
+                addStBtn.style.opacity = "";
                 addStBtn.title = "";
             }
         }
@@ -4153,9 +4192,13 @@ function updateDriveUI() {
         if (pkgBtn) {
             if (!currentPermissions.can_manage_packages) {
                 pkgBtn.classList.add("locked-feature");
+                pkgBtn.style.pointerEvents = "none";
+                pkgBtn.style.opacity = "0.4";
                 pkgBtn.title = "مقفل من المدير 🔒";
             } else {
                 pkgBtn.classList.remove("locked-feature");
+                pkgBtn.style.pointerEvents = "";
+                pkgBtn.style.opacity = "";
                 pkgBtn.title = "";
             }
         }
@@ -4165,9 +4208,13 @@ function updateDriveUI() {
         if (discountBtn) {
             if (!currentPermissions.can_request_discount) {
                 discountBtn.classList.add("locked-feature");
+                discountBtn.style.pointerEvents = "none";
+                discountBtn.style.opacity = "0.4";
                 discountBtn.title = "مقفل من المدير 🔒";
             } else {
                 discountBtn.classList.remove("locked-feature");
+                discountBtn.style.pointerEvents = "";
+                discountBtn.style.opacity = "";
                 discountBtn.title = "";
             }
         }
@@ -4198,17 +4245,6 @@ function updateDriveUI() {
             if (snap.exists()) {
                 const saved = snap.val();
 
-                // Live Toast notification for assistant on real-time change
-                if (currentUserRole !== "admin" && _prevAssistantPermissions) {
-                    PERMISSIONS_DEFS.forEach(p => {
-                        if (saved[p.key] !== undefined && _prevAssistantPermissions[p.key] !== undefined && saved[p.key] !== _prevAssistantPermissions[p.key]) {
-                            const isNowEnabled = saved[p.key];
-                            const msg = isNowEnabled ? `🟢 قام المدير بفتح خاصية: "${p.label}"` : `⛔ قام المدير بإغلاق خاصية: "${p.label}"`;
-                            showToast(msg, isNowEnabled ? "success" : "warning");
-                        }
-                    });
-                }
-
                 PERMISSIONS_DEFS.forEach(p => {
                     if (saved[p.key] !== undefined) currentPermissions[p.key] = saved[p.key];
                 });
@@ -4217,8 +4253,9 @@ function updateDriveUI() {
             }
             
             if (currentUserRole !== "admin") {
-                // Apply locks to assistant UI
+                // Apply locks to assistant UI & fetch inbox messages (no popup toast, only mailbox messages)
                 applyPermissionsToAssistantUI();
+                if (typeof fetchAssistantMessages === "function") fetchAssistantMessages();
             } else {
                 // Safely update manager toggle switches without breaking the UI
                 updateManagerPermissionsUI();
@@ -5922,6 +5959,7 @@ function updateDriveUI() {
         // Step 2: Setup real-time permissions listener (works for both admin & assistant)
         await loadPermissions();
         setupPermissionsListener();
+        if (typeof fetchAssistantMessages === "function") fetchAssistantMessages();
 
         // مزامنة صامتة عند فتح البرنامج في يوم جديد
         if (localStorage.getItem("last_cloud_sync_date") !== nowDateStr()) {
