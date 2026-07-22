@@ -2,14 +2,7 @@
    PREMIUM CSS ICONS (FontAwesome) replacing old Emojis 
    ========================================================= */
 
-[data-i18n="nav_home"]::before { content: "\f015"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 8px; color: var(--primary); }
-[data-i18n="nav_students"]::before { content: "\f500"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 8px; color: var(--primary); }
-[data-i18n="nav_session_st"]::before { content: "\f4fc"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 8px; color: var(--primary); }
-[data-i18n="nav_syllabus"]::before { content: "\f02d"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 8px; color: var(--primary); }
-[data-i18n="nav_reports"]::before { content: "\f200"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 8px; color: var(--primary); }
-[data-i18n="nav_booklets"]::before { content: "\f5fd"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 8px; color: var(--primary); }
-[data-i18n="nav_marketing"]::before { content: "\f0a1"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 8px; color: var(--primary); }
-[data-i18n="nav_settings"]::before { content: "\f013"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 8px; color: var(--primary); }
+
 
 /* Sidebar Group Titles */
 [data-i18n="grp_daily"]::before { content: "\f783"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 8px; color: var(--primary); opacity: 0.8; }
