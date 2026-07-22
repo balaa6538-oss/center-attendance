@@ -2344,4 +2344,60 @@ body.flash-green::after { box-shadow: inset 0 0 25px 8px rgba(16,185,129,0.5); t
   color: var(--text-muted);
 }
 
+/* =========================================================
+   ADVANCED PACKAGES SYSTEM & EXPIRY BADGES
+   ========================================================= */
+.pkg-builder-card {
+  transition: all 0.3s ease;
+}
+
+.pkg-item-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.pkg-item-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+}
+
+.pkg-status-alert {
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.9em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.pkg-status-alert.alert-warning {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.pkg-status-alert.alert-danger, .pkg-status-alert.alert-expired {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}
+
+.status-badge-success {
+  background: var(--bg-success-subtle);
+  color: var(--success);
+  border: 1px solid var(--success);
+}
+
+.status-badge-warning {
+  background: var(--bg-warning-subtle);
+  color: var(--warning);
+  border: 1px solid var(--warning);
+}
+
+.status-badge-danger {
+  background: var(--bg-danger-subtle);
+  color: var(--danger);
+  border: 1px solid var(--danger);
+}
+
 

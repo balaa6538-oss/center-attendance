@@ -15,8 +15,8 @@
 
  <!-- FontAwesome for Icons -->
  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
- <link rel="stylesheet" href="style.css?v=STUDIFY_V12">
- <link rel="stylesheet" href="icons.css?v=STUDIFY_V12">
+ <link rel="stylesheet" href="style.css?v=STUDIFY_V13">
+ <link rel="stylesheet" href="icons.css?v=STUDIFY_V13">
  
  <!-- PREVENT THEME FLASH -->
  <script>
@@ -484,6 +484,7 @@
  <div id="remainingBox" class="remain-box remain-red">
  <span data-i18n="lbl_remaining"> المتبقي:</span> <span id="stRemainingAmt">0</span> ج
  </div>
+ <div id="pkgStatusBoxContainer" class="pkg-status-alert hidden"></div>
  </div>
 
  <!-- تفاصيل الدفعات السابقة للطالب -->
@@ -1015,6 +1016,26 @@
  </div>
  </div>
 
+ <div class="settings-card" style="grid-column: span 2;">
+  <div class="flexBetween" style="margin-bottom: 12px;">
+  <h3 data-i18n="set_fin_title" style="margin:0;"><i class="fa-solid fa-boxes-packing" style="color:var(--warning); margin-inline-end:8px;"></i> إدارة الباقات والمصاريف المتقدمة</h3>
+  <button class="btn warning" id="openGroupFeesBtn" style="padding:8px 16px; font-weight:bold;">
+  <i class="fa-solid fa-sliders"></i> التعديل والإضافة
+  </button>
+  </div>
+  <p style="font-size:12px; color:var(--text-secondary); margin-bottom:12px;">تحديد قواعد أسعار الباقات، مدد الصلاحية (شهر/ترم/سنة)، عدد الحصص، وتنبيهات انتهاء اشتراكات الطلاب.</p>
+  
+  <div id="managerPackagesOverviewList" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:10px; margin-bottom:15px;"></div>
+  
+  <div style="display:flex; align-items:center; justify-content:space-between; padding-top:12px; border-top:1px dashed var(--border); font-size:13px; color:var(--text-secondary);">
+  <span><i class="fa-solid fa-user-shield" style="margin-inline-end:6px;"></i> السماح للمساعدين بتعديل وإضافة الباقات:</span>
+  <label class="switch" style="position:relative; display:inline-block; width:44px; height:24px;">
+  <input type="checkbox" id="allowAssistantPkgToggle" checked>
+  <span class="slider round"></span>
+  </label>
+  </div>
+  </div>
+
  <div class="settings-card">
  <h3 data-i18n="set_ui_title">المظهر والتخصيص</h3>
  <div style="display:flex; flex-direction:column; gap:15px;">
@@ -1031,13 +1052,6 @@
  </div>
  <input type="file" id="bgInput" accept="image/*" hidden>
  <button class="btn primary w100" id="changeLangBtn" data-i18n="btn_change_lang"> تغيير اللغة (Ar / En)</button>
- </div>
- </div>
-
- <div class="settings-card">
- <h3 data-i18n="set_fin_title"> إعدادات مالية</h3>
- <div style="display:flex; flex-direction:column; gap:10px;">
- <button class="btn warning w100" id="openGroupFeesBtn" style="padding:12px; font-weight:bold;" data-i18n="btn_group_fees"> إدارة الباقات والمصاريف</button>
  </div>
  </div>
 
@@ -1162,6 +1176,20 @@
  </div><!-- /app-shell -->
 
  <!-- ============ MODALS ============ -->
+ <div id="groupFeesModal" class="modal hidden">
+  <div class="modalContent" style="max-width: 650px; border-radius: 16px;">
+  <div class="flexBetween" style="border-bottom: 2px solid var(--border); padding-bottom: 12px;">
+  <h3 style="color: var(--primary); margin:0; display:flex; align-items:center; gap:8px;" data-i18n="modal_grp_fees">
+  <i class="fa-solid fa-boxes-packing"></i> إدارة ومُنشئ الباقات والمصاريف
+  </h3>
+  <button class="btn danger smallBtn" id="closeGroupFeesModal">X</button>
+  </div>
+  <p style="font-size:12px; color:var(--text-secondary); margin-top:8px; margin-bottom:15px;" data-i18n="grp_fees_desc">حدد اسم وسعر وصلاحية الباقات المتاحة للمركز مع قواعد التنبيه التلقائي.</p>
+  
+  <div id="groupFeesList" style="max-height: 60vh; overflow-y: auto; padding-inline-end: 4px;"></div>
+  </div>
+  </div>
+
  <div id="customPassModal" class="modal hidden" style="z-index: 9999;">
  <div class="modalContent" style="max-width: 350px; text-align:center;">
  <div style="font-size: 3em; margin-bottom: 10px;"></div>
@@ -1229,17 +1257,7 @@
  </div>
  </div>
 
- <div id="groupFeesModal" class="modal hidden">
- <div class="modalContent" style="max-width: 500px;">
- <div class="flexBetween" style="border-bottom: 2px solid var(--border); padding-bottom: 10px;">
- <h3 style="color: var(--primary);" data-i18n="modal_grp_fees"> إدارة مصاريف الباقات/المجموعات</h3>
- <button class="btn danger smallBtn" id="closeGroupFeesModal"></button>
- </div>
- <p style="font-size:13px; color:var(--text-secondary); margin-top:10px;" data-i18n="grp_fees_desc">أضف الباقات هنا وسيتم عرضها للأسستنت أثناء تسجيل الطالب.</p>
- <div id="groupFeesList" style="max-height: 50vh; overflow-y: auto; padding: 15px 0;"></div>
- <button id="saveGroupFeesBtn" class="btn success w100" style="margin-top:10px; padding:12px; font-weight:bold;" data-i18n="btn_save_changes">حفظ التعديلات </button>
- </div>
- </div>
+
 
  <div id="revenueModal" class="modal hidden">
  <div class="modalContent" style="max-width: 600px;">
@@ -1783,6 +1801,6 @@
  <!-- Firebase SDK -->
  <script type="module" src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js"></script>
  <script type="module" src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js"></script>
- <script type="module" src="app.js?v=STUDIFY_V12"></script>
+ <script type="module" src="app.js?v=STUDIFY_V13"></script>
 </body>
 </html>
