@@ -1288,6 +1288,7 @@ document.addEventListener('DOMContentLoaded', function() {
             assistants:   { view: "managerAssistantsView",   btn: "btnManagerAssistants",   title: "إدارة المساعدين" },
             permissions:  { view: "managerPermissionsView",  btn: "btnManagerPermissions",  title: "صلاحيات المساعد" },
             decisions:    { view: "managerDecisionsView",    btn: "btnManagerDecisions",    title: "طلبات القرارات" },
+            cloudMonitor: { view: "managerCloudMonitorView", btn: "btnManagerCloudMonitor", title: "فحص السحابة" },
             settings:     { view: "managerSettingsView",     btn: "btnManagerSettings",     title: "الإعدادات المتقدمة" },
         };
 
@@ -1301,6 +1302,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (tabId === "decisions") fetchManagerRequests();
         if (tabId === "dailyReport") renderManagerDailyReport(nowDateStr());
         if (tabId === "termReport") renderManagerTermReport();
+        if (tabId === "cloudMonitor") runCloudDataCheck();
         if (tabId === "settings") {
             const mid = localStorage.getItem("ca_manager_id") || "—";
             if ($("mgrSettingsManagerId")) $("mgrSettingsManagerId").textContent = mid;
@@ -5853,6 +5855,197 @@ function updateDriveUI() {
             }, 8000);
         }
     }
+
+    // ==========================================
+    // CLOUD DATA MONITOR
+    // ==========================================
+    const CLOUD_MONITOR_SECTIONS = [
+        { key: 'students',         firebaseKey: 'students',              label: '👥 الطلاب',                  localVar: () => students },
+        { key: 'attendance',       firebaseKey: 'attendance',            label: '📋 الحضور',                  localVar: () => attByDate },
+        { key: 'revenue',          firebaseKey: 'finances/revenue',      label: '💰 الإيرادات',               localVar: () => revenueByDate },
+        { key: 'expenses',         firebaseKey: 'finances/expenses',     label: '🧾 المصروفات',               localVar: () => expensesByDate },
+        { key: 'packages',         firebaseKey: 'packages',             label: '📦 الباقات',                 localVar: () => groupFees },
+        { key: 'deletedStudents',  firebaseKey: 'deletedStudents',      label: '🗑️ المحذوفات',              localVar: () => deletedStudents },
+        { key: 'syllabus',         firebaseKey: 'syllabus',             label: '📚 المنهج',                  localVar: () => syllabusData },
+        { key: 'evaluations',      firebaseKey: 'evaluations',          label: '📝 التقييمات',               localVar: () => evalData },
+        { key: 'sessionStudents',  firebaseKey: 'sessionStudents',      label: '🎟️ طلاب الحصة',            localVar: () => sessionStudentsByDate },
+        { key: 'booklets',         firebaseKey: 'booklets',             label: '📖 المذكرات',                localVar: () => bookletsStock },
+    ];
+
+    function countData(data) {
+        if (!data) return 0;
+        if (Array.isArray(data)) return data.length;
+        if (typeof data === 'object') return Object.keys(data).length;
+        return 0;
+    }
+
+    async function runCloudDataCheck() {
+        const tbody = $("cloudMonitorTableBody");
+        const treeEl = $("cloudMonitorTree");
+        if (!tbody) return;
+
+        const mid = window.CURRENT_MANAGER_ID || localStorage.getItem("ca_manager_id");
+        if (!mid) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:30px; color:var(--danger);">⚠️ لم يتم تسجيل الدخول — لا يمكن فحص السحابة</td></tr>`;
+            return;
+        }
+
+        // Show loading
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:30px;"><div style="display:inline-block; width:24px; height:24px; border:3px solid var(--border); border-top-color:var(--primary); border-radius:50%; animation: spin 0.8s linear infinite;"></div> جاري جلب البيانات من السيرفر...</td></tr>`;
+        if ($("cloudMonitorOverallIcon")) $("cloudMonitorOverallIcon").textContent = "⏳";
+        if ($("cloudMonitorOverallText")) $("cloudMonitorOverallText").textContent = "جاري الفحص...";
+
+        try {
+            const snapshot = await Promise.race([
+                get(child(ref(database), `users/${mid}`)),
+                new Promise((_, rej) => setTimeout(() => rej(new Error('TIMEOUT')), 15000))
+            ]);
+
+            const remote = snapshot.exists() ? snapshot.val() : {};
+            let rows = '';
+            let matchCount = 0;
+            let mismatchCount = 0;
+            let missingCloud = 0;
+            let totalSections = CLOUD_MONITOR_SECTIONS.length;
+
+            for (const sec of CLOUD_MONITOR_SECTIONS) {
+                const localData = sec.localVar();
+                // Navigate nested Firebase keys (e.g. "finances/revenue")
+                let remoteData = remote;
+                for (const part of sec.firebaseKey.split('/')) {
+                    remoteData = remoteData ? remoteData[part] : undefined;
+                }
+
+                const localCount = countData(localData);
+                const cloudCount = countData(remoteData);
+
+                let status = '';
+                let statusStyle = '';
+                if (!remoteData && localCount === 0) {
+                    status = '➖ فارغ';
+                    statusStyle = 'color:var(--text-muted);';
+                    matchCount++;
+                } else if (!remoteData && localCount > 0) {
+                    status = '⚠️ غير موجود بالسحابة!';
+                    statusStyle = 'color:var(--danger); font-weight:700;';
+                    missingCloud++;
+                    mismatchCount++;
+                } else if (localCount === cloudCount) {
+                    status = '✅ متطابق';
+                    statusStyle = 'color:var(--success); font-weight:700;';
+                    matchCount++;
+                } else {
+                    status = `⚠️ مختلف (فرق: ${Math.abs(localCount - cloudCount)})`;
+                    statusStyle = 'color:var(--warning); font-weight:700;';
+                    mismatchCount++;
+                }
+
+                rows += `<tr style="border-bottom:1px solid var(--border);">
+                    <td style="padding:12px 16px; font-weight:600;">${sec.label}</td>
+                    <td style="padding:12px 16px; text-align:center; font-weight:700;">${localCount}</td>
+                    <td style="padding:12px 16px; text-align:center; font-weight:700;">${cloudCount}</td>
+                    <td style="padding:12px 16px; text-align:center; ${statusStyle}">${status}</td>
+                </tr>`;
+            }
+
+            // Add _lastModified row
+            const lastMod = remote._lastModified;
+            const lastModStr = lastMod ? new Date(lastMod).toLocaleString('ar-EG') : 'غير متاح';
+            rows += `<tr style="border-bottom:1px solid var(--border); background:var(--bg-inset);">
+                <td style="padding:12px 16px; font-weight:600;">🕐 آخر تعديل سحابي</td>
+                <td style="padding:12px 16px; text-align:center;" colspan="2">${lastModStr}</td>
+                <td style="padding:12px 16px; text-align:center; color:var(--primary); font-weight:700;">📡 مسجل</td>
+            </tr>`;
+
+            tbody.innerHTML = rows;
+
+            // Update summary cards
+            if ($("cloudMonitorLocalCount")) $("cloudMonitorLocalCount").textContent = totalSections;
+            if ($("cloudMonitorCloudCount")) {
+                const cloudSections = CLOUD_MONITOR_SECTIONS.filter(sec => {
+                    let d = remote;
+                    for (const p of sec.firebaseKey.split('/')) { d = d ? d[p] : undefined; }
+                    return d !== undefined && countData(d) > 0;
+                }).length;
+                $("cloudMonitorCloudCount").textContent = cloudSections;
+            }
+            const now = new Date();
+            if ($("cloudMonitorLastSync")) $("cloudMonitorLastSync").textContent = now.toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'});
+
+            // Overall status
+            const card = $("cloudMonitorStatusCard");
+            if (mismatchCount === 0) {
+                if ($("cloudMonitorOverallIcon")) $("cloudMonitorOverallIcon").textContent = "✅";
+                if ($("cloudMonitorOverallText")) $("cloudMonitorOverallText").textContent = "كل الأقسام متزامنة بأمان!";
+                if (card) card.style.background = "linear-gradient(135deg, #059669, #10b981)";
+            } else {
+                if ($("cloudMonitorOverallIcon")) $("cloudMonitorOverallIcon").textContent = "⚠️";
+                if ($("cloudMonitorOverallText")) $("cloudMonitorOverallText").textContent = `يوجد ${mismatchCount} أقسام غير متطابقة`;
+                if (card) card.style.background = "linear-gradient(135deg, #d97706, #f59e0b)";
+            }
+
+            // Build tree view
+            if (treeEl) {
+                let tree = `<span style="color:#10b981;">📂</span> users/\n`;
+                tree += `  <span style="color:#10b981;">📂</span> ${mid}/\n`;
+                const allKeys = Object.keys(remote).filter(k => k !== '_lastModified').sort();
+                for (let i = 0; i < allKeys.length; i++) {
+                    const k = allKeys[i];
+                    const val = remote[k];
+                    const isLast = i === allKeys.length - 1;
+                    const connector = isLast ? '└── ' : '├── ';
+                    const subConnector = isLast ? '    ' : '│   ';
+
+                    if (typeof val === 'object' && val !== null) {
+                        const subKeys = Object.keys(val);
+                        const count = subKeys.length;
+                        tree += `    ${connector}<span style="color:#3b82f6;">📂</span> <strong>${k}</strong> <span style="color:#6b7280;">(${count} عنصر)</span>\n`;
+                        // Show first 3 sub-keys as preview
+                        const preview = subKeys.slice(0, 3);
+                        for (let j = 0; j < preview.length; j++) {
+                            const subIsLast = j === preview.length - 1 && count <= 3;
+                            const sc = subIsLast ? '└── ' : '├── ';
+                            tree += `    ${subConnector}${sc}<span style="color:#8b5cf6;">📄</span> ${preview[j]}\n`;
+                        }
+                        if (count > 3) {
+                            tree += `    ${subConnector}└── <span style="color:#6b7280;">... و ${count - 3} عنصر آخر</span>\n`;
+                        }
+                    } else {
+                        tree += `    ${connector}<span style="color:#f59e0b;">📄</span> ${k}: <span style="color:#6b7280;">${String(val).substring(0, 50)}</span>\n`;
+                    }
+                }
+                tree += `    └── <span style="color:#f59e0b;">📄</span> _lastModified: <span style="color:#6b7280;">${lastModStr}</span>\n`;
+                treeEl.innerHTML = `<pre style="margin:0; white-space:pre; overflow-x:auto;">${tree}</pre>`;
+            }
+
+            showToast("تم فحص السحابة بنجاح ✅", "success");
+        } catch (err) {
+            console.error("[CloudMonitor] Error:", err);
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:30px; color:var(--danger);">❌ فشل الاتصال بالسيرفر: ${err.message}</td></tr>`;
+            if ($("cloudMonitorOverallIcon")) $("cloudMonitorOverallIcon").textContent = "❌";
+            if ($("cloudMonitorOverallText")) $("cloudMonitorOverallText").textContent = "فشل الفحص!";
+            if ($("cloudMonitorStatusCard")) $("cloudMonitorStatusCard").style.background = "linear-gradient(135deg, #dc2626, #ef4444)";
+        }
+    }
+
+    // Bind buttons
+    if ($("btnRunCloudCheck")) on("btnRunCloudCheck", "click", () => runCloudDataCheck());
+    if ($("btnForceUpload")) on("btnForceUpload", "click", async () => {
+        const confirm = await Swal.fire({
+            title: 'رفع إجباري',
+            text: 'سيتم رفع جميع البيانات المحلية إلى السحابة. هل أنت متأكد؟',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'نعم، ارفع الآن',
+            cancelButtonText: 'إلغاء'
+        });
+        if (!confirm.isConfirmed) return;
+        
+        showToast("جاري الرفع الإجباري...", "warning");
+        await saveAll();
+        showToast("تم الرفع الإجباري بنجاح ✅", "success");
+        setTimeout(() => runCloudDataCheck(), 2000);
+    });
 
     // PRE-AUTH: Run synchronously BEFORE async initSystem
     // This prevents login page flash when user is already logged in

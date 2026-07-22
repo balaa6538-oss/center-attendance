@@ -1398,6 +1398,10 @@
           <span>طلبات القرارات</span>
           <span id="managerDecisionsBadge" class="hidden" style="margin-inline-start:auto; background:var(--danger); color:#fff; font-size:0.72em; font-weight:700; padding:2px 7px; border-radius:10px;">0</span>
         </button>
+        <button id="btnManagerCloudMonitor" class="manager-nav-item" onclick="switchManagerTab('cloudMonitor')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+          <span>فحص السحابة</span>
+        </button>
         <button id="btnManagerSettings" class="manager-nav-item" onclick="switchManagerTab('settings')">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           <span>الإعدادات المتقدمة</span>
@@ -1641,6 +1645,78 @@
           <h4 style="margin-bottom: 15px; color: var(--text-main);">سجل الإعلانات المرسلة (متابعة القراءة)</h4>
           <div id="managerBroadcastHistory" style="display: flex; flex-direction: column; gap: 15px;">
             <!-- History populated by JS -->
+          </div>
+        </div>
+
+        <!-- ====== CLOUD DATA MONITOR ====== -->
+        <div id="managerCloudMonitorView" class="manager-view hidden">
+          <h3 class="manager-section-title" style="display:flex; align-items:center; gap:10px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+            لوحة فحص السحابة (Cloud Data Monitor)
+          </h3>
+          <p class="muted" style="font-size:0.88em; margin-bottom:18px; max-width:650px;">
+            هذه اللوحة تعرض لك مقارنة مباشرة بين البيانات المحفوظة على <strong>سيرفر Firebase</strong> والبيانات المحلية في <strong>جهازك</strong>. إذا كانت كل الصفوف خضراء ✅ فهذا يعني أن كل شيء محفوظ ومتزامن بأمان.
+          </p>
+
+          <!-- Summary Cards -->
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap:12px; margin-bottom:20px;">
+            <div id="cloudMonitorStatusCard" style="background: linear-gradient(135deg, #0d9488, #14b8a6); color:#fff; padding:18px; border-radius:var(--radius-sm); text-align:center;">
+              <div style="font-size:1.6em; font-weight:800;" id="cloudMonitorOverallIcon">⏳</div>
+              <div style="font-size:0.85em; margin-top:6px;" id="cloudMonitorOverallText">جاري الفحص...</div>
+            </div>
+            <div style="background:var(--bg-surface); border:1px solid var(--border); padding:18px; border-radius:var(--radius-sm); text-align:center;">
+              <div style="font-size:1.6em; font-weight:800;" id="cloudMonitorLocalCount">—</div>
+              <div style="font-size:0.85em; margin-top:6px; color:var(--text-muted);">أقسام محلية</div>
+            </div>
+            <div style="background:var(--bg-surface); border:1px solid var(--border); padding:18px; border-radius:var(--radius-sm); text-align:center;">
+              <div style="font-size:1.6em; font-weight:800;" id="cloudMonitorCloudCount">—</div>
+              <div style="font-size:0.85em; margin-top:6px; color:var(--text-muted);">أقسام سحابية</div>
+            </div>
+            <div style="background:var(--bg-surface); border:1px solid var(--border); padding:18px; border-radius:var(--radius-sm); text-align:center;">
+              <div style="font-size:1.6em; font-weight:800;" id="cloudMonitorLastSync">—</div>
+              <div style="font-size:0.85em; margin-top:6px; color:var(--text-muted);">آخر فحص</div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
+            <button id="btnRunCloudCheck" class="btn primary" style="display:flex; align-items:center; gap:8px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+              فحص الآن
+            </button>
+            <button id="btnForceUpload" class="btn success" style="display:flex; align-items:center; gap:8px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+              رفع إجباري للسحابة
+            </button>
+          </div>
+
+          <!-- Data Comparison Table -->
+          <div style="background:var(--bg-surface); border:1px solid var(--border); border-radius:var(--radius-sm); overflow-x:auto;">
+            <table style="width:100%; border-collapse:collapse; font-size:0.88em;">
+              <thead>
+                <tr style="background:var(--bg-inset); border-bottom:2px solid var(--border);">
+                  <th style="padding:12px 16px; text-align:right; font-weight:700;">القسم</th>
+                  <th style="padding:12px 16px; text-align:center; font-weight:700;">📱 الجهاز (محلي)</th>
+                  <th style="padding:12px 16px; text-align:center; font-weight:700;">☁️ السحابة (Firebase)</th>
+                  <th style="padding:12px 16px; text-align:center; font-weight:700;">الحالة</th>
+                </tr>
+              </thead>
+              <tbody id="cloudMonitorTableBody">
+                <tr><td colspan="4" style="text-align:center; padding:30px; color:var(--text-muted);">اضغط "فحص الآن" لبدء الفحص</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Firebase Raw Structure Preview -->
+          <div style="margin-top:24px;">
+            <h4 style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              هيكل البيانات على السيرفر
+            </h4>
+            <p class="muted" style="font-size:0.82em; margin-bottom:10px;">هذا هو الشكل الفعلي لبياناتك المخزنة على سيرفر Firebase. كل فرع يمثل قسماً من أقسام النظام.</p>
+            <div id="cloudMonitorTree" style="background:var(--bg-inset); border:1px solid var(--border); border-radius:var(--radius-sm); padding:16px; font-family: 'Courier New', monospace; font-size:0.82em; direction:ltr; text-align:left; max-height:400px; overflow-y:auto; color:var(--text-body);">
+              <span style="color:var(--text-muted);">اضغط "فحص الآن" لعرض هيكل البيانات</span>
+            </div>
           </div>
         </div>
 
