@@ -5800,7 +5800,7 @@ function updateDriveUI() {
 
         if (!navigator.onLine || !isFirebaseConnected) {
             updateSyncUI('offline', 'غير متصل بالإنترنت');
-            showToast("مفيش نت! يرجى التأكد من اتصالك بالإنترنت", "err");
+            showToast("يرجى التأكد من اتصالك بالإنترنت", "err");
             return;
         }
         
@@ -6089,7 +6089,7 @@ function updateDriveUI() {
             const card = $("cloudMonitorStatusCard");
             if (mismatchCount === 0) {
                 if ($("cloudMonitorOverallIcon")) $("cloudMonitorOverallIcon").textContent = "✅";
-                if ($("cloudMonitorOverallText")) $("cloudMonitorOverallText").textContent = "كل الأقسام متزامنة بأمان!";
+                if ($("cloudMonitorOverallText")) $("cloudMonitorOverallText").textContent = "كل الأقسام متزامنة بأمان";
                 if (card) card.style.background = "linear-gradient(135deg, #059669, #10b981)";
             } else {
                 if ($("cloudMonitorOverallIcon")) $("cloudMonitorOverallIcon").textContent = "⚠️";
@@ -6136,7 +6136,7 @@ function updateDriveUI() {
             console.error("[CloudMonitor] Error:", err);
             tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:30px; color:var(--danger);">❌ فشل الاتصال بالسيرفر: ${err.message}</td></tr>`;
             if ($("cloudMonitorOverallIcon")) $("cloudMonitorOverallIcon").textContent = "❌";
-            if ($("cloudMonitorOverallText")) $("cloudMonitorOverallText").textContent = "فشل الفحص!";
+            if ($("cloudMonitorOverallText")) $("cloudMonitorOverallText").textContent = "فشل الفحص";
             if ($("cloudMonitorStatusCard")) $("cloudMonitorStatusCard").style.background = "linear-gradient(135deg, #dc2626, #ef4444)";
         }
     }
