@@ -4909,7 +4909,7 @@ function updateDriveUI() {
  renderSessionStudentsList(e.target.value);
  });
 
- on("todayRevenue", "click", function(e) {
+ on("openRevenueModalBtn", "click", function(e) {
  if(isRevHidden) return; 
  const today = nowDateStr();
  let html = "";
