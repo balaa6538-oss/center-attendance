@@ -3847,7 +3847,8 @@ function updateDriveUI() {
         const ids     = attByDate[d] || [];
         const rev     = revenueByDate[d] || 0;
         const expArr  = expensesByDate[d] || [];
-        const totalSt = Object.keys(students).length;
+        const validStudents = Object.values(students || {}).filter(s => s && s.name && s.name.trim() !== "");
+        const totalSt = validStudents.length;
         let totalExp  = 0; expArr.forEach(e => totalExp += (e.amount || 0));
 
         if ($("mgrDailyAttendCount")) $("mgrDailyAttendCount").textContent = ids.length;
@@ -3993,22 +3994,32 @@ function updateDriveUI() {
         } catch(e) { console.error("Load permissions error:", e); }
     }
 
-    async function savePermissionsToFirebase() {
-        const mid = localStorage.getItem("ca_manager_id");
-        if (!mid) return; // Removed isFirebaseConnected to allow offline queuing
-        try {
-            await update(ref(database, `users/${mid}/settings/permissions`), currentPermissions);
-            showToast("تم حفظ الصلاحيات ✅", "success");
-            // Send notification to assistants
-            const msgId = Date.now();
-            await update(ref(database, `users/${mid}/assistant_messages/${msgId}`), {
-                title: "تحديث الصلاحيات",
-                body: "قام المدير بتحديث صلاحياتك. بعض الميزات قد تكون تغيرت.",
-                type: "feature_toggle",
-                timestamp: msgId,
-                read: false
-            });
-        } catch(e) { console.error("Save permissions error:", e); showToast("فشل حفظ الصلاحيات", "err"); }
+    async function savePermissionsToFirebase(toggledKey, toggledVal) {
+        const mid = window.CURRENT_MANAGER_ID || localStorage.getItem("ca_manager_id");
+        if (!mid) throw new Error("Missing manager ID");
+
+        await update(ref(database, `users/${mid}/settings/permissions`), currentPermissions);
+
+        let detailMsg = "";
+        if (toggledKey !== undefined) {
+            const def = PERMISSIONS_DEFS.find(p => p.key === toggledKey);
+            const name = def ? def.label : toggledKey;
+            detailMsg = toggledVal ? `🟢 تم فتح خاصية: "${name}"` : `⛔ تم إغلاق خاصية: "${name}"`;
+        } else {
+            detailMsg = "تم تحديث الصلاحيات العامة";
+        }
+
+        showToast(detailMsg, toggledVal !== false ? "success" : "warning");
+
+        // Send detailed notification to assistants inbox
+        const msgId = Date.now();
+        await update(ref(database, `users/${mid}/assistant_messages/${msgId}`), {
+            title: toggledVal ? "🟢 فتح صلاحية جديدة" : "⛔ إغلاق صلاحية",
+            body: `قام المدير بتعديل صلاحياتك: ${detailMsg}`,
+            type: "feature_toggle",
+            timestamp: msgId,
+            read: false
+        });
     }
 
     function renderPermissionsPanel() {
@@ -4020,16 +4031,48 @@ function updateDriveUI() {
                     <div class="permission-title">${p.label}</div>
                     <div class="permission-desc">${p.desc}</div>
                 </div>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="perm_${p.key}" ${currentPermissions[p.key] ? "checked" : ""} onchange="window.onPermissionToggle('${p.key}', this.checked)">
-                    <span class="toggle-track"></span>
-                </label>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span id="perm_status_${p.key}" style="font-size:0.82em; transition:all 0.3s;"></span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="perm_${p.key}" ${currentPermissions[p.key] ? "checked" : ""} onchange="window.onPermissionToggle('${p.key}', this.checked)">
+                        <span class="toggle-track"></span>
+                    </label>
+                </div>
             </div>`).join("");
     }
 
-    window.onPermissionToggle = function(key, val) {
+    window.onPermissionToggle = async function(key, val) {
+        const inputEl = $("perm_" + key);
+        const statusEl = $("perm_status_" + key);
+
+        if (inputEl) inputEl.disabled = true;
+        if (statusEl) {
+            statusEl.innerHTML = `<div style="display:inline-block; width:14px; height:14px; border:2px solid var(--border); border-top-color:var(--primary); border-radius:50%; animation:spin 0.6s linear infinite; vertical-align:middle;"></div> <span style="color:var(--text-muted);">جاري الحفظ...</span>`;
+        }
+
         currentPermissions[key] = val;
-        savePermissionsToFirebase();
+        try {
+            await savePermissionsToFirebase(key, val);
+            if (statusEl) {
+                statusEl.innerHTML = `<span style="color:var(--success); font-weight:700;">✅ تم الحفظ</span>`;
+                setTimeout(() => { if (statusEl) statusEl.innerHTML = ""; }, 2500);
+            }
+        } catch (e) {
+            console.error("Permission toggle error:", e);
+            currentPermissions[key] = !val;
+            if (inputEl) {
+                inputEl.checked = !val;
+                inputEl.disabled = false;
+            }
+            if (statusEl) {
+                statusEl.innerHTML = `<span style="color:var(--danger); font-weight:700;">❌ فشل الحفظ</span>`;
+                setTimeout(() => { if (statusEl) statusEl.innerHTML = ""; }, 3000);
+            }
+            showToast("فشل حفظ الصلاحيات. حاول مرة أخرى.", "err");
+            return;
+        }
+
+        if (inputEl) inputEl.disabled = false;
     };
 
     // ── CENTRAL PERMISSION-TO-UI MAP ──
@@ -4115,8 +4158,6 @@ function updateDriveUI() {
     }
 
     function updateManagerPermissionsUI() {
-        if (!document.getElementById("managerPermissionsView") || document.getElementById("managerPermissionsView").classList.contains("hidden")) return;
-        
         PERMISSIONS_DEFS.forEach(p => {
             const checkbox = document.getElementById("perm_" + p.key);
             if (checkbox && checkbox.checked !== !!currentPermissions[p.key]) {
@@ -4127,6 +4168,7 @@ function updateDriveUI() {
 
     // ── REAL-TIME PERMISSIONS LISTENER ──
     // Called from initSystem() after data loads to guarantee reliability.
+    let _prevAssistantPermissions = null;
     let _permListenerRegistered = false;
     function setupPermissionsListener() {
         if (_permListenerRegistered) return;
@@ -4139,9 +4181,23 @@ function updateDriveUI() {
         onValue(permRef, snap => {
             if (snap.exists()) {
                 const saved = snap.val();
+
+                // Live Toast notification for assistant on real-time change
+                if (currentUserRole !== "admin" && _prevAssistantPermissions) {
+                    PERMISSIONS_DEFS.forEach(p => {
+                        if (saved[p.key] !== undefined && _prevAssistantPermissions[p.key] !== undefined && saved[p.key] !== _prevAssistantPermissions[p.key]) {
+                            const isNowEnabled = saved[p.key];
+                            const msg = isNowEnabled ? `🟢 قام المدير بفتح خاصية: "${p.label}"` : `⛔ قام المدير بإغلاق خاصية: "${p.label}"`;
+                            showToast(msg, isNowEnabled ? "success" : "warning");
+                        }
+                    });
+                }
+
                 PERMISSIONS_DEFS.forEach(p => {
                     if (saved[p.key] !== undefined) currentPermissions[p.key] = saved[p.key];
                 });
+
+                _prevAssistantPermissions = { ...currentPermissions };
             }
             
             if (currentUserRole !== "admin") {
