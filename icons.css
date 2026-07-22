@@ -1,0 +1,49 @@
+/* =========================================================
+   PREMIUM CSS ICONS (FontAwesome) replacing old Emojis 
+   ========================================================= */
+
+[data-i18n="nav_home"]::before { content: "\f015"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 8px; color: var(--primary); }
+[data-i18n="nav_students"]::before { content: "\f500"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 8px; color: var(--primary); }
+[data-i18n="nav_session_st"]::before { content: "\f4fc"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 8px; color: var(--primary); }
+[data-i18n="nav_syllabus"]::before { content: "\f02d"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 8px; color: var(--primary); }
+[data-i18n="nav_reports"]::before { content: "\f200"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 8px; color: var(--primary); }
+[data-i18n="nav_booklets"]::before { content: "\f5fd"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 8px; color: var(--primary); }
+[data-i18n="nav_marketing"]::before { content: "\f0a1"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 8px; color: var(--primary); }
+[data-i18n="nav_settings"]::before { content: "\f013"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 8px; color: var(--primary); }
+
+/* Sidebar Group Titles */
+[data-i18n="grp_daily"]::before { content: "\f783"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 8px; color: var(--primary); opacity: 0.8; }
+[data-i18n="grp_finance"]::before { content: "\f555"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 8px; color: var(--primary); opacity: 0.8; }
+[data-i18n="grp_tools"]::before { content: "\f552"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 8px; color: var(--primary); opacity: 0.8; }
+[data-i18n="grp_system"]::before { content: "\f233"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 8px; color: var(--primary); opacity: 0.8; }
+
+/* Action Buttons */
+[data-i18n="btn_add_st"]::before, [data-i18n="btn_add_open"]::before { content: "\f234"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; }
+[data-i18n="btn_record"]::before { content: "\f46c"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; }
+[data-i18n="btn_open"]::before { content: "\f07c"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; }
+[data-i18n="btn_discount"]::before { content: "\f02b"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; }
+[data-i18n="btn_deposit"]::before { content: "\f53a"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; }
+[data-i18n="btn_add_note"]::before { content: "\f4ad"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; }
+[data-i18n="btn_save_st"]::before, [data-i18n="btn_save"]::before, [data-i18n="btn_save_sys"]::before { content: "\f0c7"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; }
+[data-i18n="btn_delete_st"]::before, [data-i18n="btn_delete"]::before { content: "\f2ed"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; }
+[data-i18n="btn_edit"]::before { content: "\f044"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; }
+[data-i18n="btn_print"]::before { content: "\f02f"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; }
+[data-i18n="btn_photo_mode"]::before { content: "\f030"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; }
+[data-i18n="btn_close_rec"]::before, [data-i18n="btn_cancel"]::before { content: "\f00d"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; }
+[data-i18n="btn_logout"]::before { content: "\f2f5"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; }
+[data-i18n="correct_pay_btn"]::before { content: "\f53a"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; }
+
+/* Dashboard / Stats Cards */
+[data-i18n="stat_total"]::before { content: "\f0c0"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 8px; color: var(--primary); }
+[data-i18n="stat_active"]::before { content: "\f4fb"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 8px; color: var(--success); }
+[data-i18n="stat_absent"]::before { content: "\f235"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 8px; color: var(--danger); }
+
+/* Additional Modals/Misc */
+[data-i18n="mkt_filter_btn"]::before { content: "\f0b0"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; }
+[data-i18n="mkt_broadcast_btn"]::before { content: "\f1d8"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; }
+[data-i18n="mkt_copy_btn"]::before { content: "\f0c5"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; }
+[data-i18n="btn_pause"]::before { content: "\f04c"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; }
+[data-i18n="btn_stop"]::before { content: "\f04d"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; }
+
+/* Ensure pseudo-elements on buttons scale slightly on hover */
+.btn:hover::before { transform: scale(1.1); transition: 0.2s ease; display: inline-block; }
