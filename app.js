@@ -1118,9 +1118,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         const remote = snapshot.val();
                         const remoteTimestamp = remote._lastModified || 0;
                         const localTimestamp = localTimestamps[K_STUDENTS] || 0;
+                        const localStudentCount = Object.keys(students || {}).filter(k => students[k] && students[k].name).length;
+                        const remoteStudentCount = Object.keys(remote.students || {}).filter(k => remote.students[k] && remote.students[k].name).length;
 
-                        if (remoteTimestamp >= localTimestamp) {
-                            // Server is newer or equal — use server data
+                        if (remoteTimestamp >= localTimestamp || (localStudentCount === 0 && remoteStudentCount > 0)) {
+                            // Server is newer or equal, or local DB is empty (Incognito/new device) — use server data
                             students = remote.students || students;
                             deletedStudents = remote.deletedStudents || deletedStudents;
                             attByDate = remote.attendance || attByDate;
@@ -1131,7 +1133,21 @@ document.addEventListener('DOMContentLoaded', function() {
                             evalData = remote.evaluations || evalData;
                             sessionStudentsByDate = remote.sessionStudents || sessionStudentsByDate;
                             bookletsStock = remote.booklets || bookletsStock;
-                            console.log("[loadAll] Server data is newer — using Firebase data");
+                            console.log("[loadAll] Using Firebase data (Server is newer or local device was empty)");
+                            
+                            // Save to local IndexedDB for offline persistence
+                            await Promise.all([
+                                secureSave(K_STUDENTS, students),
+                                secureSave(K_ATT_BY_DATE, attByDate),
+                                secureSave(K_REVENUE, revenueByDate),
+                                secureSave(K_GROUP_FEES, groupFees),
+                                secureSave(K_EXPENSES, expensesByDate),
+                                secureSave(K_DELETED, deletedStudents),
+                                secureSave(K_SYLLABUS, syllabusData),
+                                secureSave(K_EVAL, evalData),
+                                secureSave(K_SESSION_STUDENTS, sessionStudentsByDate),
+                                secureSave(K_BOOKLETS, bookletsStock)
+                            ]);
                         } else {
                             // Local is newer — merge granularly (field-level)
                             console.log("[loadAll] Local data is newer — performing granular merge");
@@ -6101,6 +6117,12 @@ function updateDriveUI() {
         await saveAll();
         showToast("تم الرفع الإجباري بنجاح ✅", "success");
         setTimeout(() => runCloudDataCheck(), 2000);
+    });
+
+    if ($("syncFirebaseBtn")) on("syncFirebaseBtn", "click", async () => {
+        showToast("جاري رفع البيانات إلى السحابة...", "warning");
+        await saveAll();
+        showToast("تم رفع جميع البيانات إلى سيرفر Firebase بنجاح ☁️✅", "success");
     });
 
     // PRE-AUTH: Run synchronously BEFORE async initSystem
