@@ -47,3 +47,69 @@
 
 /* Ensure pseudo-elements on buttons scale slightly on hover */
 .btn:hover::before { transform: scale(1.1); transition: 0.2s ease; display: inline-block; }
+
+/* =========================================================
+   ADDITIONAL PREMIUM ICONS FOR ALL SYSTEM TEXTS & LABELS
+   ========================================================= */
+
+/* Login & Headers */
+[data-i18n="login_title_manager"]::before { content: "\f508"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 8px; color: var(--primary); }
+[data-i18n="login_desc_manager"]::before { content: "\f023"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; }
+[data-i18n="login_title_assistant"]::before { content: "\f4fb"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 8px; color: var(--primary); }
+
+/* Quick Actions & Search Titles */
+[data-i18n="quick_controls_title"]::before { content: "\f1de"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; }
+[data-i18n="quick_activity_log"]::before { content: "\f1da"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; }
+[data-i18n="quick_title"]::before { content: "\f0e7"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; color: #eab308; }
+[data-i18n="search_title"]::before { content: "\f002"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; }
+[data-i18n="add_title"]::before { content: "\f234"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; }
+[data-i18n="adv_search_title"]::before { content: "\f0b0"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; }
+
+/* Stats Cards */
+[data-i18n="stat_students"]::before { content: "\f500"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 8px; color: var(--primary); }
+[data-i18n="stat_attend"]::before { content: "\f4fc"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 8px; color: var(--success); }
+[data-i18n="stat_revenue"]::before { content: "\f53a"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 8px; color: var(--warning); }
+[data-i18n="stat_b_types"]::before { content: "\f02d"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; color: var(--primary); }
+[data-i18n="stat_b_sold"]::before { content: "\f571"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; color: var(--success); }
+[data-i18n="stat_b_remain"]::before { content: "\f07b"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; color: var(--warning); }
+[data-i18n="stat_b_rev"]::before { content: "\f51e"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; color: var(--success); }
+
+/* Details & Profile Labels */
+[data-i18n="st_details"]::before { content: "\f2b9"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; }
+[data-i18n="lbl_name"]::before, [data-i18n="sess_name_lbl"]::before { content: "\f007"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; opacity:0.7; }
+[data-i18n="lbl_class"]::before, [data-i18n="sess_class_lbl"]::before { content: "\f5fd"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; opacity:0.7; }
+[data-i18n="lbl_phone"]::before, [data-i18n="sess_phone_lbl"]::before { content: "\f095"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; opacity:0.7; }
+[data-i18n="lbl_finance"]::before { content: "\f571"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; opacity:0.7; }
+[data-i18n="lbl_total_paid"]::before, [data-i18n="sess_amount_lbl"]::before { content: "\f0d6"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; opacity:0.7; color: var(--success); }
+[data-i18n="lbl_remaining"]::before { content: "\f4c0"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; opacity:0.7; color: var(--danger); }
+[data-i18n="lbl_history"]::before, [data-i18n="lbl_pay_history"]::before { content: "\f1da"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; opacity:0.7; }
+[data-i18n="lbl_notes"]::before { content: "\f249"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; opacity:0.7; }
+[data-i18n="btn_mark_present"]::before { content: "\f4fc"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; }
+[data-i18n="btn_mark_absent"]::before { content: "\f506"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; }
+[data-i18n="print_receipt_lock"]::before { content: "\f023"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; }
+
+/* Finance & Vaults */
+[data-i18n="fin_summary_title"]::before, [data-i18n="vaults_title"]::before { content: "\f53a"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; color: var(--success); }
+[data-i18n="vault_cash"]::before { content: "\f155"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; color: var(--primary); }
+[data-i18n="vault_instapay"]::before { content: "\f3d1"; font-family: "Font Awesome 6 Brands"; font-weight: 400; margin-inline-end: 6px; color: #6366f1; }
+[data-i18n="vault_wallet"]::before { content: "\f3b1"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; color: #e11d48; }
+
+/* Marketing & Booklets */
+[data-i18n="mkt_main_title"]::before { content: "\f0a1"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; }
+[data-i18n="mkt_setup_title"]::before { content: "\f013"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; }
+[data-i18n="mkt_target_lbl"]::before, [data-i18n="mkt_select_grp_lbl"]::before { content: "\f140"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; }
+[data-i18n="booklets_main_title"]::before, [data-i18n="booklet_list_title"]::before { content: "\f5fd"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; }
+[data-i18n="booklet_add_title"]::before { content: "\f067"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; }
+
+/* Settings / Cloud */
+[data-i18n="stng_title"]::before { content: "\f013"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; }
+[data-i18n="cloud_auth_title"]::before { content: "\f0c2"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; color: var(--primary); }
+[data-i18n="danger_zone"]::before { content: "\f071"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; color: var(--danger); }
+[data-i18n="btn_cloud_upload"]::before { content: "\f0ee"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; }
+[data-i18n="btn_cloud_download"]::before { content: "\f0ed"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; }
+[data-i18n="btn_reset_all"]::before { content: "\f12d"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; }
+
+/* Misc Labels */
+[data-i18n="txt_no_notes"]::before { content: "\f071"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; opacity:0.7; }
+[data-i18n="sess_list_title"]::before { content: "\f0ca"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; }
+[data-i18n="mkt_list_title"]::before { content: "\f03a"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; }
