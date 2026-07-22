@@ -804,7 +804,7 @@ document.addEventListener('DOMContentLoaded', function() {
  const toast = document.createElement("div"); 
  toast.className = `toast toast-warning undo-toast`;
  const undoTxt = currentLang === 'ar' ? 'تراجع ↩️' : 'Undo ↩️';
- toast.innerHTML = `<span>️ ${msg}</span> <button class="btn smallBtn" id="tempUndoBtn" style="margin-right:15px; padding:5px 10px;">${undoTxt}</button>`;
+ toast.innerHTML = `<span><i class="fa-solid fa-circle-info"></i> ${msg}</span> <button class="btn smallBtn" id="tempUndoBtn" style="margin-right:15px; padding:5px 10px;">${undoTxt}</button>`;
  container.appendChild(toast); 
  let isUndone = false;
  toast.querySelector("#tempUndoBtn").onclick = () => { 
@@ -1618,7 +1618,7 @@ document.addEventListener('DOMContentLoaded', function() {
  if (m === "instapay") { mBadge = t("badge_instapay"); badgeBg = "#f3e8ff"; badgeColor = "#6b21a8"; }
  if (m === "wallet") { mBadge = t("badge_wallet"); badgeBg = "#fee2e2"; badgeColor = "#991b1b"; }
  
- let delBtn = isAdmin ? `<button class="btn danger smallBtn iconOnly" style="padding:2px 6px; font-size:11px;" onclick="window.deleteStudentPayment(${i})" title="${t('btn_del_payment')}">️</button>` : "";
+ let delBtn = isAdmin ? `<button class="btn danger smallBtn iconOnly" style="padding:2px 6px; font-size:11px;" onclick="window.deleteStudentPayment(${i})" title="${t('btn_del_payment')}"><i class="fa-solid fa-trash-can"></i></button>` : "";
  
  payHtml += `
  <div class="item flexBetween" style="margin-bottom:8px; font-size:0.9em; padding:8px 10px; background:var(--bg-surface); border-radius:6px; border:1px solid var(--border);">
@@ -2055,7 +2055,7 @@ document.addEventListener('DOMContentLoaded', function() {
  let sessArr = sessionStudentsByDate[d] || [];
  if(sessArr.length > 0) {
  html += `
- <h4 style="color:var(--primary); margin-top:15px; display:flex; align-items:center; gap:5px;"><span>️</span> طلاب الحصة الفورية (${sessArr.length})</h4>
+ <h4 style="color:var(--primary); margin-top:15px; display:flex; align-items:center; gap:5px;"><span><i class="fa-solid fa-users"></i></span> طلاب الحصة الفورية (${sessArr.length})</h4>
  <div style="background:var(--bg-surface); border:1px solid var(--border); border-radius:8px; padding:10px; margin-top:5px;">`;
  for (let i = 0; i < sessArr.length; i++) {
  let item = sessArr[i];
@@ -2088,7 +2088,7 @@ document.addEventListener('DOMContentLoaded', function() {
  html += `
  <div class="item flexBetween" style="margin-bottom:8px;">
  <b>${s.name} (${id})</b> 
- <button class="btn success smallBtn" onclick="window.restoreSt('${id}')">استرجاع</button>
+ <button class="btn success smallBtn" onclick="window.restoreSt('${id}')"><i class="fa-solid fa-rotate-left"></i> استرجاع</button>
  </div>`; 
  }
  bl.innerHTML = html;
@@ -2213,7 +2213,7 @@ document.addEventListener('DOMContentLoaded', function() {
  else if (s.status === "in_progress") statusIcon = currentLang === 'ar' ? " جاري الشرح" : " In Progress";
  else statusIcon = currentLang === 'ar' ? " لم يبدأ" : " Not Started";
  
- let deleteBtnHtml = isAdmin ? `<button class="btn danger smallBtn iconOnly" onclick="window.deleteSyllabus(${i})">️</button>` : "";
+ let deleteBtnHtml = isAdmin ? `<button class="btn danger smallBtn iconOnly" onclick="window.deleteSyllabus(${i})"><i class="fa-solid fa-trash-can"></i></button>` : "";
  let dateLbl = currentLang === 'ar' ? "أخر تحديث:" : "Last Update:";
 
  html += `
@@ -2868,8 +2868,8 @@ on("quickAttendId", "keypress", function(e) {
  <span style="color:var(--text); font-size:0.9em;">${textPart}</span>
  </div>
  <div class="row" style="width:auto; gap:6px;">
- <button class="btn warning smallBtn iconOnly edit-note-btn" data-index="${i}" title="${t('btn_edit_note')}">️</button>
- <button class="btn danger smallBtn iconOnly delete-note-btn" data-index="${i}" title="${t('btn_del_note')}">️</button>
+ <button class="btn warning smallBtn iconOnly edit-note-btn" data-index="${i}" title="${t('btn_edit_note')}"><i class="fa-solid fa-pen-to-square"></i></button>
+ <button class="btn danger smallBtn iconOnly delete-note-btn" data-index="${i}" title="${t('btn_del_note')}"><i class="fa-solid fa-trash-can"></i></button>
  </div>
  </div>`;
  }
@@ -2990,7 +2990,7 @@ on("quickAttendId", "keypress", function(e) {
  <div style="display:flex; gap:10px; margin-bottom:15px; background:#eef2f5; padding:10px; border-radius:8px;">
  <input type="text" id="newPkgName" class="inp" placeholder="اسم الباقة (مثال: ترم كامل)">
  <input type="number" id="newPkgPrice" class="inp" placeholder="السعر" style="width:100px;">
- <button class="btn primary" id="addNewPkgBtn">إضافة</button>
+ <button class="btn primary" id="addNewPkgBtn"><i class="fa-solid fa-plus"></i> إضافة</button>
  </div>
  `;
  
@@ -3003,7 +3003,7 @@ on("quickAttendId", "keypress", function(e) {
  </div>
  <div class="row" style="width:auto; gap:5px;">
  <input type="number" class="inp g-fee-inp" data-group="${g}" value="${val}" style="width:90px; text-align:center;"> ج
- <button class="btn danger smallBtn iconOnly delete-pkg-btn" data-group="${g}" title="حذف الباقة">️</button>
+ <button class="btn danger smallBtn iconOnly delete-pkg-btn" data-group="${g}" title="حذف الباقة"><i class="fa-solid fa-trash-can"></i></button>
  </div>
  </div>`;
  }
@@ -3841,7 +3841,7 @@ function updateDriveUI() {
  <div class="assistant-sub">كلمة المرور: ${pass} &nbsp;•&nbsp; تاريخ الإنشاء: ${createdAt}</div>
  </div>
  <div class="assistant-actions">
- <button class="btn danger smallBtn" onclick="window.deleteAssistant('${key}')" style="display:flex;align-items:center;gap:5px;">
+ <button class="btn danger smallBtn" onclick="window.deleteAssistant('${key}')" style="display:flex;align-items:center;gap:5px;"><i class="fa-solid fa-trash-can"></i> 
  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
  حذف
  </button>
@@ -4000,7 +4000,7 @@ function updateDriveUI() {
  <td style="padding:10px 16px;color:${r.debt > 0 ? 'var(--danger)' : 'var(--success)'};font-weight:700;">${r.debt > 0 ? r.debt + " ج" : ""}</td>
  <td style="padding:10px 16px;">${r.attCount}</td>
  <td style="padding:10px 16px;">
- <button class="btn primary smallBtn" onclick="window.extOpen('${r.st.id}')">فتح</button>
+ <button class="btn primary smallBtn" onclick="window.extOpen('${r.st.id}')"><i class="fa-solid fa-folder-open"></i> فتح</button>
  </td>
  </tr>`).join("");
  }
@@ -4302,8 +4302,8 @@ function updateDriveUI() {
  </div>
  <div class="decision-amount">${r.type === "exemption" ? "إعفاء" : r.amount + " ج"}</div>
  <div class="decision-actions">
- <button class="btn success smallBtn" onclick="window.approveRequest('${r.id}')">قبول</button>
- <button class="btn danger smallBtn" onclick="window.rejectRequest('${r.id}')">رفض</button>
+ <button class="btn success smallBtn" onclick="window.approveRequest('${r.id}')"><i class="fa-solid fa-check"></i> قبول</button>
+ <button class="btn danger smallBtn" onclick="window.rejectRequest('${r.id}')"><i class="fa-solid fa-xmark"></i> رفض</button>
  </div>
  </div>`;
  });
@@ -4501,8 +4501,8 @@ function updateDriveUI() {
  const tabsDiv = document.createElement("div");
  tabsDiv.className = "msg-tabs";
  tabsDiv.innerHTML = `
- <button class="msg-tab-btn active" id="msgTabMessages" onclick="window.switchMsgTab('messages')">الرسائل</button>
- <button class="msg-tab-btn" id="msgTabActivity" onclick="window.switchMsgTab('activity')">سجل العمليات</button>`;
+ <button class="msg-tab-btn active" id="msgTabMessages" onclick="window.switchMsgTab('messages')"><i class="fa-solid fa-envelope"></i> الرسائل</button>
+ <button class="msg-tab-btn" id="msgTabActivity" onclick="window.switchMsgTab('activity')"><i class="fa-solid fa-clock-rotate-left"></i> سجل العمليات</button>`;
  dropdown.insertBefore(tabsDiv, listEl);
  }
 
@@ -4525,7 +4525,7 @@ function updateDriveUI() {
  const listEl = $("notificationsList");
  if (!listEl) return;
  if (assistantMessages.length === 0) {
- listEl.innerHTML = `<div style="text-align:center;color:#888;padding:10px;">لا توجد رسائل</div>`;
+ listEl.innerHTML = `<div style="text-align:center;color:#888;padding:10px;"><i class="fa-solid fa-comment-slash" style="font-size:24px;margin-bottom:8px;"></i><br>لا توجد رسائل</div>`;
  return;
  }
  listEl.innerHTML = assistantMessages.slice(0, 20).map(m => {
@@ -4832,8 +4832,8 @@ function updateDriveUI() {
  </div>
  <div class="row" style="width:auto; gap:10px;">
  <span style="color:var(--success); font-weight:bold; font-size:1.1em;">+ ${item.amount} ج</span>
- ${item.phone ? `<button class="btn success smallBtn iconOnly" title="مراسلة واتساب" onclick="window.open('https://wa.me/20${item.phone}', '_blank')"></button>` : ""}
- <button class="btn danger smallBtn iconOnly delete-sess-btn" data-date="${d}" data-index="${i}" title="حذف وإلغاء الدفعة">️</button>
+ ${item.phone ? `<button class="btn success smallBtn iconOnly" title="مراسلة واتساب" onclick="window.open('https://wa.me/20${item.phone}', '_blank')"><i class="fa-brands fa-whatsapp"></i></button>` : ""}
+ <button class="btn danger smallBtn iconOnly delete-sess-btn" data-date="${d}" data-index="${i}" title="حذف وإلغاء الدفعة"><i class="fa-solid fa-trash-can"></i></button>
  </div>
  </div>`;
  }
@@ -5100,12 +5100,12 @@ function updateDriveUI() {
  <span style="font-size:0.8em; color:var(--text-secondary); display:block;">عائد المذكرة</span>
  <strong style="color:var(--primary); font-size:1.2em;">${rev} ج</strong>
  </div>
- <button class="btn success" style="padding:10px 18px; font-weight:bold; font-size:1.05em; display:flex; align-items:center; gap:5px;" onclick="sellBookletCopy('${id}')">
+ <button class="btn success" style="padding:10px 18px; font-weight:bold; font-size:1.05em; display:flex; align-items:center; gap:5px;" onclick="sellBookletCopy('${id}')"><i class="fa-solid fa-cart-shopping"></i> 
  بيع نسخة (+1)
  </button>
- <button class="btn warning smallBtn" title="إرجاع نسخة (-1)" onclick="returnBookletCopy('${id}')"></button>
- <button class="btn primary smallBtn" title="تعديل العدد الكلي المستلم" onclick="editBookletQty('${id}')">️</button>
- <button class="btn danger smallBtn" title="حذف المذكرة" onclick="deleteBooklet('${id}')">️</button>
+ <button class="btn warning smallBtn" title="إرجاع نسخة (-1)" onclick="returnBookletCopy('${id}')"><i class="fa-solid fa-rotate-left"></i></button>
+ <button class="btn primary smallBtn" title="تعديل العدد الكلي المستلم" onclick="editBookletQty('${id}')"><i class="fa-solid fa-pen-to-square"></i></button>
+ <button class="btn danger smallBtn" title="حذف المذكرة" onclick="deleteBooklet('${id}')"><i class="fa-solid fa-trash-can"></i></button>
  </div>
  </div>`;
  }
