@@ -15,8 +15,8 @@
 
  <!-- FontAwesome for Icons -->
  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
- <link rel="stylesheet" href="style.css?v=STUDIFY_V7">
- <link rel="stylesheet" href="icons.css?v=STUDIFY_V7">
+ <link rel="stylesheet" href="style.css?v=STUDIFY_V8">
+ <link rel="stylesheet" href="icons.css?v=STUDIFY_V8">
  
  <!-- PREVENT THEME FLASH -->
  <script>
@@ -520,7 +520,7 @@
  <button id="saveStudentBtn" class="btn primary" data-i18n="btn_save_st">حفظ البيانات </button>
  <button id="markTodayBtn" class="btn success" data-i18n="btn_mark_present"> حضور</button>
  <button id="unmarkTodayBtn" class="btn warning" data-i18n="btn_mark_absent"> غياب</button>
- <button id="deleteStudentBtn" class="btn danger adminOnly" style="margin-inline-start:auto;" data-i18n="btn_delete"> حذف</button>
+ <button id="deleteStudentBtn" class="btn danger adminOnly" style="margin-inline-start:auto;" data-i18n="btn_delete"><i class="fa-solid fa-trash-can" style="margin-inline-end: 6px;"></i> حذف</button>
  </div>
 
  <!-- إيصال الدفع النهائي (مغلق بقفل في حال عدم سداد الباقة بالكامل) -->
@@ -1011,7 +1011,7 @@
 
  <hr style="border: 1px dashed var(--border); margin: 5px 0;">
 
- <button class="btn danger w100" id="openBinBtn" style="padding:12px;" data-i18n="btn_recycle">سلة المحذوفات</button>
+ <button class="btn danger w100" id="openBinBtn" style="padding:12px;" data-i18n="btn_recycle"><i class="fa-solid fa-trash-can" style="margin-inline-end: 8px;"></i> سلة المحذوفات</button>
  </div>
  </div>
 
@@ -1045,7 +1045,7 @@
  <h3 data-i18n="set_danger_title"> منطقة الخطر</h3>
  <div style="display:flex; flex-direction:column; gap:10px;">
  <button class="btn warning w100" id="resetTermBtn" data-i18n="btn_reset_term"> تصفير الترم</button>
- <button class="btn danger w100" id="resetBtn" data-i18n="btn_factory_reset"> مسح النظام بالكامل</button>
+ <button class="btn danger w100" id="resetBtn" data-i18n="btn_factory_reset"><i class="fa-solid fa-triangle-exclamation" style="margin-inline-end: 8px;"></i> مسح النظام بالكامل</button>
  </div>
  </div>
  </div>
@@ -1215,7 +1215,7 @@
  <button id="closeBinBtn" class="btn smallBtn">X</button>
  </div>
  <div id="binList" class="list"></div>
- <button id="emptyBinBtn" class="btn danger" style="width:100%; margin-top:15px;" data-i18n="btn_empty_bin">إفراغ السلة نهائياً</button>
+ <button id="emptyBinBtn" class="btn danger" style="width:100%; margin-top:15px;" data-i18n="btn_empty_bin"><i class="fa-solid fa-trash-can-arrow-up" style="margin-inline-end: 6px;"></i> إفراغ السلة نهائياً</button>
  </div>
  </div>
 
@@ -1783,6 +1783,6 @@
  <!-- Firebase SDK -->
  <script type="module" src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js"></script>
  <script type="module" src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js"></script>
- <script type="module" src="app.js?v=STUDIFY_V7"></script>
+ <script type="module" src="app.js?v=STUDIFY_V8"></script>
 </body>
 </html>
