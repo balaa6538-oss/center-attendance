@@ -8,7 +8,7 @@
 [data-i18n="grp_daily"]::before { content: "\f783"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 8px; color: var(--primary); opacity: 0.8; }
 [data-i18n="grp_finance"]::before { content: "\f555"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 8px; color: var(--primary); opacity: 0.8; }
 [data-i18n="grp_tools"]::before { content: "\f552"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 8px; color: var(--primary); opacity: 0.8; }
-[data-i18n="grp_system"]::before { content: "\f233"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 8px; color: var(--primary); opacity: 0.8; }
+[data-i18n="grp_system"]::before { content: "\f013"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 8px; color: var(--primary); opacity: 0.8; }
 
 /* Action Buttons */
 [data-i18n="btn_add_st"]::before, [data-i18n="btn_add_open"]::before { content: "\f234"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 6px; }
