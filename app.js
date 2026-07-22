@@ -76,14 +76,14 @@ document.addEventListener('DOMContentLoaded', function() {
  
  // Sync UI with Mute State
  if($("muteSoundsToggle")) $("muteSoundsToggle").checked = window.isMuted;
- if($("soundIcon")) $("soundIcon").innerText = window.isMuted ? "" : "";
+ if($("soundIcon")) $("soundIcon").innerHTML = window.isMuted ? '<i class="fa-solid fa-volume-xmark"></i>' : '<i class="fa-solid fa-volume-high"></i>';
 
  if ($("toggleSoundsBtn")) {
  $("toggleSoundsBtn").addEventListener("click", function() {
  window.isMuted = !window.isMuted;
  localStorage.setItem("ca_muted", window.isMuted ? "1" : "0");
  if($("muteSoundsToggle")) $("muteSoundsToggle").checked = window.isMuted;
- if($("soundIcon")) $("soundIcon").innerText = window.isMuted ? "" : "";
+ if($("soundIcon")) $("soundIcon").innerHTML = window.isMuted ? '<i class="fa-solid fa-volume-xmark"></i>' : '<i class="fa-solid fa-volume-high"></i>';
  if (!window.isMuted) playSound("click");
  });
  }
@@ -1404,7 +1404,7 @@ document.addEventListener('DOMContentLoaded', function() {
  if($("todayCountTop")) $("todayCountTop").textContent = todayCount;
  
  if($("todayRevenue")) $("todayRevenue").textContent = isRevHidden ? "****** ج" : revenue + " ج";
- if($("toggleRevBtn")) $("toggleRevBtn").textContent = isRevHidden ? "️‍️" : "️";
+ if($("toggleRevBtn")) $("toggleRevBtn").innerHTML = isRevHidden ? '<i class="fa-solid fa-eye-slash"></i>' : '<i class="fa-solid fa-eye"></i>';
  }
 
  function updateLiveFeed(st) {

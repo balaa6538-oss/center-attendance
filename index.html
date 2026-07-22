@@ -303,7 +303,7 @@
  <span class="stat-pill clickable" id="todayCountTopCard">
  <span data-i18n="stat_attend"> حضور:</span> <b id="todayCountTop">0</b>
  </span>
- <span class="stat-pill adminOnly">
+ <span class="stat-pill adminOnly clickable" onclick="window.switchTab('finance')">
  <span data-i18n="stat_revenue"> إيراد:</span> 
  <b id="todayRevenue" class="blurTarget">0 ج</b>
  <span id="toggleRevBtn" style="cursor:pointer; font-size:1.1em; margin-inline-start:5px;">️</span>
@@ -330,14 +330,14 @@
 
  <!-- Notifications Bell -->
  <div id="notificationsToggleBtn" class="topbar-icon-btn" title="رسائل وإشعارات" style="position: relative; cursor: pointer;">
- ️
+ <i class="fa-regular fa-bell"></i>
  <span id="notificationsBadge" class="notification-badge hidden" style="position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; font-size: 0.7em; padding: 2px 5px; font-weight: bold;">0</span>
  </div>
  
  <!-- Notifications Dropdown -->
  <div id="notificationsDropdown" class="user-profile-dropdown hidden" style="position: absolute; top: 110%; inset-inline-end: 40px; width: 320px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); padding: 12px; z-index: 9999; display: flex; flex-direction: column; gap: 8px;">
  <div style="font-weight: bold; font-size: 0.95em; color: var(--primary); padding: 4px 8px; border-bottom: 1px solid var(--border); margin-bottom: 4px; display: flex; justify-content: space-between;">
- <span>️ رسائل وإشعارات</span>
+ <span><i class="fa-regular fa-bell"></i> رسائل وإشعارات</span>
  <span id="markAllReadBtn" style="cursor: pointer; font-size: 0.85em; color: var(--success); font-weight: normal;">تحديد كمقروء</span>
  </div>
  <div id="notificationsList" style="max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
@@ -350,11 +350,11 @@
  </button>
  
  <!-- COMPACT ICON TOGGLE BUTTON (NO WORDS, REPLACES UNPROFESSIONAL LOGOUT BUTTON) -->
- <button id="userProfileToggleBtn" class="topbar-icon-btn" title="قائمة النظام والخروج">️</button>
+ <button id="userProfileToggleBtn" class="topbar-icon-btn" title="قائمة النظام والخروج"><i class="fa-solid fa-sliders"></i></button>
  
  <!-- THE QUICK ACTION DROPDOWN / DRAWER -->
  <div id="userProfileDropdown" class="user-profile-dropdown hidden" style="position: absolute; top: 110%; inset-inline-end: 0; width: 260px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); padding: 12px; z-index: 9999; display: flex; flex-direction: column; gap: 8px;">
- <div style="font-weight: bold; font-size: 0.95em; color: var(--primary); padding: 4px 8px; border-bottom: 1px solid var(--border); margin-bottom: 4px;" data-i18n="quick_controls_title">️ قائمة التحكم السريعة</div>
+ <div style="font-weight: bold; font-size: 0.95em; color: var(--primary); padding: 4px 8px; border-bottom: 1px solid var(--border); margin-bottom: 4px;" data-i18n="quick_controls_title">قائمة التحكم السريعة</div>
  
  <button id="quickActivityLogBtn" class="btn secondary adminOnly" style="width: 100%; display: flex; align-items: center; gap: 10px; padding: 8px 12px; font-weight: bold; font-size: 0.9em; text-align: start; justify-content: flex-start;">
  <span></span> <span data-i18n="quick_activity_log">سجل العمليات (Activity Log)</span>
