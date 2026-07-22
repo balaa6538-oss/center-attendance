@@ -148,3 +148,7 @@
 
 /* Quick fix for table cloud status */
 th[style*="font-weight:700"]::before { content: "\f0c2"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 5px; }
+
+/* Danger Zone Buttons */
+[data-i18n="btn_reset_term"]::before { content: "\f1da"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 8px; }
+[data-i18n="btn_factory_reset"]::before { content: "\f071"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-inline-end: 8px; }
