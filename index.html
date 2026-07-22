@@ -998,19 +998,14 @@
                   <hr style="border: 1px dashed var(--border); margin: 5px 0;">
 
                   <div style="display:flex; justify-content:space-between; align-items:center; padding: 0 5px;">
-                    <span id="firebaseStatusText" style="font-size: 13px; font-weight: bold; color: var(--success);">🟢 السحابة الرسمية (Firebase)</span>
-                    <span id="lastFirebaseSyncText" style="font-size: 11px; color: var(--text-secondary);">متصل وتلقائي</span>
+                    <span id="driveStatusText" style="font-size: 13px; font-weight: bold; color: var(--text-secondary);" data-i18n="drive_offline">⚪ غير متصل</span>
+                    <span id="lastSyncText" style="font-size: 11px; color: var(--text-secondary);"></span>
                   </div>
 
-                  <button class="btn primary w100" id="syncFirebaseBtn" style="padding:12px; font-weight:bold;">رفع البيانات للسحابة الآن ☁️</button>
-
-                  <!-- Legacy Drive controls hidden for backwards compatibility -->
-                  <div style="display:none;">
-                    <span id="driveStatusText"></span>
-                    <span id="lastSyncText"></span>
-                    <button id="driveLoginBtn"></button>
-                    <button id="restoreDriveBtn"></button>
-                    <button id="syncNowBtn"></button>
+                  <button class="btn primary w100" id="driveLoginBtn" style="padding:12px; font-weight:bold;" data-i18n="btn_drive_login">ربط بجوجل درايف ☁️</button>
+                  <div class="row" style="gap:5px;">
+                    <button class="btn warning w100" id="restoreDriveBtn" style="padding:12px; font-weight:bold;" data-i18n="btn_drive_restore">استرجاع من السحاب 🔄</button>
+                    <button class="btn success hidden" id="syncNowBtn" style="padding:12px; flex:0.3;" title="Manual Sync">⬆️</button>
                   </div>
 
                   <hr style="border: 1px dashed var(--border); margin: 5px 0;">

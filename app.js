@@ -5881,10 +5881,13 @@ function updateDriveUI() {
         }
     }
 
-    // Cloud Sync Click Handler
+    // Cloud Sync Click Handler (Top bar cloud icon)
     if ($("cloudSyncIndicator")) {
-        $("cloudSyncIndicator").addEventListener("click", function() {
-            syncWithFirebase();
+        $("cloudSyncIndicator").addEventListener("click", async function() {
+            showToast("جاري المزامنة والرفع إلى السحابة... ☁️", "warning");
+            await saveAll();
+            await syncWithFirebase();
+            showToast("تمت المزامنة ورفع البيانات إلى السحابة بنجاح ☁️✅", "success");
         });
     }
 
@@ -6117,12 +6120,6 @@ function updateDriveUI() {
         await saveAll();
         showToast("تم الرفع الإجباري بنجاح ✅", "success");
         setTimeout(() => runCloudDataCheck(), 2000);
-    });
-
-    if ($("syncFirebaseBtn")) on("syncFirebaseBtn", "click", async () => {
-        showToast("جاري رفع البيانات إلى السحابة...", "warning");
-        await saveAll();
-        showToast("تم رفع جميع البيانات إلى سيرفر Firebase بنجاح ☁️✅", "success");
     });
 
     // PRE-AUTH: Run synchronously BEFORE async initSystem
