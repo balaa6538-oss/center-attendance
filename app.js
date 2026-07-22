@@ -2301,6 +2301,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         localStorage.setItem(K_ROLE, "admin"); 
                         localStorage.setItem("ca_manager_id", u);
                         localStorage.setItem("ca_current_username", "المدير");
+                        window.CURRENT_MANAGER_ID = u;
+                        window.CURRENT_ROLE = "admin";
                         checkAuth(); 
                         return;
                     }
@@ -2355,6 +2357,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         localStorage.setItem(K_ROLE, "assistant"); 
                         localStorage.setItem("ca_manager_id", center);
                         localStorage.setItem("ca_current_username", foundUsername);
+                        window.CURRENT_MANAGER_ID = center;
+                        window.CURRENT_ROLE = "assistant";
                         checkAuth(); 
                         return;
                     }
@@ -5677,6 +5681,7 @@ function updateDriveUI() {
     // ==========================================
     async function syncWithFirebase() {
         if (syncInProgress) return;
+        window.CURRENT_MANAGER_ID = window.CURRENT_MANAGER_ID || localStorage.getItem("ca_manager_id");
         if (!window.CURRENT_MANAGER_ID) {
             showToast("لا يوجد حساب مسجل للمزامنة.", "err");
             return;
