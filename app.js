@@ -3094,6 +3094,9 @@ on("quickAttendId", "keypress", function(e) {
  });
 
  window.renderManagerPackagesCard = function() {
+    if ($("allowAssistantPkgToggle")) {
+      $("allowAssistantPkgToggle").checked = !!(currentPermissions && currentPermissions.can_manage_packages);
+    }
    const container = $("managerPackagesOverviewList");
    if (!container) return;
 
@@ -3283,7 +3286,16 @@ on("quickAttendId", "keypress", function(e) {
    });
  };
 
- on("openGroupFeesBtn", "click", function() {
+ on("allowAssistantPkgToggle", "change", function(e) {
+    if (currentUserRole !== "admin") return;
+    const isChecked = e.target.checked;
+    if ($("perm_can_manage_packages")) {
+      $("perm_can_manage_packages").checked = isChecked;
+    }
+    window.onPermissionToggle('can_manage_packages', isChecked);
+  });
+
+  on("openGroupFeesBtn", "click", function() {
    renderGroupFeesModal();
    if ($("groupFeesModal")) $("groupFeesModal").classList.remove("hidden");
  });
@@ -4305,6 +4317,9 @@ function updateDriveUI() {
  }
 
  currentPermissions[key] = val;
+  if (key === 'can_manage_packages' && $("allowAssistantPkgToggle")) {
+    $("allowAssistantPkgToggle").checked = val;
+  }
  try {
  await savePermissionsToFirebase(key, val);
  if (statusEl) {
