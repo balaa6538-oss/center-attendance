@@ -15,8 +15,8 @@
 
  <!-- FontAwesome for Icons -->
  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
- <link rel="stylesheet" href="style.css?v=STUDIFY_V15">
- <link rel="stylesheet" href="icons.css?v=STUDIFY_V15">
+ <link rel="stylesheet" href="style.css?v=STUDIFY_V16">
+ <link rel="stylesheet" href="icons.css?v=STUDIFY_V16">
  
  <!-- PREVENT THEME FLASH -->
  <script>
@@ -1016,25 +1016,7 @@
  </div>
  </div>
 
- <div class="settings-card" style="grid-column: span 2;">
-  <div class="flexBetween" style="margin-bottom: 12px;">
-  <h3 data-i18n="set_fin_title" style="margin:0;"><i class="fa-solid fa-boxes-packing" style="color:var(--warning); margin-inline-end:8px;"></i> إدارة الباقات والمصاريف المتقدمة</h3>
-  <button class="btn warning" id="openGroupFeesBtn" style="padding:8px 16px; font-weight:bold;">
-  <i class="fa-solid fa-sliders"></i> التعديل والإضافة
-  </button>
-  </div>
-  <p style="font-size:12px; color:var(--text-secondary); margin-bottom:12px;">تحديد قواعد أسعار الباقات، مدد الصلاحية (شهر/ترم/سنة)، عدد الحصص، وتنبيهات انتهاء اشتراكات الطلاب.</p>
-  
-  <div id="managerPackagesOverviewList" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:10px; margin-bottom:15px;"></div>
-  
-  <div style="display:flex; align-items:center; justify-content:space-between; padding-top:12px; border-top:1px dashed var(--border); font-size:13px; color:var(--text-secondary);">
-  <span><i class="fa-solid fa-user-shield" style="margin-inline-end:6px;"></i> السماح للمساعدين بتعديل وإضافة الباقات:</span>
-  <label class="switch" style="position:relative; display:inline-block; width:44px; height:24px;">
-  <input type="checkbox" id="allowAssistantPkgToggle" checked>
-  <span class="slider round"></span>
-  </label>
-  </div>
-  </div>
+
 
  <div class="settings-card">
  <h3 data-i18n="set_ui_title">المظهر والتخصيص</h3>
@@ -1739,6 +1721,31 @@
  </div>
  </div>
 
+ <div id="managerPackagesView" class="manager-view hidden">
+  <h3 class="manager-section-title">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+  إدارة الباقات والمصاريف المتقدمة
+  </h3>
+  <div style="background:var(--bg-surface); border:1px solid var(--border); border-radius:var(--radius-sm); padding:20px; margin-bottom:20px;">
+  <div class="flexBetween" style="margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+  <p class="muted" style="font-size:0.9em; margin:0; max-width:500px;">تحديد قواعد أسعار الباقات، مدد الصلاحية (شهر/ترم/سنة)، عدد الحصص، وتنبيهات انتهاء اشتراكات الطلاب.</p>
+  <button class="btn warning" id="openGroupFeesBtn" style="padding:8px 16px; font-weight:bold;">
+  <i class="fa-solid fa-sliders"></i> التعديل والإضافة
+  </button>
+  </div>
+  
+  <div id="managerPackagesOverviewList" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:10px; margin-bottom:15px;"></div>
+  
+  <div style="display:flex; align-items:center; justify-content:space-between; padding-top:12px; border-top:1px dashed var(--border); font-size:13px; color:var(--text-secondary);">
+  <span><i class="fa-solid fa-user-shield" style="margin-inline-end:6px;"></i> السماح للمساعدين بتعديل وإضافة الباقات:</span>
+  <label class="switch" style="position:relative; display:inline-block; width:44px; height:24px;">
+  <input type="checkbox" id="allowAssistantPkgToggle" checked>
+  <span class="slider round"></span>
+  </label>
+  </div>
+  </div>
+ </div>
+
  <div id="managerSettingsView" class="manager-view hidden">
  <h3 class="manager-section-title">
  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -1801,6 +1808,6 @@
  <!-- Firebase SDK -->
  <script type="module" src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js"></script>
  <script type="module" src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js"></script>
- <script type="module" src="app.js?v=STUDIFY_V15"></script>
+ <script type="module" src="app.js?v=STUDIFY_V16"></script>
 </body>
 </html>
