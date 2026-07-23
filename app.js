@@ -2587,8 +2587,8 @@ document.addEventListener('DOMContentLoaded', function() {
  return;
  }
  if($("userProfileDropdown")) $("userProfileDropdown").classList.add("hidden");
+ window.switchTab('Packages');
  renderGroupFeesModal();
- if($("groupFeesModal")) $("groupFeesModal").classList.remove("hidden");
  });
  on("quickExportBtn", "click", function() {
  if($("userProfileDropdown")) $("userProfileDropdown").classList.add("hidden");
@@ -3295,12 +3295,8 @@ on("quickAttendId", "keypress", function(e) {
   });
 
   on("openGroupFeesBtn", "click", function() {
+   window.switchTab('Packages');
    renderGroupFeesModal();
-   if ($("groupFeesModal")) $("groupFeesModal").classList.remove("hidden");
- });
-
- on("closeGroupFeesModal", "click", function() {
-   if ($("groupFeesModal")) $("groupFeesModal").classList.add("hidden");
  });
 
  on("changeLangBtn", "click", function() { 
@@ -5041,22 +5037,12 @@ function updateDriveUI() {
  on("btnTabRevenue", "click", function() { window.switchTab('Revenue'); renderCharts(); updateFinanceSummary(); });
  on("btnTabReports", "click", function() { window.switchTab('Reports'); renderReportsPage(); });
  on("btnTabPackages", "click", function() {
-    try {
-      if (typeof closeMobileSidebar === "function") closeMobileSidebar(false);
-      if (currentUserRole !== "admin" && (!currentPermissions || !currentPermissions.can_manage_packages)) {
-        showToast("عفواً، تعديل الباقات والأسعار مقفل من المدير ", "err");
-        return;
-      }
-      renderGroupFeesModal();
-      if ($("groupFeesModal")) {
-        $("groupFeesModal").classList.remove("hidden");
-        $("groupFeesModal").style.display = "flex";
-      } else {
-        alert("خطأ: لم يتم العثور على نافذة الباقات (groupFeesModal) في النظام!");
-      }
-    } catch(err) {
-      alert("حدث خطأ أثناء فتح النافذة: " + err.message);
+    if (currentUserRole !== "admin" && (!currentPermissions || !currentPermissions.can_manage_packages)) {
+      showToast("عفواً، تعديل الباقات والأسعار مقفل من المدير ", "err");
+      return;
     }
+    window.switchTab('Packages');
+    renderGroupFeesModal();
   });
   on("btnTabAdmin", "click", function() { window.switchTab('Admin'); if (typeof renderManagerPackagesCard === "function") renderManagerPackagesCard(); });
  on("btnTabSyllabus", "click", function() { window.switchTab('Syllabus'); renderSyllabus(); });

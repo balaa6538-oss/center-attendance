@@ -15,8 +15,8 @@
 
  <!-- FontAwesome for Icons -->
  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
- <link rel="stylesheet" href="style.css?v=STUDIFY_V27">
- <link rel="stylesheet" href="icons.css?v=STUDIFY_V27">
+ <link rel="stylesheet" href="style.css?v=STUDIFY_V28">
+ <link rel="stylesheet" href="icons.css?v=STUDIFY_V28">
  
  <!-- PREVENT THEME FLASH -->
  <script>
@@ -1052,7 +1052,19 @@
  </div>
  </section>
 
- <!-- ====== REPORTS ====== -->
+ 
+  <!-- ====== PACKAGES ====== -->
+  <section id="secPackages" class="tab-section hidden">
+    <div class="content-header">
+      <h2><i class="fa-solid fa-boxes-packing"></i> الباقات والأسعار</h2>
+      <p class="text-secondary">حدد اسم وسعر وصلاحية الباقات المتاحة للمركز مع قواعد التنبيه التلقائي.</p>
+    </div>
+    <div class="content-body" style="max-width: 800px; margin: 0 auto;">
+      <div id="groupFeesList" style="padding-bottom: 30px;"></div>
+    </div>
+  </section>
+
+  <!-- ====== REPORTS ====== -->
  <section id="secReports" class="tab-section hidden">
  <div class="card" style="margin-bottom: 20px;">
  <div class="flexBetween">
@@ -1162,19 +1174,7 @@
  </div><!-- /app-shell -->
 
  <!-- ============ MODALS ============ -->
- <div id="groupFeesModal" class="modal hidden">
-  <div class="modalContent" style="max-width: 650px; border-radius: 16px;">
-  <div class="flexBetween" style="border-bottom: 2px solid var(--border); padding-bottom: 12px;">
-  <h3 style="color: var(--primary); margin:0; display:flex; align-items:center; gap:8px;" data-i18n="modal_grp_fees">
-  <i class="fa-solid fa-boxes-packing"></i> إدارة ومُنشئ الباقات والمصاريف
-  </h3>
-  <button class="btn danger smallBtn" id="closeGroupFeesModal">X</button>
-  </div>
-  <p style="font-size:12px; color:var(--text-secondary); margin-top:8px; margin-bottom:15px;" data-i18n="grp_fees_desc">حدد اسم وسعر وصلاحية الباقات المتاحة للمركز مع قواعد التنبيه التلقائي.</p>
-  
-  <div id="groupFeesList" style="max-height: 60vh; overflow-y: auto; padding-inline-end: 4px;"></div>
-  </div>
-  </div>
+ 
 
  <div id="customPassModal" class="modal hidden" style="z-index: 9999;">
  <div class="modalContent" style="max-width: 350px; text-align:center;">
@@ -1816,6 +1816,6 @@
  <!-- Firebase SDK -->
  <script type="module" src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js"></script>
  <script type="module" src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js"></script>
- <script type="module" src="app.js?v=STUDIFY_V27"></script>
+ <script type="module" src="app.js?v=STUDIFY_V28"></script>
 </body>
 </html>
