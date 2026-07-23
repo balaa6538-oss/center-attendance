@@ -1427,6 +1427,7 @@ document.addEventListener('DOMContentLoaded', function() {
  permissions: { view: "managerPermissionsView", btn: "btnManagerPermissions", title: "صلاحيات المساعد" },
  decisions: { view: "managerDecisionsView", btn: "btnManagerDecisions", title: "طلبات القرارات" },
  cloudMonitor: { view: "managerCloudMonitorView", btn: "btnManagerCloudMonitor", title: "فحص السحابة" },
+  packages: { view: "managerPackagesView", btn: "btnManagerPackages", title: "إدارة الباقات والمصاريف" },
  settings: { view: "managerSettingsView", btn: "btnManagerSettings", title: "الإعدادات المتقدمة" },
  };
 
@@ -1441,6 +1442,7 @@ document.addEventListener('DOMContentLoaded', function() {
  if (tabId === "dailyReport") renderManagerDailyReport(nowDateStr());
  if (tabId === "termReport") renderManagerTermReport();
  if (tabId === "cloudMonitor") runCloudDataCheck();
+  if (tabId === "packages") { if (typeof renderManagerPackagesCard === "function") renderManagerPackagesCard(); }
  if (tabId === "settings") {
  const mid = localStorage.getItem("ca_manager_id") || "—";
  if ($("mgrSettingsManagerId")) $("mgrSettingsManagerId").textContent = mid;
