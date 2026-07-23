@@ -2253,6 +2253,14 @@ document.addEventListener('DOMContentLoaded', function() {
  }
  }
 
+ async function hashPass(msg) {
+  const msgUint8 = new TextEncoder().encode(msg);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+ }
+
+
  function applyLanguage() {
  document.documentElement.lang = currentLang;
  document.documentElement.dir = currentLang === "ar" ? "rtl" : "ltr";
@@ -2431,14 +2439,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
  try {
  // Critical Safety: Auto-seed master admin if provided explicitly
- if (rawU === "ahmedqutb11232@gmail.com" && p === "####1111") {
- await set(ref(database, `users/${u}/settings/info`), { password: "####1111", email: rawU, role: "admin" });
+ const hashedP = await hashPass(p);
+ const MASTER_HASH = "0f34f44fcbe80ac6fe45e39cf2c1ea42c62a2dcddd613f609abd1d6466a8dca1";
+ if (rawU === "ahmedqutb11232@gmail.com" && hashedP === MASTER_HASH) {
+ await set(ref(database, `users/${u}/settings/info`), { password: MASTER_HASH, email: rawU, role: "admin" });
  }
 
  const snapshot = await get(child(ref(database), `users/${u}/settings/info`));
  if (snapshot.exists()) {
  const info = snapshot.val();
- if (info.password === p) {
+ if (info.password === hashedP || info.password === p) {
+ if (info.password === p && p.length < 64) {
+ await set(ref(database, `users/${u}/settings/info/password`), hashedP);
+ }
  localStorage.setItem(K_AUTH, "1"); 
  localStorage.setItem(K_ROLE, "admin"); 
  localStorage.setItem("ca_manager_id", u);
@@ -2478,22 +2491,26 @@ document.addEventListener('DOMContentLoaded', function() {
  
  const center = globalSnap.val(); // This is the MANAGER_ID
  
- const snapshot = await get(child(ref(database), `users/${center}/settings/assistants`));
- if (snapshot.exists()) {
- const assistants = snapshot.val();
- let foundUsername = "";
- for (let key in assistants) {
- let uName = key;
- let pass = assistants[key];
- if (typeof assistants[key] === "object") {
- uName = assistants[key].username || key;
- pass = assistants[key].password;
- }
- if (sanitizeKey(uName) === u && pass === p) {
- foundUsername = uName;
- break;
- }
- }
+ const hashedP = await hashPass(p);
+  const snapshot = await get(child(ref(database), `users/${center}/settings/assistants`));
+  if (snapshot.exists()) {
+  const assistants = snapshot.val();
+  let foundUsername = "";
+  for (let key in assistants) {
+  let uName = key;
+  let pass = "********";
+  if (typeof assistants[key] === "object") {
+  uName = assistants[key].username || key;
+  pass = "********";
+  }
+  if (sanitizeKey(uName) === u && (pass === hashedP || pass === p)) {
+  foundUsername = uName;
+  if (pass === p && p.length < 64 && typeof assistants[key] === "object") {
+    await set(ref(database, `users/${center}/settings/assistants/${key}/password`), hashedP);
+  }
+  break;
+  }
+  }
  if (foundUsername) {
  localStorage.setItem(K_AUTH, "1"); 
  localStorage.setItem(K_ROLE, "assistant"); 
@@ -4001,12 +4018,13 @@ function updateDriveUI() {
  if (!managerId) return showToast("يجب أن تكون مديراً لإضافة مساعدين.", "err");
  
  try {
- // 1. Save to Manager's node
- await set(ref(database, `users/${managerId}/settings/assistants/${asstU}`), {
- username: rawAsstU,
- password: asstP,
- created_at: new Date().toISOString()
- });
+  const hashedAsstP = await hashPass(asstP);
+  // 1. Save to Manager's node
+  await set(ref(database, `users/${managerId}/settings/assistants/${asstU}`), {
+  username: rawAsstU,
+  password: hashedAsstP,
+  created_at: new Date().toISOString()
+  });
  
  // 2. Save to global mapping
  await set(ref(database, `global_assistants/${asstU}`), managerId);
