@@ -4412,6 +4412,19 @@ function updateDriveUI() {
  }
 
  // 4. Manage packages lock
+  const pkgTabBtn = $("btnTabPackages");
+  if (pkgTabBtn) {
+    if (!currentPermissions.can_manage_packages && currentUserRole !== "admin") {
+      pkgTabBtn.classList.add("locked-feature");
+      pkgTabBtn.style.opacity = "0.4";
+      pkgTabBtn.title = "مقفل من المدير ";
+    } else {
+      pkgTabBtn.classList.remove("locked-feature");
+      pkgTabBtn.style.opacity = "1";
+      pkgTabBtn.title = "";
+    }
+  }
+  
  const pkgBtn = $("quickGroupFeesBtn");
  if (pkgBtn) {
  if (!currentPermissions.can_manage_packages) {
@@ -5028,7 +5041,15 @@ function updateDriveUI() {
  on("btnTabSessionStudents", "click", function() { window.switchTab('SessionStudents'); renderSessionStudentsList(nowDateStr()); if($("sessFilterDate")) $("sessFilterDate").value = nowDateStr(); });
  on("btnTabRevenue", "click", function() { window.switchTab('Revenue'); renderCharts(); updateFinanceSummary(); });
  on("btnTabReports", "click", function() { window.switchTab('Reports'); renderReportsPage(); });
- on("btnTabAdmin", "click", function() { window.switchTab('Admin'); if (typeof renderManagerPackagesCard === "function") renderManagerPackagesCard(); });
+ on("btnTabPackages", "click", function() {
+    if (currentUserRole !== "admin" && (!currentPermissions || !currentPermissions.can_manage_packages)) {
+      showToast("عفواً، تعديل الباقات والأسعار مقفل من المدير ", "err");
+      return;
+    }
+    renderGroupFeesModal();
+    if ($("groupFeesModal")) $("groupFeesModal").classList.remove("hidden");
+  });
+  on("btnTabAdmin", "click", function() { window.switchTab('Admin'); if (typeof renderManagerPackagesCard === "function") renderManagerPackagesCard(); });
  on("btnTabSyllabus", "click", function() { window.switchTab('Syllabus'); renderSyllabus(); });
  on("btnTabBooklets", "click", function() { window.switchTab('Booklets'); renderBookletsStock(); });
  on("btnTabMarketing", "click", function() { window.switchTab('Marketing'); populateMarketingGroups(); filterCampaignTarget(); });
