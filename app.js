@@ -3130,8 +3130,7 @@ on("quickAttendId", "keypress", function(e) {
 
  window.renderGroupFeesModal = function() {
    const counts = {};
-   Object.values(students).forEach(st => {
-     const pName = st.className || "عام";
+   Object.values(students).forEach(st => { if(!st) return; const pName = st.className || "عام";
      counts[pName] = (counts[pName] || 0) + 1;
    });
 
