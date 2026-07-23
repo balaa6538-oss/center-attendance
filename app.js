@@ -5042,6 +5042,7 @@ function updateDriveUI() {
  on("btnTabRevenue", "click", function() { window.switchTab('Revenue'); renderCharts(); updateFinanceSummary(); });
  on("btnTabReports", "click", function() { window.switchTab('Reports'); renderReportsPage(); });
  on("btnTabPackages", "click", function() {
+    if (typeof closeMobileSidebar === "function") closeMobileSidebar(false);
     if (currentUserRole !== "admin" && (!currentPermissions || !currentPermissions.can_manage_packages)) {
       showToast("عفواً، تعديل الباقات والأسعار مقفل من المدير ", "err");
       return;
